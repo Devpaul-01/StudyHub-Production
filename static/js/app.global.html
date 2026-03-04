@@ -1,0 +1,201 @@
+/**
+ * ============================================================================
+ * GLOBAL EVENT DELEGATION
+ * Handles modals, overlays, and document-level interactions
+ * ============================================================================
+ */
+
+import { feedState } from './move/feed.state.js';
+import * as feedApi from './move/feed.api.js';
+import {
+  addForkTag,
+  removeForkTag,
+  addPostTag,
+  removePostTag,
+  addThreadTag,
+  removeThreadTag,
+  startRefinement,
+  applyRefinement,
+  refineBeforePost,
+  startInlineRefinement,
+  applyInlineRefinement
+} from './move/feed.modals.js';
+import { 
+  handleCreatePost,
+  handleCreateThread,
+  handleJoinThread,
+  handleReportPost,
+} from './move/feed.events.js';
+import { 
+  saveForkedPost,
+  postComment 
+} from './move/feed.modals.js';
+
+import { closeModal, openModal } from './move/feed.utils.js';
+
+/**
+ * Global action handlers - for elements OUTSIDE feed containers
+ */
+const GLOBAL_ACTIONS = {
+  // Modal controls
+  'open-modal': (target) => {
+    const modalId = target.dataset.modalId;
+    const closeModalId = target.dataset.closeModal;
+    if (closeModalId) closeModal(closeModalId);
+    if (modalId) openModal(modalId);
+  },
+  
+  'close-modal': (target) => {
+    const modalId = target.dataset.modalId;
+    if (modalId) closeModal(modalId);
+  },
+  
+  // Create post modal
+  'submit-create-post': (target, event) => {
+    event.preventDefault();
+    handleCreatePost(event);
+  },
+  
+  'add-post-tag': (target) => {
+    const tag = target.dataset.value;
+    if (tag) addPostTag(tag);
+  },
+  
+  'remove-post-tag': (target) => {
+    const tag = target.dataset.value;
+    if (tag) removePostTag(tag);
+  },
+  
+  'toggle-thread-settings': (target) => {
+    const modal = document.getElementById('create-post-thread-details-modal');
+    if (modal) modal.classList.toggle('hidden');
+  },
+  
+  'refine-before-post': (target, event) => {
+    const context = target.dataset.context || 'create';
+    refineBeforePost(context, event);
+  },
+  
+  'start-inline-refinement': (target, event) => {
+    event.stopPropagation();
+    startInlineRefinement();
+  },
+  
+  'apply-inline-refinement': (target, event) => {
+    event.stopPropagation();
+    applyInlineRefinement();
+  },
+  
+  // Create thread modal
+  'submit-create-thread': (target, event) => {
+    event.preventDefault();
+    handleCreateThread(event);
+  },
+  
+  'add-thread-tag': (target) => {
+    const tag = target.dataset.value;
+    if (tag) addThreadTag(tag);
+  },
+  
+  'remove-thread-tag': (target) => {
+    const tag = target.dataset.value;
+    if (tag) removeThreadTag(tag);
+  },
+  
+  'trigger-file-input': (target) => {
+    const inputId = target.dataset.inputId;
+    const modalId = target.dataset.closeModal;
+    
+    const input = document.getElementById(inputId);
+    if (input) input.click();
+    
+    if (modalId) closeModal(modalId);
+  },
+  
+  // Fork modal
+  'submit-fork-post': (target, event) => {
+    event.preventDefault();
+    saveForkedPost(event);
+  },
+  
+  'add-fork-tag': (target) => {
+    const tag = target.dataset.tag || target.dataset.value;
+    if (tag) addForkTag(tag);
+  },
+  
+  'remove-fork-tag': (target) => {
+    const tag = target.dataset.tag || target.dataset.value;
+    if (tag) removeForkTag(tag);
+  },
+  
+  // Thread view modal (join button)
+  'join-thread': (target, event) => {
+    event.stopPropagation();
+    handleJoinThread(event);
+  },
+  
+  // Report modal
+  'submit-report-post': (target, event) => {
+    event.preventDefault();
+    handleReportPost(event);
+  },
+  
+  // Refinement modal
+  'start-refinement': (target, event) => {
+    event.stopPropagation();
+    const modal = document.getElementById('post-refine-modal');
+    const postId = modal?.dataset.id;
+    if (postId) startRefinement(postId);
+  },
+  
+  'apply-refinement': (target, event) => {
+    event.stopPropagation();
+    const modal = document.getElementById('post-refine-modal');
+    const postId = modal?.dataset.id;
+    if (postId) applyRefinement(postId);
+  },
+  
+  // Comment modal
+  'post-comment': (target, event) => {
+    event.stopPropagation();
+    postComment(event);
+  }
+};
+
+/**
+ * Setup global delegation on document body
+ */
+export function setupGlobalDelegation() {
+  // Remove existing listener if any
+  /*
+  document.body.removeEventListener('click', globalClickHandler);
+  */
+  
+  // Add fresh listener
+  document.body.addEventListener('click', globalClickHandler);
+  
+  console.log('✅ Global delegation initialized');
+}
+
+/**
+ * Global click handler
+ */
+function globalClickHandler(event) {
+  const target = event.target.closest('[data-action]');
+  if (!target) return;
+  
+  const action = target.dataset.action;
+  const handler = GLOBAL_ACTIONS[action];
+  
+  if (handler) {
+    event.stopPropagation();
+    handler(target, event);
+  }
+}
+
+/**
+ * Export for window (optional, for debugging)
+ */
+if (typeof window !== 'undefined') {
+  window.setupGlobalDelegation = setupGlobalDelegation;
+}

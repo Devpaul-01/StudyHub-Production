@@ -1,0 +1,12 @@
+export async function getNotifications(cursor){
+  const response = await api.get(`/profile/notifications?limit=30cursor=${cursor}`);
+  return response.data || {};
+}
+export function toggleEnableNotification(data){
+  const response = await api.post("/profile/notifications/settings", data);
+  return response;
+}
+export function toggleEnableNotificationSound(data){
+  const response = await api.post("/profile/notifications/settings", data);
+  return response;
+}

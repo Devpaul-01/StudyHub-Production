@@ -1,0 +1,2676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learnora AI Assistant</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <!-- Highlight.js for code syntax highlighting (optional) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0f0f0f;
+            --bg-secondary: #1a1a1a;
+            --bg-tertiary: #242424;
+            --bg-hover: #2a2a2a;
+            --text-primary: #ffffff;
+            --text-secondary: #b4b4b4;
+            --accent-primary: #8b5cf6;
+            --accent-secondary: #6366f1;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Main Container */
+        .app-container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(-100%);
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logo::before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            top: 5px;
+            left: 5px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.3; }
+            50% { transform: scale(1.2); opacity: 0.6; }
+        }
+
+        .logo-icon {
+            width: 24px;
+            height: 24px;
+            fill: white;
+            position: relative;
+            z-index: 1;
+        }
+
+        .logo-text {
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .new-chat-btn {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .new-chat-btn:hover {
+            background: var(--bg-hover);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .new-chat-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Conversations List */
+        .conversations-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+        }
+
+        .conversations-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .conversations-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .conversations-list::-webkit-scrollbar-thumb {
+            background: var(--bg-hover);
+            border-radius: 3px;
+        }
+
+        .conversation-item {
+            padding: 12px 14px;
+            margin-bottom: 6px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .conversation-item:hover {
+            background: var(--bg-hover);
+        }
+
+        .conversation-item.active {
+            background: var(--bg-tertiary);
+            border-left: 3px solid var(--accent-primary);
+        }
+
+        .conversation-icon {
+            width: 16px;
+            height: 16px;
+            opacity: 0.6;
+        }
+
+        .conversation-title {
+            font-size: 14px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .conversation-item.active .conversation-title {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        /* Main Content Area */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Top Navigation */
+        .top-nav {
+            height: 64px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .sidebar-toggle {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: var(--glass-bg);
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-toggle:hover {
+            background: var(--bg-hover);
+        }
+
+        .sidebar-toggle svg {
+            width: 20px;
+            height: 20px;
+            fill: var(--text-primary);
+        }
+
+        .assistant-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            animation: blink 2s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .nav-btn:hover {
+            background: var(--bg-hover);
+        }
+
+        .nav-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: var(--text-secondary);
+        }
+
+        /* Chat Area */
+        .chat-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-area::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-area::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .chat-area::-webkit-scrollbar-thumb {
+            background: var(--bg-hover);
+            border-radius: 4px;
+        }
+
+        /* Empty State */
+        .empty-state {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .empty-logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .empty-logo svg {
+            width: 48px;
+            height: 48px;
+            fill: white;
+        }
+
+        .empty-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .empty-subtitle {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+        }
+
+        .suggestions-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            width: 100%;
+        }
+
+        .suggestion-card {
+            padding: 16px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+            backdrop-filter: blur(10px);
+        }
+
+        .suggestion-card:hover {
+            background: var(--bg-hover);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .suggestion-icon {
+            width: 24px;
+            height: 24px;
+            margin-bottom: 8px;
+        }
+
+        .suggestion-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .suggestion-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Messages */
+        .messages-container {
+            max-width: 800px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .message {
+            margin-bottom: 24px;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .message-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .message.user .message-avatar {
+            background: linear-gradient(135deg, #ec4899 0%, #f43f5e 100%);
+        }
+
+        .message.assistant .message-avatar {
+            background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+        }
+
+        .message-avatar svg {
+            width: 18px;
+            height: 18px;
+            fill: white;
+        }
+
+        .message-author {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .message-content {
+            margin-left: 44px;
+            padding: 16px 20px;
+            border-radius: 12px;
+            line-height: 1.6;
+            font-size: 15px;
+        }
+
+        .message.user .message-content {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+        }
+
+        .message.assistant .message-content {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+        }
+
+        /* Input Area */
+        .input-area {
+            padding: 20px 24px 24px;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .input-wrapper {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .input-container {
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .input-container:focus-within {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+
+        .input-actions-left {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .input-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .input-btn:hover {
+            background: var(--bg-hover);
+        }
+
+        .input-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: var(--text-secondary);
+        }
+
+        .input-btn:hover svg {
+            fill: var(--text-primary);
+        }
+
+        /* Upload Dropdown */
+        .upload-dropdown {
+            position: absolute;
+            bottom: 48px;
+            left: 0;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 8px;
+            min-width: 180px;
+            box-shadow: var(--shadow-lg);
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(10px);
+            transition: all 0.2s ease;
+            z-index: 100;
+        }
+
+        .upload-dropdown.active {
+            opacity: 1;
+            pointer-events: all;
+            transform: translateY(0);
+        }
+
+        .upload-option {
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .upload-option:hover {
+            background: var(--bg-hover);
+        }
+
+        .upload-option svg {
+            width: 18px;
+            height: 18px;
+            fill: var(--text-secondary);
+        }
+
+        .upload-option span {
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+
+        /* Settings Dropdown */
+        .settings-dropdown {
+            position: absolute;
+            bottom: 48px;
+            right: 0;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px;
+            min-width: 220px;
+            box-shadow: var(--shadow-lg);
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(10px);
+            transition: all 0.2s ease;
+            z-index: 100;
+        }
+
+        .settings-dropdown.active {
+            opacity: 1;
+            pointer-events: all;
+            transform: translateY(0);
+        }
+
+        .settings-section {
+            margin-bottom: 16px;
+        }
+
+        .settings-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .settings-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .mode-option {
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.2s ease;
+            margin-bottom: 4px;
+        }
+
+        .mode-option:hover {
+            background: var(--bg-hover);
+        }
+
+        .mode-option.active {
+            background: var(--accent-primary);
+        }
+
+        .mode-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .mode-name {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .mode-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .mode-option.active .mode-desc {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .mode-check {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 2px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mode-option.active .mode-check {
+            border-color: white;
+            background: white;
+        }
+
+        .mode-check svg {
+            width: 12px;
+            height: 12px;
+            fill: var(--accent-primary);
+            opacity: 0;
+        }
+
+        .mode-option.active .mode-check svg {
+            opacity: 1;
+        }
+
+        /* Message Input */
+        .message-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text-primary);
+            font-size: 15px;
+            resize: none;
+            max-height: 200px;
+            min-height: 24px;
+            font-family: inherit;
+        }
+
+        .message-input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .send-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: var(--accent-primary);
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .send-btn:hover {
+            background: var(--accent-secondary);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .send-btn:disabled {
+            background: var(--bg-hover);
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .send-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: white;
+        }
+
+        /* Footer Info */
+        .input-footer {
+            margin-top: 12px;
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        /* Responsive */
+        @media (max-width: 768px) {
+          .sidebar {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            z-index: 1000;
+          }
+        /* Hidden by default on mobile */
+        .sidebar.collapsed {
+          transform: translateX(-100%);
+        }
+        }
+        .message-content h1,
+        .message-content h2,
+        .message-content h3 {
+            margin: 16px 0 12px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .message-content h1 { font-size: 24px; }
+        .message-content h2 { font-size: 20px; }
+        .message-content h3 { font-size: 18px; }
+        
+        .message-content p {
+            margin: 12px 0;
+            line-height: 1.6;
+        }
+        
+        .message-content ul,
+        .message-content ol {
+            margin: 12px 0;
+            padding-left: 24px;
+        }
+        
+        .message-content li {
+            margin: 6px 0;
+            line-height: 1.6;
+        }
+        
+        .message-content code {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            color: #f8f8f2;
+        }
+        
+        .message-content pre {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            overflow-x: auto;
+            margin: 16px 0;
+        }
+        
+        .message-content pre code {
+            background: none;
+            padding: 0;
+            border-radius: 0;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        
+        .message-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .message-content th,
+        .message-content td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .message-content th {
+            background: rgba(255, 255, 255, 0.05);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .message-content tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .message-content a {
+            color: var(--accent-primary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        
+        .message-content a:hover {
+            color: var(--accent-secondary);
+            text-decoration: underline;
+        }
+        
+        .message-content blockquote {
+            border-left: 3px solid var(--accent-primary);
+            padding-left: 16px;
+            margin: 16px 0;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+        
+        .message-content hr {
+            border: none;
+            border-top: 1px solid var(--border-color);
+            margin: 24px 0;
+        }
+        
+        .message-content strong {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .message-content em {
+            font-style: italic;
+            color: var(--text-secondary);
+        }
+        
+        /* Code syntax highlighting overrides */
+        .message-content .hljs {
+            background: transparent;
+            color: #f8f8f2;
+        }
+        
+        /* ============================================ */
+        /* FILE PREVIEW STYLING */
+        /* ============================================ */
+        
+        .file-preview {
+            display: none;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        
+        .file-chip {
+            padding: 8px 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-primary);
+            transition: all 0.2s ease;
+        }
+        
+        .file-chip:hover {
+            background: var(--bg-hover);
+        }
+        
+        .file-chip-icon {
+            font-size: 16px;
+        }
+        
+        .file-chip-remove {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 18px;
+            line-height: 1;
+            padding: 0;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        
+        .file-chip-remove:hover {
+            color: #ef4444;
+            transform: scale(1.2);
+        }
+        
+        /* Continue Button */
+.continue-btn {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    margin-bottom: 12px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+}
+
+.continue-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(245, 158, 11, 0.4);
+}
+
+.continue-btn svg {
+    width: 18px;
+    height: 18px;
+    animation: rotate 2s linear infinite;
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Warning Message */
+.warning-message {
+    background: linear-gradient(135deg, #f59e0b 0%, #fb923c 100%);
+    color: white;
+    padding: 14px 16px;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Error Message */
+.error-message {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    padding: 14px 16px;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+    animation: slideDown 0.3s ease;
+}
+
+/* Thinking Animation - Like Gemini */
+.thinking-container {
+    margin-left: 44px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.thinking-text {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* Animated Thinking Orb - Like Gemini */
+.thinking-orb {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.thinking-orb::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: conic-gradient(
+        from 0deg,
+        #8b5cf6,
+        #6366f1,
+        #3b82f6,
+        #06b6d4,
+        #10b981,
+        #8b5cf6
+    );
+    animation: rotateGradient 3s linear infinite;
+}
+
+.thinking-orb::after {
+    content: '';
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--bg-tertiary);
+    z-index: 1;
+}
+
+@keyframes rotateGradient {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.thinking-orb .inner-circle {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+    z-index: 2;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* File Preview Chips */
+.file-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.file-chip {
+    padding: 8px 12px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+}
+
+.file-chip:hover {
+    background: var(--bg-hover);
+}
+
+.file-chip-icon {
+    width: 16px;
+    height: 16px;
+    opacity: 0.7;
+}
+
+.file-chip-remove {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    padding: 0;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.file-chip-remove:hover {
+    color: #ef4444;
+    transform: scale(1.2);
+}
+
+/* Message Attachments */
+.message-attachments {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.attachment-item {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+}
+
+.attachment-item:hover {
+    transform: scale(1.02);
+    box-shadow: var(--shadow-sm);
+}
+
+.attachment-image {
+    max-width: 200px;
+    max-height: 200px;
+    display: block;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.attachment-doc {
+    padding: 10px 14px;
+    background: var(--bg-tertiary);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.attachment-doc svg {
+    width: 16px;
+    height: 16px;
+    fill: var(--text-secondary);
+}
+
+/* Loading States */
+.loading-state {
+    height: 60px;
+    background: linear-gradient(90deg, var(--bg-tertiary) 0%, var(--bg-hover) 50%, var(--bg-tertiary) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+    border-radius: 8px;
+    margin-bottom: 12px;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Empty State */
+.empty-state-message {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+/* Post Selection Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.modal-content {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    padding: 24px;
+    box-shadow: var(--shadow-lg);
+    transform: translateY(20px);
+    transition: transform 0.3s ease;
+}
+
+.modal-overlay.active .modal-content {
+    transform: translateY(0);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.modal-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.modal-close {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: var(--bg-hover);
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+    background: var(--bg-tertiary);
+    transform: rotate(90deg);
+}
+
+.post-card {
+    padding: 16px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.post-card:hover {
+    background: var(--bg-hover);
+    transform: translateX(4px);
+}
+
+.post-card-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.post-card-preview {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+/* Hidden Class */
+.hidden {
+    display: none !important;
+}
+
+
+        
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar collapsed" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-section">
+                    <div class="logo">
+                        <svg class="logo-icon" viewBox="0 0 24 24">
+                            <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" fill="white"/>
+                            <circle cx="12" cy="12" r="3" fill="rgba(255,255,255,0.3)"/>
+                        </svg>
+                    </div>
+                    <div class="logo-text">Learnora</div>
+                </div>
+                <button class="new-chat-btn">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 4V20M4 12H20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    New Conversation
+                </button>
+            </div>
+
+            <div class="conversations-list">
+                <!-- Sample Conversation Items -->
+                <div class="conversation-item active">
+                    <svg class="conversation-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2Z"/>
+                    </svg>
+                    <div class="conversation-title">Welcome to Learnora AI</div>
+                </div>
+                <div class="conversation-item">
+                    <svg class="conversation-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2Z"/>
+                    </svg>
+                    <div class="conversation-title">Python Programming Help</div>
+                </div>
+                <div class="conversation-item">
+                    <svg class="conversation-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2Z"/>
+                    </svg>
+                    <div class="conversation-title">Study Schedule Planning</div>
+                </div>
+                <div class="conversation-item">
+                    <svg class="conversation-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2Z"/>
+                    </svg>
+                    <div class="conversation-title">Calculus Problem Solving</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Navigation -->
+            <nav class="top-nav">
+                <div class="nav-left">
+                    <button class="sidebar-toggle" id="sidebarToggle">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M3 6H21M3 12H21M3 18H21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                    <div class="assistant-name">
+                        <span class="status-indicator"></span>
+                        Learnora AI Assistant
+                    </div>
+                </div>
+                <div class="nav-right">
+                    <button class="nav-btn">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 17C11.45 17 11 16.55 11 16V12C11 11.45 11.45 11 12 11C12.55 11 13 11.45 13 12V16C13 16.55 12.55 17 12 17ZM13 9H11V7H13V9Z"/>
+                        </svg>
+                    </button>
+                    <button class="nav-btn">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 8C9.79 8 8 9.79 8 12C8 14.21 9.79 16 12 16C14.21 16 16 14.21 16 12C16 9.79 14.21 8 12 8ZM12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.58 20 4 16.42 4 12C4 7.58 7.58 4 12 4C16.42 4 20 7.58 20 12C20 16.42 16.42 20 12 20Z"/>
+                        </svg>
+                    </button>
+                </div>
+            </nav>
+
+            <!-- Chat Area -->
+            <div class="chat-area">
+                <!-- Empty State (Show when no messages) -->
+                <div class="empty-state">
+                    <div class="empty-logo">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" fill="white"/>
+                            <circle cx="12" cy="12" r="4" fill="rgba(255,255,255,0.3)"/>
+                        </svg>
+                    </div>
+                    <h1 class="empty-title">Welcome to Learnora AI</h1>
+                    <p class="empty-subtitle">Your intelligent study companion. Ask me anything!</p>
+                    
+                    <div class="suggestions-grid">
+                        <div class="suggestion-card">
+                            <div class="suggestion-icon">💡</div>
+                            <div class="suggestion-title">Explain Concepts</div>
+                            <div class="suggestion-desc">Break down complex topics</div>
+                        </div>
+                        <div class="suggestion-card">
+                            <div class="suggestion-icon">💻</div>
+                            <div class="suggestion-title">Code Review</div>
+                            <div class="suggestion-desc">Debug and optimize code</div>
+                        </div>
+                        <div class="suggestion-card">
+                            <div class="suggestion-icon">📚</div>
+                            <div class="suggestion-title">Study Guide</div>
+                            <div class="suggestion-desc">Create personalized plans</div>
+                        </div>
+                        <div class="suggestion-card">
+                            <div class="suggestion-icon">🎯</div>
+                            <div class="suggestion-title">Practice Problems</div>
+                            <div class="suggestion-desc">Test your knowledge</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Messages Container (Hidden by default, show when messages exist) -->
+                <!-- <div class="messages-container" style="display: none;">
+                    <div class="message user">
+                        <div class="message-header">
+                            <div class="message-avatar">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z"/>
+                                </svg>
+                            </div>
+                            <div class="message-author">You</div>
+                        </div>
+                        <div class="message-content">
+                            How do I solve quadratic equations?
+                        </div>
+                    </div>
+
+                    <div class="message assistant">
+                        <div class="message-header">
+                            <div class="message-avatar">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z"/>
+                                </svg>
+                            </div>
+                            <div class="message-author">Learnora AI</div>
+                        </div>
+                        <div class="message-content">
+                            Great question! There are several methods to solve quadratic equations. Let me explain the most common approaches...
+                            <br><br>
+                            <strong>1. Factoring Method</strong><br>
+                            If the equation is in the form ax² + bx + c = 0, try to factor it into (px + q)(rx + s) = 0
+                            <br><br>
+                            <strong>2. Quadratic Formula</strong><br>
+                            x = (-b ± √(b² - 4ac)) / 2a
+                            <br><br>
+                            Would you like me to walk through an example with specific numbers?
+                        </div>
+                    </div>
+                </div> -->
+            </div>
+            
+            <!-- Input Area -->
+            <!-- Replace the entire .input-area section with this -->
+            <div class="input-area">
+              <div class="input-wrapper">
+        <div class="input-container">
+            <div class="input-actions-left">
+                <!-- Upload Button -->
+                <div style="position: relative;">
+                    <button class="input-btn" id="uploadBtn">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M9 16V10H5L12 3L19 10H15V16H9ZM5 20V18H19V20H5Z"/>
+                        </svg>
+                    </button>
+                    
+                    <!-- Upload Dropdown -->
+                    <div class="upload-dropdown" id="uploadDropdown">
+                        <div class="upload-option" id="uploadImage">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M21 19V5C21 3.9 20.1 3 19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19ZM8.5 13.5L11 16.51L14.5 12L19 18H5L8.5 13.5Z"/>
+                            </svg>
+                            <span>Upload Image</span>
+                        </div>
+                        <div class="upload-option" id="uploadFile">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2ZM16 18H8V16H16V18ZM16 14H8V12H16V14ZM13 9V3.5L18.5 9H13Z"/>
+                            </svg>
+                            <span>Upload File</span>
+                        </div>
+                        <div class="upload-option" id="uploadBookmark">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M17 3H7C5.9 3 5 3.9 5 5V21L12 18L19 21V5C19 3.9 18.1 3 17 3Z"/>
+                            </svg>
+                            <span>Post Bookmarks</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Message Input -->
+            <textarea 
+                class="message-input" 
+                id="messageInput" 
+                placeholder="Message Learnora AI..." 
+                rows="1"
+            ></textarea>
+
+            <div style="position: relative;">
+                <!-- Settings Button -->
+                <button class="input-btn" id="settingsBtn">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M19.14 12.94C19.18 12.64 19.2 12.33 19.2 12C19.2 11.68 19.18 11.36 19.13 11.06L21.16 9.48C21.34 9.34 21.39 9.07 21.28 8.87L19.36 5.55C19.24 5.33 18.99 5.26 18.77 5.33L16.38 6.29C15.88 5.91 15.35 5.59 14.76 5.35L14.4 2.81C14.36 2.57 14.16 2.4 13.92 2.4H10.08C9.84 2.4 9.65 2.57 9.61 2.81L9.25 5.35C8.66 5.59 8.12 5.92 7.63 6.29L5.24 5.33C5.02 5.25 4.77 5.33 4.65 5.55L2.74 8.87C2.62 9.08 2.66 9.34 2.86 9.48L4.89 11.06C4.84 11.36 4.8 11.69 4.8 12C4.8 12.31 4.82 12.64 4.87 12.94L2.84 14.52C2.66 14.66 2.61 14.93 2.72 15.13L4.64 18.45C4.76 18.67 5.01 18.74 5.23 18.67L7.62 17.71C8.12 18.09 8.65 18.41 9.24 18.65L9.6 21.19C9.65 21.43 9.84 21.6 10.08 21.6H13.92C14.16 21.6 14.36 21.43 14.39 21.19L14.75 18.65C15.34 18.41 15.88 18.09 16.37 17.71L18.76 18.67C18.98 18.75 19.23 18.67 19.35 18.45L21.27 15.13C21.39 14.91 21.34 14.66 21.15 14.52L19.14 12.94ZM12 15.6C10.02 15.6 8.4 13.98 8.4 12C8.4 10.02 10.02 8.4 12 8.4C13.98 8.4 15.6 10.02 15.6 12C15.6 13.98 13.98 15.6 12 15.6Z"/>
+                    </svg>
+                </button>
+
+                <!-- Settings Dropdown -->
+                <div class="settings-dropdown" id="settingsDropdown">
+                    <div class="settings-section">
+                        <div class="settings-label">AI Mode</div>
+                        
+                        <div class="mode-option active" data-mode="fast_response">
+                            <div class="mode-info">
+                                <div class="mode-name">Fast Response</div>
+                                <div class="mode-desc">Quick and concise answers</div>
+                            </div>
+                            <div class="mode-check">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z"/>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <div class="mode-option" data-mode="deep_think">
+                            <div class="mode-info">
+                                <div class="mode-name">Deep Think</div>
+                                <div class="mode-desc">Detailed explanations</div>
+                            </div>
+                            <div class="mode-check">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z"/>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <div class="mode-option" data-mode="programming">
+                            <div class="mode-info">
+                                <div class="mode-name">Programming</div>
+                                <div class="mode-desc">Code review & debugging</div>
+                            </div>
+                            <div class="mode-check">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z"/>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <div class="mode-option" data-mode="research">
+                            <div class="mode-info">
+                                <div class="mode-name">Research</div>
+                                <div class="mode-desc">In-depth analysis</div>
+                            </div>
+                            <div class="mode-check">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z"/>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <div class="mode-option" data-mode="summarize">
+                            <div class="mode-info">
+                                <div class="mode-name">Summarize</div>
+                                <div class="mode-desc">Extract key points</div>
+                            </div>
+                            <div class="mode-check">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z"/>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <div class="mode-option" data-mode="explain">
+                            <div class="mode-info">
+                                <div class="mode-name">Explain</div>
+                                <div class="mode-desc">Teaching mode</div>
+                            </div>
+                            <div class="mode-check">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Send Button -->
+            <button class="send-btn" id="sendBtn" disabled>
+                <svg viewBox="0 0 24 24">
+                    <path d="M2.01 21L23 12L2.01 3L2 10L17 12L2 14L2.01 21Z"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="input-footer">
+            Learnora AI can make mistakes. Consider checking important information.
+        </div>
+    </div>
+</div>
+
+    <!-- Add this right before closing </body> tag -->
+
+<!-- Bookmark Modal Container (will be created dynamically) -->
+<div id="bookmark-modal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-title">Select Bookmarked Post</div>
+            <button class="modal-close" onclick="closeBookmarkModal()">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                    <path d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41Z"/>
+                </svg>
+            </button>
+        </div>
+        <div id="bookmark-folders-list"></div>
+    </div>
+</div>
+    
+
+    <!-- Allow multiple images -->
+    <input type="file" id="imageFileInput" accept="image/*" multiple style="display: none;">
+    <!-- Already has multiple -->
+    <input type="file" id="documentFileInput" accept=".txt,.py,.js,.html,.css,.java,.pdf,.docx,.csv" multiple style="display: none;">
+    <script src="{{ url_for('static', filename='js/core/api.js') }}"></script>
+    <script>
+        // Initialize syntax highlighting after page load
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof hljs !== 'undefined') {
+                // Apply to all code blocks
+                document.querySelectorAll('pre code').forEach((block) => {
+                    hljs.highlightElement(block);
+                });
+            }
+        });
+    </script>
+    <script>
+// ============================================
+// LEARNORA AI CHAT - FULLY FIXED VERSION
+// ============================================
+
+// Global State
+let conversationId = null;
+let selectedFiles = [];
+let selectedPost = null;
+let currentMode = 'fast_response';
+let canContinue = false;
+let isStreaming = false;
+
+// DOM Elements
+const sidebar = document.getElementById('sidebar');
+const sidebarToggle = document.getElementById('sidebarToggle');
+const uploadBtn = document.getElementById('uploadBtn');
+const uploadDropdown = document.getElementById('uploadDropdown');
+const settingsBtn = document.getElementById('settingsBtn');
+const settingsDropdown = document.getElementById('settingsDropdown');
+const messageInput = document.getElementById('messageInput');
+const sendBtn = document.getElementById('sendBtn');
+const chatArea = document.querySelector('.chat-area');
+const emptyState = document.querySelector('.empty-state');
+const imageFileInput = document.getElementById('imageFileInput');
+const documentFileInput = document.getElementById('documentFileInput');
+
+// ============================================
+// MARKDOWN UTILITIES
+// ============================================
+
+if (typeof marked !== 'undefined') {
+    marked.setOptions({
+        breaks: true,
+        gfm: true,
+        highlight: function(code, lang) {
+            return `<code class="language-${lang}">${escapeHtml(code)}</code>`;
+        }
+    });
+}
+
+function escapeHtml(text) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, m => map[m]);
+}
+
+function renderMarkdown(text) {
+    if (!text) return '';
+    
+    if (typeof marked !== 'undefined') {
+        try {
+            return marked.parse(text);
+        } catch (e) {
+            console.error('Markdown parse error:', e);
+            return escapeHtml(text);
+        }
+    }
+    
+    return escapeHtml(text).replace(/\n/g, '<br>');
+}
+
+// ============================================
+// FILE VALIDATION - FIXED
+// ============================================
+
+function validateFile(file) {
+    console.log('🔍 Validating:', file.name, file.type, (file.size/1024).toFixed(2) + 'KB');
+    
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+    
+    if (!file || !file.name) {
+        console.error('❌ Invalid file object:', file);
+        showToast('Invalid file', 'error');
+        return false;
+    }
+    
+    if (file.size > MAX_FILE_SIZE) {
+        const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+        showToast(`File too large: ${sizeMB}MB (max 5MB)`, 'error');
+        return false;
+    }
+    
+    if (file.size === 0) {
+        showToast(`File is empty: ${file.name}`, 'error');
+        return false;
+    }
+    
+    // ✅ Check images by MIME type (works for all formats)
+    if (file.type && file.type.startsWith('image/')) {
+        console.log('✅ Valid image:', file.name, file.type);
+        return true;
+    }
+    
+    // ✅ Check documents by extension (case-insensitive)
+    const validExts = ['.pdf', '.txt', '.docx', '.csv', '.py', '.js', '.java', '.cpp', '.html', '.css', '.ts', '.c', '.h', '.rb', '.php', '.json', '.xml'];
+    const fileName = file.name.toLowerCase();
+    const isValid = validExts.some(ext => fileName.endsWith(ext));
+    
+    if (!isValid) {
+        showToast(`Unsupported file type: ${file.name}`, 'error');
+        return false;
+    }
+    
+    console.log('✅ Valid document:', file.name);
+    return true;
+}
+
+function handleFileSelection(files) {
+    const MAX_FILES = 10;
+    console.log(`📎 Processing ${files.length} file(s)...`);
+    console.log('📎 Input type:', files instanceof FileList ? 'FileList' : Array.isArray(files) ? 'Array' : typeof files);
+    
+    let added = 0;
+    
+    // Convert FileList to Array if needed
+    const filesArray = Array.isArray(files) ? files : Array.from(files);
+    
+    filesArray.forEach((file, index) => {
+        console.log(`📎 Processing file ${index + 1}:`, {
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            isFile: file instanceof File,
+            lastModified: file.lastModified
+        });
+        
+        if (selectedFiles.length >= MAX_FILES) {
+            showToast(`Maximum ${MAX_FILES} files allowed`, 'warning');
+            return;
+        }
+        
+        if (validateFile(file)) {
+            // ✅ Store the actual File object
+            selectedFiles.push(file);
+            added++;
+            console.log(`✅ Added: ${file.name} (now have ${selectedFiles.length} files)`);
+        } else {
+            console.warn(`⚠️ Validation failed for: ${file.name}`);
+        }
+    });
+    
+    if (added > 0) {
+        showToast(`Added ${added} file(s) • Total: ${selectedFiles.length}/${MAX_FILES}`, 'success');
+        updateFilePreview();
+        autoResizeInput();
+    } else {
+        console.warn('⚠️ No files were added');
+    }
+    
+    // Verify selectedFiles array
+    console.log('📊 Current selectedFiles:', selectedFiles.map(f => ({ 
+        name: f.name, 
+        type: f.type, 
+        size: f.size,
+        isFile: f instanceof File 
+    })));
+}
+
+// ============================================
+// INITIALIZATION
+// ============================================
+
+window.onload = async () => {
+    console.log('🚀 Learnora AI starting...');
+    
+    // Verify file inputs exist
+    if (!imageFileInput || !documentFileInput) {
+        console.error('❌ File inputs not found!');
+        showToast('Error: File inputs not initialized', 'error');
+        return;
+    }
+    
+    await createNewConversation();
+    setupEventListeners();
+    await loadConversations();
+    autoResizeInput();
+    
+    console.log('✅ Initialization complete');
+};
+
+// ============================================
+// EVENT LISTENERS
+// ============================================
+
+function setupEventListeners() {
+    console.log('🔧 Setting up event listeners...');
+    
+    // Sidebar
+    sidebarToggle.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
+    });
+
+    // Upload dropdown
+    uploadBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        uploadDropdown.classList.toggle('active');
+        settingsDropdown.classList.remove('active');
+    });
+
+    // Settings dropdown
+    settingsBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        settingsDropdown.classList.toggle('active');
+        uploadDropdown.classList.remove('active');
+    });
+
+    // Close dropdowns
+    document.addEventListener('click', () => {
+        uploadDropdown.classList.remove('active');
+        settingsDropdown.classList.remove('active');
+    });
+
+    // Upload options
+    document.getElementById('uploadImage').addEventListener('click', () => {
+        console.log('📷 Image upload clicked');
+        imageFileInput.click();
+        uploadDropdown.classList.remove('active');
+    });
+
+    document.getElementById('uploadFile').addEventListener('click', () => {
+        console.log('📄 File upload clicked');
+        documentFileInput.click();
+        uploadDropdown.classList.remove('active');
+    });
+
+    document.getElementById('uploadBookmark').addEventListener('click', () => {
+        console.log('📌 Bookmark clicked');
+        showBookmarkModal();
+        uploadDropdown.classList.remove('active');
+    });
+
+    // File inputs - CRITICAL FIX
+    imageFileInput.addEventListener('change', (e) => {
+        console.log('📷 Image input changed:', e.target.files.length, 'files');
+        if (e.target.files && e.target.files.length > 0) {
+            const filesArray = Array.from(e.target.files);
+            console.log('📷 Files array:', filesArray.map(f => ({ name: f.name, type: f.type, size: f.size })));
+            handleFileSelection(filesArray);
+        } else {
+            showToast('⚠️ No files in image input', 'error');
+        }
+        e.target.value = ''; // Reset
+    });
+
+    documentFileInput.addEventListener('change', (e) => {
+        console.log('📄 Document input changed:', e.target.files.length, 'files');
+        if (e.target.files && e.target.files.length > 0) {
+            const filesArray = Array.from(e.target.files);
+            console.log('📄 Files array:', filesArray.map(f => ({ name: f.name, type: f.type, size: f.size })));
+            handleFileSelection(filesArray);
+        } else {
+            console.warn('⚠️ No files in document input');
+        }
+        e.target.value = ''; // Reset
+    });
+
+    // Mode selection
+    document.querySelectorAll('.mode-option').forEach(option => {
+        option.addEventListener('click', () => {
+            document.querySelectorAll('.mode-option').forEach(o => o.classList.remove('active'));
+            option.classList.add('active');
+            currentMode = option.getAttribute('data-mode');
+            console.log('🎯 Mode:', currentMode);
+            settingsDropdown.classList.remove('active');
+        });
+    });
+
+    // Input
+    messageInput.addEventListener('input', autoResizeInput);
+    
+    messageInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            if (!sendBtn.disabled && !isStreaming) {
+                sendMessage();
+            }
+        }
+    });
+
+    // Send button
+    sendBtn.addEventListener('click', () => {
+        if (!isStreaming) {
+            sendMessage();
+        }
+    });
+
+    // New chat
+    document.querySelector('.new-chat-btn').addEventListener('click', async () => {
+        await createNewConversation();
+        clearChatArea();
+        if (emptyState) emptyState.classList.remove('hidden');
+        document.querySelectorAll('.conversation-item').forEach(i => i.classList.remove('active'));
+        showToast('New conversation started', 'success');
+    });
+
+    // Suggestions
+    document.querySelectorAll('.suggestion-card').forEach(card => {
+        card.addEventListener('click', () => {
+            const title = card.querySelector('.suggestion-title').textContent;
+            messageInput.value = `Help me with: ${title}`;
+            messageInput.focus();
+            autoResizeInput();
+        });
+    });
+
+    // Responsive
+    window.addEventListener('resize', () => {
+        if (window.innerWidth <= 768) {
+            sidebar.classList.add('collapsed');
+        }
+    });
+    
+    console.log('✅ Event listeners ready');
+}
+
+function autoResizeInput() {
+    messageInput.style.height = 'auto';
+    messageInput.style.height = Math.min(messageInput.scrollHeight, 200) + 'px';
+    const hasContent = messageInput.value.trim() || selectedFiles.length > 0 || selectedPost;
+    sendBtn.disabled = !hasContent || isStreaming;
+}
+
+// ============================================
+// CONVERSATION MANAGEMENT
+// ============================================
+
+async function createNewConversation() {
+    try {
+        const response = await fetch('/learnora/api/conversation/new', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            conversationId = data.conversation_id;
+            console.log('✅ New conversation:', conversationId);
+            selectedFiles = [];
+            selectedPost = null;
+            updateFilePreview();
+            if (window.innerWidth <= 768) sidebar.classList.add('collapsed');
+        } else {
+            showToast('Failed to create conversation', 'error');
+        }
+    } catch (error) {
+        console.error('❌ Create conversation error:', error);
+        showToast('Error creating conversation', 'error');
+    }
+}
+
+async function loadConversations() {
+    try {
+        const response = await fetch('/learnora/api/conversation/list');
+        const result = await response.json();
+        if (result.status === 'success') {
+            displayConversations(result.data);
+        }
+    } catch (error) {
+        console.error('Load conversations error:', error);
+    }
+}
+
+function displayConversations(conversations) {
+    const list = document.querySelector('.conversations-list');
+    list.querySelectorAll('.conversation-item:not(.active)').forEach(i => i.remove());
+    
+    if (!conversations || conversations.length === 0) return;
+    
+    conversations.forEach(conv => {
+        const div = document.createElement('div');
+        div.className = 'conversation-item';
+        div.dataset.id = conv.conversation_id;
+        div.innerHTML = `
+            <svg class="conversation-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2Z"/>
+            </svg>
+            <div class="conversation-title">${conv.title}</div>
+        `;
+        div.addEventListener('click', () => loadConversation(conv.conversation_id));
+        list.appendChild(div);
+    });
+}
+
+async function loadConversation(id) {
+    try {
+        clearChatArea();
+        showLoadingState();
+        
+        const response = await fetch(`/learnora/api/conversations/${id}`);
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+            conversationId = id;
+            if (emptyState) emptyState.classList.add('hidden');
+            displayMessages(result.data.messages);
+            document.querySelectorAll('.conversation-item').forEach(item => {
+                item.classList.toggle('active', item.dataset.id == id);
+            });
+            if (window.innerWidth <= 768) sidebar.classList.add('collapsed');
+        } else {
+            showToast(result.message || 'Failed to load', 'error');
+            clearChatArea();
+        }
+    } catch (error) {
+        console.error('Load conversation error:', error);
+        showToast('Error loading conversation', 'error');
+        clearChatArea();
+    }
+}
+
+// ============================================
+// MESSAGE SENDING - FIXED
+// ============================================
+
+async function sendMessage(isContinue = false) {
+    const message = messageInput.value.trim();
+    
+    console.log('📤 SEND MESSAGE START');
+    console.log('📤 Message:', message);
+    console.log('📤 Selected files count:', selectedFiles.length);
+    console.log('📤 Selected files details:', selectedFiles.map(f => ({ 
+        name: f.name, 
+        type: f.type, 
+        size: f.size,
+        isFile: f instanceof File 
+    })));
+    
+    if (!isContinue && !message && selectedFiles.length === 0 && !selectedPost) {
+        showToast('Please enter a message or upload files', 'error');
+        return;
+    }
+    
+    if (isStreaming) {
+        showToast('Please wait...', 'warning');
+        return;
+    }
+    
+    if (!conversationId) {
+        console.log('Creating conversation...');
+        await createNewConversation();
+    }
+    
+    isStreaming = true;
+    sendBtn.disabled = true;
+    messageInput.disabled = true;
+    
+    const userMessage = isContinue ? 'continue' : message;
+    if (!isContinue) {
+        messageInput.value = '';
+        autoResizeInput();
+    }
+    
+    if (emptyState) emptyState.classList.add('hidden');
+    if (!isContinue) addUserMessage(message, selectedFiles, selectedPost);
+    
+    const thinking = showThinkingAnimation();
+    
+    // Build FormData - CRITICAL: Make sure files are actual File objects
+    const formData = new FormData();
+    formData.append('conversation_id', conversationId);
+    formData.append('message', userMessage);
+    formData.append('mode', currentMode);
+    formData.append('continue', isContinue ? 'true' : 'false');
+    
+    console.log('📦 Building FormData...');
+    
+    // ✅ CRITICAL FIX: Verify each file is valid before adding
+    let validFileCount = 0;
+    selectedFiles.forEach((file, index) => {
+        console.log(`📦 Processing file ${index}:`, file.name, file.type, file instanceof File);
+        if (file instanceof File) {
+            formData.append('files', file);
+            console.log(`✅ Added to FormData: ${file.name} (${file.type}, ${file.size} bytes)`);
+            validFileCount++;
+        } else {
+            console.error('❌ Invalid file object:', file);
+        }
+    });
+    
+    console.log(`📊 FormData complete. Valid files: ${validFileCount}/${selectedFiles.length}`);
+    
+    if (selectedPost) {
+        formData.append('post_id', selectedPost.id);
+    }
+    
+    // Store files reference before clearing
+    const filesBeforeClear = [...selectedFiles];
+    
+    // Clear selections
+    selectedFiles = [];
+    selectedPost = null;
+    updateFilePreview();
+    
+    try {
+        console.log('🚀 Starting fetch to /learnora/api/chat...');
+        await streamResponse(formData, thinking);
+        console.log('✅ Send complete');
+    } catch (error) {
+        console.error('❌ SEND ERROR:', error);
+        console.error('❌ Error name:', error.name);
+        console.error('❌ Error message:', error.message);
+        console.error('❌ Error stack:', error.stack);
+        showToast('Error: ' + error.message, 'error');
+        if (thinking) thinking.remove();
+        
+        // Restore files on error
+        selectedFiles = filesBeforeClear;
+        updateFilePreview();
+    } finally {
+        isStreaming = false;
+        sendBtn.disabled = false;
+        messageInput.disabled = false;
+        messageInput.focus();
+        autoResizeInput();
+    }
+}
+
+async function streamResponse(formData, thinking) {
+    console.log('📡 ========== STREAM RESPONSE START ==========');
+    console.log('📡 Request URL:', window.location.origin + '/learnora/api/chat');
+    
+    // Debug: Log FormData contents
+    console.log('📦 FormData contents:');
+    let fileCount = 0;
+    for (let pair of formData.entries()) {
+        if (pair[1] instanceof File) {
+            fileCount++;
+            showToast(`  FILE ${fileCount}: ${pair[0]} = ${pair[1].name} (${pair[1].type}, ${(pair[1].size/1024).toFixed(2)}KB)`, "success");
+        } else {
+            console.log(`  FIELD: ${pair[0]} = ${pair[1]}`);
+        }
+    }
+    console.log(`📊 Total files in FormData: ${fileCount}`);
+    
+    let response;
+    try {
+        console.log('🌐 Making fetch request...');
+        response = await fetch('/learnora/api/chat', {
+            method: 'POST',
+            body: formData,
+        });
+        
+        console.log('✅ Response received!');
+        console.log('📡 Status:', response.status, response.statusText);
+        console.log('📡 Headers:', Object.fromEntries(response.headers.entries()));
+    } catch (fetchError) {
+        console.error('❌ ========== FETCH FAILED ==========');
+        console.error('❌ Error name:', fetchError.name);
+        console.error('❌ Error message:', fetchError.message);
+        console.error('❌ Error stack:', fetchError.stack);
+        console.error('❌ Full error object:', fetchError);
+        
+        // Check for specific error types
+        if (fetchError.name === 'TypeError' && fetchError.message.includes('Failed to fetch')) {
+            throw new Error('Network error - Cannot connect to server. Check if server is running.');
+        } else if (fetchError.name === 'AbortError') {
+            throw new Error('Request was aborted');
+        } else {
+            throw new Error(`Network error: ${fetchError.message}`);
+        }
+    }
+    
+    if (!response.ok) {
+        console.error('❌ HTTP error:', response.status);
+        let errorMsg = `HTTP ${response.status}`;
+        try {
+            const errorData = await response.json();
+            errorMsg = errorData.error || errorMsg;
+        } catch (e) {}
+        throw new Error(errorMsg);
+    }
+    
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    
+    let assistantMessage = '';
+    let messageElement = null;
+    
+    while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        
+        const chunk = decoder.decode(value);
+        const lines = chunk.split('\n');
+        
+        for (const line of lines) {
+            if (line.startsWith('data: ')) {
+                const data = line.slice(6);
+                if (data === '[DONE]') continue;
+                
+                try {
+                    const parsed = JSON.parse(data);
+                    
+                    if (parsed.type === 'start') {
+                        if (thinking) thinking.remove();
+                        messageElement = addAssistantMessage('');
+                    }
+                    else if (parsed.content) {
+                        assistantMessage += parsed.content;
+                        if (messageElement) {
+                            messageElement.innerHTML = renderMarkdown(assistantMessage);
+                            scrollToBottom();
+                        }
+                    }
+                    else if (parsed.type === 'done') {
+                        canContinue = parsed.can_continue;
+                        if (canContinue) showContinueButton();
+                    }
+                    else if (parsed.error) {
+                        throw new Error(parsed.error);
+                    }
+                } catch (e) {
+                    if (e.message !== 'Unexpected end of JSON input') {
+                        console.error('Parse error:', e);
+                    }
+                }
+            }
+        }
+    }
+    
+    await loadConversations();
+    console.log('📡 ========== STREAM RESPONSE END ==========');
+}
+// ============================================
+// UI FUNCTIONS
+// ============================================
+
+function addUserMessage(text, files, post) {
+    const container = getOrCreateMessagesContainer();
+    const div = document.createElement('div');
+    div.className = 'message user';
+    div.innerHTML = `
+        <div class="message-header">
+            <div class="message-avatar">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z"/>
+                </svg>
+            </div>
+            <div class="message-author">You</div>
+        </div>
+        <div class="message-content">
+            ${escapeHtml(text)}
+            ${renderAttachments(files, post)}
+        </div>
+    `;
+    container.appendChild(div);
+    scrollToBottom();
+}
+
+function addAssistantMessage(text) {
+    const container = getOrCreateMessagesContainer();
+    const div = document.createElement('div');
+    div.className = 'message assistant';
+    div.innerHTML = `
+        <div class="message-header">
+            <div class="message-avatar">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z"/>
+                </svg>
+            </div>
+            <div class="message-author">Learnora AI</div>
+        </div>
+        <div class="message-content"></div>
+    `;
+    container.appendChild(div);
+    const contentDiv = div.querySelector('.message-content');
+    if (text) contentDiv.innerHTML = renderMarkdown(text);
+    scrollToBottom();
+    return contentDiv;
+}
+
+function showThinkingAnimation() {
+    const container = getOrCreateMessagesContainer();
+    const div = document.createElement('div');
+    div.className = 'message assistant thinking';
+    div.innerHTML = `
+        <div class="message-header">
+            <div class="message-avatar">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z"/>
+                </svg>
+            </div>
+            <div class="message-author">Learnora AI</div>
+        </div>
+        <div class="thinking-container">
+            <span class="thinking-text">Thinking</span>
+            <div class="thinking-orb"><div class="inner-circle"></div></div>
+        </div>
+    `;
+    container.appendChild(div);
+    scrollToBottom();
+    return div;
+}
+
+function showContinueButton() {
+    const wrapper = document.querySelector('.input-wrapper');
+    if (document.querySelector('.continue-btn')) return;
+    
+    const btn = document.createElement('button');
+    btn.className = 'continue-btn';
+    btn.innerHTML = `
+        <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 4V1L8 5L12 9V6C15.31 6 18 8.69 18 12C18 15.31 15.31 18 12 18C8.69 18 6 15.31 6 12H4C4 16.42 7.58 20 12 20C16.42 20 20 16.42 20 12C20 7.58 16.42 4 12 4Z"/>
+        </svg>
+        Continue Response
+    `;
+    btn.onclick = () => { btn.remove(); sendMessage(true); };
+    wrapper.insertBefore(btn, wrapper.firstChild);
+}
+function displayMessages(messages) {
+    clearChatArea();
+    if (!messages || messages.length === 0) {
+        if (emptyState) emptyState.classList.remove('hidden');
+        return;
+    }
+    
+    const container = getOrCreateMessagesContainer();
+    messages.forEach(msg => {
+        if (msg.role === 'system') return;
+        if (msg.role === 'user') {
+            const files = msg.attachments ? msg.attachments.map(a => ({ name: a.filename, type: a.mime_type })) : [];
+            addUserMessage(msg.content, files, null);
+        } else if (msg.role === 'assistant') {
+            addAssistantMessage(msg.content);
+        }
+    });
+    scrollToBottom();
+}
+
+function renderAttachments(files, post) {
+    if ((!files || files.length === 0) && !post) return '';
+    let html = '<div class="message-attachments">';
+    if (files && files.length > 0) {
+        files.forEach(file => {
+            html += `<div class="attachment-item"><div class="attachment-doc">📎 ${file.name}</div></div>`;
+        });
+    }
+    if (post) {
+        html += `<div class="attachment-item"><div class="attachment-doc">📌 Post: ${post.title}</div></div>`;
+    }
+    html += '</div>';
+    return html;
+}
+
+function updateFilePreview() {
+    let container = document.querySelector('.file-preview');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'file-preview';
+        document.querySelector('.input-wrapper').insertBefore(container, document.querySelector('.input-wrapper').firstChild);
+    }
+    
+    container.innerHTML = '';
+    
+    selectedFiles.forEach((file, i) => {
+        const chip = document.createElement('div');
+        chip.className = 'file-chip';
+        chip.innerHTML = `
+            <span class="file-chip-icon">📎</span>
+            <span>${file.name}</span>
+            <button class="file-chip-remove" onclick="removeFile(${i})">×</button>
+        `;
+        container.appendChild(chip);
+    });
+    
+    if (selectedPost) {
+        const chip = document.createElement('div');
+        chip.className = 'file-chip';
+        chip.innerHTML = `
+            <span class="file-chip-icon">📌</span>
+            <span>${selectedPost.title.slice(0, 30)}</span>
+            <button class="file-chip-remove" onclick="removePost()">×</button>
+        `;
+        container.appendChild(chip);
+    }
+    
+    container.style.display = (selectedFiles.length > 0 || selectedPost) ? 'flex' : 'none';
+}
+
+function removeFile(index) {
+    selectedFiles.splice(index, 1);
+    updateFilePreview();
+    autoResizeInput();
+}
+
+function removePost() {
+    selectedPost = null;
+    updateFilePreview();
+    autoResizeInput();
+}
+
+function getOrCreateMessagesContainer() {
+    let container = document.querySelector('.messages-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'messages-container';
+        chatArea.appendChild(container);
+    }
+    return container;
+}
+
+function clearChatArea() {
+    const container = document.querySelector('.messages-container');
+    if (container) container.remove();
+}
+
+function showLoadingState() {
+    const container = getOrCreateMessagesContainer();
+    container.innerHTML = '<div class="loading-state"></div><div class="loading-state"></div>';
+}
+
+function scrollToBottom() {
+    chatArea.scrollTop = chatArea.scrollHeight;
+}
+
+// ============================================
+// BOOKMARK FUNCTIONS
+// ============================================
+
+async function showBookmarkModal() {
+    let modal = document.getElementById('bookmark-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'bookmark-modal';
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">Select Bookmarked Post</div>
+                    <button class="modal-close" onclick="closeBookmarkModal()">×</button>
+                </div>
+                <div id="bookmark-folders-list"></div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+    modal.classList.add('active');
+    await loadBookmarkFolders();
+}
+
+function closeBookmarkModal() {
+    const modal = document.getElementById('bookmark-modal');
+    if (modal) modal.classList.remove('active');
+}
+
+async function loadBookmarkFolders() {
+    const list = document.getElementById('bookmark-folders-list');
+    list.innerHTML = '<div class="loading-state"></div>';
+    
+    try {
+        const response = await fetch('/student/posts/bookmark/folders');
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+            const folders = result.data || [];
+            if (folders.length === 0) {
+                list.innerHTML = '<div class="empty-state-message">No bookmarks found</div>';
+                return;
+            }
+            
+            list.innerHTML = '';
+            folders.forEach(folder => {
+                const div = document.createElement('div');
+                div.className = 'post-card';
+                div.innerHTML = `<div class="post-card-title">📁 ${folder}</div>`;
+                div.onclick = () => loadBookmarkedPosts(folder);
+                list.appendChild(div);
+            });
+        }
+    } catch (error) {
+        console.error('Load folders error:', error);
+        list.innerHTML = '<div class="empty-state-message">Error loading folders</div>';
+    }
+}
+
+async function loadBookmarkedPosts(folder) {
+    const list = document.getElementById('bookmark-folders-list');
+    list.innerHTML = '<div class="loading-state"></div>';
+    
+    try {
+        const response = await fetch(`/student/posts/bookmarked?folder=${encodeURIComponent(folder)}`);
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+            const bookmarks = result.data.bookmarks || [];
+            
+            list.innerHTML = '<button onclick="loadBookmarkFolders()" style="margin-bottom:12px;padding:8px 12px;background:var(--bg-hover);border:none;border-radius:8px;color:var(--text-primary);cursor:pointer;">← Back</button>';
+            
+            bookmarks.forEach(bookmark => {
+                const post = bookmark.post;
+                const div = document.createElement('div');
+                div.className = 'post-card';
+                div.innerHTML = `
+                    <div class="post-card-title">${post.title}</div>
+                    <div class="post-card-preview">${(post.text_content || '').slice(0, 100)}...</div>
+                `;
+                div.onclick = () => selectPost(post);
+                list.appendChild(div);
+            });
+        }
+    } catch (error) {
+        console.error('Load posts error:', error);
+    }
+}
+
+function selectPost(post) {
+    selectedPost = post;
+    updateFilePreview();
+    autoResizeInput();
+    closeBookmarkModal();
+    showToast('Post selected', 'success');
+}
+        
+    
+function showToast(message, type = 'info') {
+    console.log(`🔔 Toast (${type}):`, message);
+    
+    // Simple toast notification (you can enhance this)
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        background: ${type === 'error' ? '#ef4444' : type === 'warning' ? '#f59e0b' : type === 'success' ? '#10b981' : '#6366f1'};
+        color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        z-index: 10000;
+        font-size: 14px;
+        animation: slideIn 0.3s ease;
+    `;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideOut {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+`;
+document.head.appendChild(style);
+
+  
+    
+    </script>
+    
+</body>
+</html>

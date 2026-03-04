@@ -1,0 +1,159 @@
+/**
+ * ============================================================================
+ * HOMEWORK API CALLS
+ * All backend communication for homework section
+ * ============================================================================
+ */
+
+export const homeworkAPI = {
+  /**
+   * Get my assignments
+   */
+  async getMyAssignments(params = {}) {
+    const queryParams = new URLSearchParams(params).toString();
+    const url = `/assignments${queryParams ? '?' + queryParams : ''}`;
+    return await api.get(url);
+  },
+  async getChartData(){
+    return await api.get('/homework/stats/charts');
+},
+
+  /**
+   * Create new assignment
+   */
+  async createAssignment(data) {
+    return await api.post('/assignments', data);
+  },
+
+  /**
+   * Update assignment
+   */
+  async updateAssignment(id, data) {
+    return await api.put(`/assignments/${id}`, data);
+  },
+
+  /**
+   * Delete assignment
+   */
+  async deleteAssignment(id) {
+    return await api.delete(`/assignments/${id}`);
+  },
+
+  /**
+   * Toggle assignment status
+   */
+  async toggleAssignmentStatus(id, status) {
+    showToast(`Sending homwework status: ${status}`)
+    return await api.post(`/assignments/${id}/quick-actions`, {action:status });
+  },
+
+  /**
+   * Share assignment for help
+   */
+  async shareAssignmentForHelp(id) {
+    return await api.post(`/assignments/${id}/share-for-help`);
+  },
+
+  /**
+   * Unshare assignment
+   */
+  async unshareAssignment(id) {
+    return await api.post(`/assignments/${id}/unshare`);
+  },
+  
+
+  /**
+   * Get connections homework feed
+   */
+  async getConnectionsHomework(params = {}) {
+    const queryParams = new URLSearchParams(params).toString();
+    const url = `/homework/feed${queryParams ? '?' + queryParams : ''}`;
+    return await api.get(url);
+  },
+
+  /**
+   * Offer to help with homework
+   */
+  async offerHelp(assignmentId, message = '') {
+    return await api.post(`/homework/${assignmentId}/offer-help`, { message });
+  },
+
+  /**
+   * Get my help requests (people helping me)
+   */
+  async getMyHelpRequests(id) {
+    const url = `/homework/${id}/helpers`;
+    return await api.get(url);
+  },
+
+  /**
+   * Get homework I'm helping with
+   */
+  async getHelpingWith(params = {}) {
+    const queryParams = new URLSearchParams(params).toString();
+    const url = `/homework/helping-with${queryParams ? '?' + queryParams : ''}`;
+    return await api.get(url);
+  },
+
+  /**
+   * Get submission details
+   */
+  async getSubmissionDetails(submissionId) {
+    return await api.get(`/homework/submission/${submissionId}`);
+  },
+
+  /**
+   * Submit solution
+   */
+  async submitSolution(submissionId, data) {
+    return await api.post(`/homework/submission/${submissionId}/submit-solution`, data);
+  },
+
+  /**
+   * Give feedback on solution
+   */
+  async giveFeedback(submissionId, data) {
+    return await api.post(`/homework/submission/${submissionId}/give-feedback`, data);
+  },
+
+  /**
+   * Upload resource for homework
+   */
+  async uploadResource(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    return await api.post('/posts/resource/upload', formData, true);
+  },
+
+  /**
+   * Quick actions on assignment (start, complete, reopen, etc.)
+   */
+  async quickAction(assignmentId, action) {
+    return await api.post(`/assignments/${assignmentId}/quick-actions`, { action });
+  },
+
+  /**
+   * Cancel submission (before solution submitted)
+   */
+  async cancelSubmission(submissionId) {
+    return await api.delete(`/homework/submission/${submissionId}/cancel`);
+  },
+
+  /**
+   * Get homework statistics
+   */
+  async getStats() {
+    return await api.get('/homework/stats');
+  },
+  async getMyStreak() {
+  return await api.get('/homework/my-streak');
+},
+
+async getChampions() {
+  return await api.get('/homework/champions');
+},
+
+async getActivityFeed() {
+  return await api.get('/activity/feed');
+}
+};

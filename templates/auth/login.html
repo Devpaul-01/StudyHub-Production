@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - StudyHub</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth/forms.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth/auth.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="auth-page">
+        <div class="auth-container">
+            <div class="auth-header">
+                <div class="auth-logo">🎓</div>
+                <h1 class="auth-title">Welcome Back!</h1>
+                <p class="auth-subtitle">Login to continue learning</p>
+            </div>
+            
+            <form id="login-form" class="auth-form">
+                <div class="form-group">
+                    <label for="username_or_email" class="form-label required">Username or Email</label>
+                    <input type="text" 
+                           id="username_or_email" 
+                           name="username_or_email" 
+                           class="form-input" 
+                           placeholder="john or john@university.edu"
+                           required
+                           autocomplete="username">
+                    <span class="form-error hidden" id="username_error"></span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password" class="form-label required">Password</label>
+                    <input type="password" 
+                           id="password" 
+                           name="password" 
+                           class="form-input" 
+                           placeholder="Enter your password"
+                           required
+                           autocomplete="current-password">
+                    <span class="form-error hidden" id="password_error"></span>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-lg);">
+                    <div class="checkbox-group" style="margin: 0;">
+                        <input type="checkbox" id="remember_me" name="remember_me">
+                        <label for="remember_me">Remember me</label>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-lg" id="submit-btn">
+                    Login
+                </button>
+            </form>
+            
+            <div class="auth-divider">
+                <span>OR</span>
+            </div>
+            
+            <button class="google-btn" id="google-login-btn">
+                <img src="https://www.svgrepo.com/show/355037/google.svg" alt="Google logo">
+                Login with Google
+            </button>
+            
+            <div class="auth-footer">
+                Don't have an account? <a href="{{ url_for('student.student_auth.register') }}">Create one now</a>
+            </div>
+            
+            <a href="/student/reset-password">Forgot password?</a>
+        </div>
+    </div>
+    
+    <!-- Load scripts in correct order -->
+    <script src="{{ url_for('static', filename='js/core/api.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/core/utils.js') }}"></script>
+    <script>
+// ✅ COMPLETELY FIXED Login JavaScript
+document.addEventListener("DOMContentLoaded", async () => {
+    console.log("✅ Login page loaded");
+    
+    // Check for Google OAuth data
+    try {
+        const res = await fetch("/student/google_temp_info");
+        const data = await res.json();
+        
+        if (data.email) {
+            document.getElementById("username_or_email").value = data.email;
+            if (typeof showToast === 'function') {
+                showToast("Email prefilled from Google", "info");
+            }
+        }
+    } catch (error) {
+        console.error("Error fetching Google info:", error);
+    }
+    
+    // ✅ FIXED: Google OAuth button with correct path
+    const googleBtn = document.getElementById("google-login-btn");
+    if (googleBtn) {
+        googleBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            console.log("🔵 Redirecting to Google OAuth...");
+            // ✅ CORRECT PATH: /google/start (as registered in app.py)
+            window.location.href = "/google/start";
+        });
+    }
+    
+    // ✅ FIXED: Form submission
+    const form = document.getElementById('login-form');
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await handleLogin(e);
+    });
+    
+    // Auto-focus first input
+    document.getElementById('username_or_email').focus();
+    
+    console.log("✅ Login page initialized");
+});
+
+/**
+ * Handle login form submission - COMPLETELY FIXED
+ */
+async function handleLogin(e) {
+    console.log("📤 Submitting login form...");
+    
+    clearAllErrors();
+    
+    const formData = new FormData(e.target);
+    const data = {
+        username_or_email: formData.get('username_or_email').trim().toLowerCase(),
+        password: formData.get('password')
+    };
+    
+    console.log("Login data:", { username_or_email: data.username_or_email });
+    
+    // Validation
+    if (!data.username_or_email) {
+        showFieldError('username', 'Username or email is required');
+        return;
+    }
+    
+    if (!data.password) {
+        showFieldError('password', 'Password is required');
+        return;
+    }
+    
+    const submitBtn = document.getElementById('submit-btn');
+    
+    try {
+        setButtonLoading(submitBtn, true, 'Logging in...');
+        
+        // ✅ Use your api.post (which already has /student base URL)
+        const result = await api.post('/login', data);
+        
+        console.log("Login result:", result);
+        
+        if (result.status === 'success') {
+            if (typeof showToast === 'function') {
+                showToast('Welcome back! Redirecting...', 'success');
+            }
+            
+            // Clear Google session
+            await clearGoogleSession();
+            
+            setTimeout(() => {
+                const redirectUrl = result.data?.redirect || '/student/profile/homepage';
+                window.location.href = redirectUrl;
+            }, 1000);
+        } else {
+            throw new Error(result.message || 'Login failed');
+        }
+    } catch (error) {
+        console.error('❌ Login error:', error);
+        setButtonLoading(submitBtn, false);
+        
+        const errorMsg = error.message || 'Login failed. Please try again.';
+        
+        if (errorMsg.includes('Invalid credentials')) {
+            if (typeof showToast === 'function') {
+                showToast('Invalid username/email or password', 'error');
+            } else {
+                alert('Invalid username/email or password');
+            }
+            showFieldError('password', 'Incorrect password');
+        } else if (errorMsg.includes('verify your email')) {
+            if (typeof showToast === 'function') {
+                showToast('Please verify your email first. Check your inbox.', 'warning', 5000);
+            } else {
+                alert('Please verify your email first. Check your inbox.');
+            }
+        } else if (errorMsg.includes('complete your registration')) {
+            if (typeof showToast === 'function') {
+                showToast('Please complete your registration', 'warning');
+            } else {
+                alert('Please complete your registration');
+            }
+            if (errorMsg.includes('verification link')) {
+                if (typeof showToast === 'function') {
+                    showToast('Check your email for the verification link', 'info', 5000);
+                }
+            }
+        } else {
+            if (typeof showToast === 'function') {
+                showToast(errorMsg, 'error');
+            } else {
+                alert(errorMsg);
+            }
+        }
+    }
+}
+
+/**
+ * Show field-specific error
+ */
+function showFieldError(fieldName, message) {
+    const inputId = fieldName === 'username' ? 'username_or_email' : fieldName;
+    const input = document.getElementById(inputId);
+    const errorSpan = document.getElementById(fieldName + '_error');
+    
+    if (input) {
+        input.classList.add('error');
+        console.log(`⚠️ Error on field ${fieldName}: ${message}`);
+    }
+    
+    if (errorSpan) {
+        errorSpan.classList.remove('hidden');
+        errorSpan.textContent = message;
+    }
+}
+
+/**
+ * Clear all form errors
+ */
+function clearAllErrors() {
+    document.querySelectorAll('.form-error').forEach(el => {
+        el.classList.add('hidden');
+        el.textContent = '';
+    });
+    
+    document.querySelectorAll('.form-input').forEach(el => {
+        el.classList.remove('error');
+    });
+}
+
+/**
+ * Set button loading state
+ */
+function setButtonLoading(button, loading, text = '') {
+    if (loading) {
+        button.disabled = true;
+        button.dataset.originalText = button.textContent;
+        button.textContent = text || 'Loading...';
+    } else {
+        button.disabled = false;
+        button.textContent = button.dataset.originalText || 'Submit';
+    }
+}
+
+/**
+ * Clear Google OAuth session
+ */
+async function clearGoogleSession() {
+    try {
+        await api.post("/clear-session", {});
+        console.log("🧹 Google session cleared");
+    } catch (error) {
+        console.error("Error clearing session:", error);
+    }
+}
+    </script>
+</body>
+</html>

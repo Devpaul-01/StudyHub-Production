@@ -1,0 +1,1576 @@
+
+/**
+ * ============================================================================
+ * FEED EVENTS
+ * Event listeners and interaction handlers
+ * ============================================================================
+ */
+
+/**
+ * ============================================================================
+ * FEED EVENTS
+ * ============================================================================
+ */
+// This will finally show up after the fix!
+import { feedState } from './feed.state.js';
+import { LONG_PRESS_TIME, AVAILABLE_TAGS, MAX_TAGS } from './feed.constants.js';
+import * as feedApi from './feed.api.js';
+
+// --- FIX 1: Import renderSelectedForkTags from render.js, NOT modals.js ---
+import { 
+  renderFeed, 
+  updateFilterButtons, 
+  updateFeedContainerVisibility,
+  highlightPost,
+  clearAllHighlights,
+  updateReactionDisplay,
+  showReactionMenu,
+  hideReactionMenu,
+  updateCommentLikeButton,
+  updateCommentHelpfulButton,
+  removePostFromDOM,
+  removeCommentFromDOM,
+  updatePostBookmarkDisplay,
+  updatePreviousButton,
+  renderSelectedForkTags // <--- MOVED HERE
+} from './feed.render.js';
+
+import { getReactionType,renderThreadDetailsHTML} from './feed.templates.js';
+
+// --- FIX 2: Removed renderSelectedForkTags from here ---
+import { openCommentModal, openBookmarkFoldersModal } from './feed.modals.js';
+
+// ... rest of the file ...
+
+
+/**
+ * Setup all event listeners
+ */
+export function setupAllEventListeners() {
+  setupReactionListeners();
+  setupViewTracking();
+  setupBulkSelectionListeners();
+  setupFileUploadListeners();
+  setupForkTagsListeners();
+  setupBookmarkModalListeners();
+  setupPostMedias(); // ✅ ADD THIS
+  setupThreadListeners(); // ✅ ADD THIS
+  setupThreadTags(); // ✅ ADD THIS
+  setupPostTags(); // ✅ ADD THIS
+  setupGlobalClickListeners();
+}
+export function toggleCommentSettings(commentId, event){
+  event.stopPropagation();
+  const commentCard = document.getElementById(`comment-card-${commentId}`);
+  if(commentCard){
+    commentCard.querySelector(".delete-comment").classList.toggle('hidden');
+  }
+  showToast('Error encountered', 'error');
+}
+export function handleSwitchComment(event){
+  event.stopPropagation();
+  const allComments = feedState.getCommentModalHistory();
+  const previousState = allComments.pop();
+  if (!previousState) closeModal('post-comments-modal');
+  updatePreviousButton();
+  const commentsModal = document.getElementById("comments-container");
+  commentsModal.innerHTML = previousState.html;
+  commentsModal.scrollTop = previousState.scrollTop;
+}
+export function handleListenPost(postId, event) {
+  if(event) event.stopPropagation();
+  document.getElementById("close-comments-modal-btn").addEventListener("click", function(e) {
+    feedState.clearCommentModalHistory();
+  })
+  // Stop any currently playing speech
+  if (window.speechSynthesis.speaking) {
+    window.speechSynthesis.cancel();
+    showToast("Speech stopped", "info");
+    return;
+  }
+
+  const post = document.getElementById(`post-${postId}`);
+  if (!post) {
+    showToast("Post not found", "error");
+    return;
+  }
+
+  const contentEl = post.querySelector(".post-content");
+  const titleEl = post.querySelector(".post-title");
+
+  if (!contentEl || !titleEl) {
+    showToast("No content to read", "warning");
+    return;
+  }
+
+  const text = `${titleEl.textContent} ${contentEl.textContent}`;
+  
+  if (!text.trim()) {
+    showToast("No content to read", "warning");
+    return;
+  }
+
+  const speech = new SpeechSynthesisUtterance(text);
+  speech.rate = 1; 
+  speech.pitch = 1; 
+  speech.lang = "en-US";
+  
+  speech.onstart = () => {
+    showToast("🔊 Reading post...", "info");
+  };
+  
+  speech.onend = () => {
+    showToast("Finished reading", "success");
+  };
+  
+  speech.onerror = (error) => {
+    console.error("Speech error:", error);
+    showToast("Speech failed: " + error.error, "error");
+  };
+  
+  window.speechSynthesis.speak(speech);
+}
+/**
+ * Setup reaction listeners (likes, long press reactions)
+ */
+export function togglePostOptions(postId, event) {
+    event.stopPropagation();
+    const optionsMenu = document.getElementById(`options-${postId}`);
+    const button = document.getElementById(`options-btn-${postId}`);
+
+    if (optionsMenu) {
+        const allMenus = document.querySelectorAll('.advanced-post-options:not(.hidden)');
+        allMenus.forEach(menu => {
+            if (menu.id !== `options-${postId}`) {
+                menu.classList.add('hidden');
+            }
+        });
+
+        optionsMenu.classList.toggle('hidden');
+    }
+}
+
+
+export async function setupThreadListeners(){
+  const avatarInput = document.getElementById("thread-avatar-input");
+  const threadAvatar = document.getElementById('thread-avatar');
+  
+  avatarInput.addEventListener("change", async function(e) { // Add async here
+    const file = e.target.files[0]; // Remove extra parentheses
+    const url = URL.createObjectURL(file);
+    threadAvatar.src = url;
+    
+    const result = await feedApi.uploadResource(file);
+    const resource = {
+      url: result.data.url,
+      type: result.data.type,
+      filename: result.data.filename
+    };
+    feedState.setThreadAvatar(resource);
+  });
+}
+
+export async function handleCreatePost(event) { // Add async
+  event.preventDefault();
+  
+  const postTitle = document.getElementById("post-title").value;
+  const postContent = document.getElementById("post-content").value;
+  const postTags = feedState.getPostTags(); // Remove 'get' typo
+  const postType = document.getElementById('post-type').value;
+  const postResources = feedState.getPostResources();
+  const threadEnabled = document.getElementById('thread-toggle').checked;
+  
+  let threadTitle = '';
+  let threadDescription = '';
+  let maxMembers = null;
+  let requiresApproval = false;
+  
+  if(threadEnabled){
+    threadTitle = document.getElementById("thread-title").value;
+    threadDescription = document.getElementById('thread-description').value; // Change : to ;
+    maxMembers = document.getElementById("thread-max-members").value;
+    requiresApproval = document.getElementById("thread-approval-toggle").checked; // Add .checked
+  }
+  
+  const payload = {
+    title: postTitle,
+    text_content: postContent,
+    post_type: postType,
+    tags: postTags,
+    resources: postResources,
+    thread_enabled: threadEnabled,
+    thread_title: threadTitle,
+    thread_description: threadDescription,
+    max_members: maxMembers,
+    requires_approval: requiresApproval
+  };
+  try{
+    const response = await feedApi.uploadPost(payload);
+    if(response && response.status == 'error'){
+      showToast(response.message, 'error');
+      return
+    }
+    showToast("Post created successfully", "success");
+    closeModal("create-post-modal");
+    document.getElementById("create-post-form").reset();
+  }
+  catch(error){
+    showToast("Upload post error:"+ error, 'error');
+  }
+  
+    
+  }
+
+
+export async function handleCreateThread(event) { // Add async and event parameter
+  event.preventDefault();
+  
+  const threadTitle = document.getElementById("thread-title-input").value;
+  const threadDescription = document.getElementById("thread-description-input").value;
+  const threadTags = feedState.getThreadTags();
+  const maxMembers = document.getElementById("thread-maximum-members").value;
+  const requiresApproval = document.getElementById("thread-require-approval").checked; // Add .checked
+  const threadResource = feedState.getThreadResource(); // Should be singular or check the method name
+  
+  const payload = {
+    title: threadTitle,
+    description: threadDescription,
+    tags: threadTags, // Added missing tags
+    max_members: maxMembers,
+    requires_approval: requiresApproval,
+    resources: threadResource
+  };
+  try{
+    const response = await feedApi.createThread(payload);
+    if(response && response.status == 'error'){
+      showToast(response.message, 'error');
+      return
+    }
+    showToast("Thread created successfully", "success");
+    closeModal("create-thread-modal");
+    document.getElementById("create-thread-form").reset();
+  }
+  catch(error){
+    showToast("Create thread error:"+ error, 'error');
+  }
+}
+
+function setupThreadTags() { // Add 'function' keyword
+  const tagInput = document.getElementById("thread-tag-search");
+  const tagsDropdown = document.getElementById("thread-tag-results"); // Fixed ID
+  const selectedTags = document.getElementById("thread-selected-tags");
+  
+  if (!tagInput || !tagsDropdown) {
+    console.warn("Tags elements not found");
+    return;
+  }
+
+  tagInput.addEventListener("input", function(e) {
+    const input = e.target.value.toLowerCase();
+    
+    if (input.length === 0) {
+      tagsDropdown.classList.add("hidden");
+      return;
+    }
+    
+    if (feedState.getThreadTags().length >= MAX_TAGS) {
+      tagsDropdown.classList.add('hidden');
+      return;
+    }
+    
+    const relatedTags = AVAILABLE_TAGS.filter(tag => 
+      tag.toLowerCase().includes(input) && !feedState.getThreadTags().includes(tag)
+    );
+    
+    if (relatedTags.length > 0) {
+      tagsDropdown.innerHTML = relatedTags.slice(0, 10).map(tag => 
+        `<div class="tag-option" onclick="addThreadTag('${tag}')">${tag}</div>`
+      ).join('');
+      tagsDropdown.classList.remove('hidden');
+    } else {
+      tagsDropdown.classList.add('hidden');
+    }
+  });
+
+  tagInput.addEventListener("keydown", function(e) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const value = e.target.value.trim();
+      if (value && feedState.getThreadTags().length < MAX_TAGS) {
+        if (typeof window.addThreadTag === 'function') {
+          window.addThreadTag(value);
+        }
+      }
+    }
+  });
+}
+
+function setupPostTags() { // Add 'function' keyword
+  const tagInput = document.getElementById("tags-input");
+  const tagsDropdown = document.getElementById("tags-dropdown");
+  
+  if (!tagInput || !tagsDropdown) {
+    console.warn("Tags elements not found");
+    return;
+  }
+
+  tagInput.addEventListener("input", function(e) {
+    const input = e.target.value.toLowerCase();
+    
+    if (input.length === 0) {
+      tagsDropdown.classList.add("hidden");
+      return;
+    }
+    
+    if (feedState.getPostTags().length >= MAX_TAGS) {
+      tagsDropdown.classList.add('hidden');
+      return;
+    }
+    
+    const relatedTags = AVAILABLE_TAGS.filter(tag => 
+      tag.toLowerCase().includes(input) && !feedState.getPostTags().includes(tag)
+    );
+    
+    if (relatedTags.length > 0) {
+      tagsDropdown.innerHTML = relatedTags.slice(0, 10).map(tag => 
+        `<div class="tag-option" onclick="addTag('${tag}')">${tag}</div>`
+      ).join('');
+      tagsDropdown.classList.remove('hidden');
+    } else {
+      tagsDropdown.classList.add('hidden');
+    }
+  });
+
+  tagInput.addEventListener("keydown", function(e) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const value = e.target.value.trim();
+      if (value && feedState.getPostTags().length < MAX_TAGS) {
+        if (typeof window.addTag === 'function') {
+          window.addTag(value);
+        }
+      }
+    }
+  });
+}
+
+export function setupReactionListeners() {
+    const reactionMenu = document.getElementById("reactionMenu");
+    
+    if (!reactionMenu) {
+        console.warn("Reaction menu not found");
+        return;
+    }
+    
+    // ✅ Better approach - just add listeners without cloning
+    document.querySelectorAll(".post-card .reaction-btn").forEach(btn => {
+        // Remove old listeners by storing reference
+        if (btn._longPressHandler) {
+            btn.removeEventListener("mousedown", btn._longPressHandler);
+            btn.removeEventListener("touchstart", btn._touchStartHandler);
+        }
+        
+        // Create new handlers
+        btn._longPressHandler = function(e) {
+            e.preventDefault();
+            feedState.setReactionBtn(btn);
+            startPress(e);
+        };
+        
+        btn._touchStartHandler = function(e) {
+            e.preventDefault();
+            feedState.setReactionBtn(btn);
+            startPress(e);
+        };
+        
+        // Add listeners
+        btn.addEventListener("mousedown", btn._longPressHandler);
+        btn.addEventListener("mouseup", cancelPress);
+        btn.addEventListener("mouseleave", cancelPress);
+        btn.addEventListener("touchstart", btn._touchStartHandler, { passive: false });
+        btn.addEventListener("touchend", cancelPress);
+        btn.addEventListener("touchmove", cancelPress);
+    });
+  
+  // Reaction menu click handler
+  reactionMenu.addEventListener("click", async function(e) {
+    const reactionType = e.target.dataset.reaction;
+    if (!reactionType) return;
+
+    const reactionBtn = feedState.getReactionBtn();
+    if (!reactionBtn) return;
+
+    const postCard = reactionBtn.closest(".post-card");
+    const postId = postCard?.dataset.postId;
+
+    if (postId) {
+      toggleReactions(postId, reactionType);
+    }
+
+    hideReactionMenu();
+    cancelPress();
+  });
+}
+
+/**
+ * Start long press
+ */
+function startPress(e) {
+  const timer = setTimeout(() => {
+    showReactionMenu(e);
+    feedState.setLongPressTimer(null);
+  }, LONG_PRESS_TIME);
+  
+  feedState.setLongPressTimer(timer);
+}
+
+
+/**
+ * Cancel long press
+ */
+function cancelPress() {
+  feedState.clearLongPressTimer();
+}
+
+/**
+
+
+
+/**
+ * Setup view tracking with Intersection Observer
+ */
+export function setupViewTracking() {
+  // Disconnect previous observer
+  feedState.disconnectViewObserver();
+  
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const postId = entry.target.id;
+        
+        if (postId) {
+          sendView(postId);
+          observer.unobserve(entry.target);
+        }
+      }
+    });
+  }, {
+    threshold: 0.4,
+    rootMargin: '0px'
+  });
+  
+  feedState.setViewObserver(observer);
+  
+  document.querySelectorAll(".post-card[data-post-id]").forEach(post => {
+    observer.observe(post);
+  });
+}
+
+/**
+ * Send view tracking
+ */
+async function sendView(postId) {
+  try {
+    await feedApi.trackPostView(postId);
+  } catch (error) {
+    console.debug("View tracking error:", postId, error);
+  }
+}
+
+/**
+ * Setup bulk selection listeners
+ */
+export function setupBulkSelectionListeners() {
+  document.querySelectorAll(".post-card").forEach(post => {
+    post.onclick = null;
+  });
+  
+  document.querySelectorAll(".post-card").forEach(post => {
+    post.addEventListener("touchstart", function(e) {
+      if (e.target.closest('button, a, .comment-action-btn, .post-action')) return;
+      startBulk(e, post);
+    }, {once:false});
+    post.addEventListener("touchend", clearBulk);
+    post.addEventListener("touchmove", clearBulk);
+
+    post.addEventListener("mousedown", function(e) {
+      if (e.target.closest('button, a, .post-action')) return;
+      startBulk(e, post);
+    });
+    post.addEventListener("mouseup", clearBulk);
+    post.addEventListener("mouseleave", clearBulk);
+    
+
+    post.addEventListener("click", function(e) {
+      if(feedState.isInHighlightMode() && post.classList.contains(".choosed") && !e.target.closest('button, a, .post-action')){
+      feedState.reduceBookmarkCount();
+      feedState.togglePostSelection(post.dataset.postId); 
+      post.classList.remove("choosed");
+      return;
+    }
+      if (feedState.isInHighlightMode() && !e.target.closest('button, a, .post-action')) {
+        e.preventDefault();
+        e.stopPropagation();
+        highlightPost(post);
+      }
+    });
+  });
+}
+
+/**
+ * Start bulk selection
+ */
+function startBulk(e, post) {
+  const timeout = setTimeout(() => {
+    feedState.setHighlightMode(true);
+    highlightPost(post);
+    feedState.increaseBookmarkCount();
+    const bulkBtn = document.getElementById("bulk-bookmark-btn");
+    if (bulkBtn) bulkBtn.classList.remove("hidden");
+  }, LONG_PRESS_TIME);
+  
+  feedState.setLongPressTimeout(timeout);
+}
+
+/**
+ * Clear bulk selection timeout
+ */
+function clearBulk() {
+  feedState.clearLongPressTimeout();
+}
+
+/**
+ * Bookmark multiple posts
+ */
+export async function bookmarkPosts(event) {
+  const selected = [...document.querySelectorAll(".post-card.choosed")];
+  event.stopPropagation();
+  if (selected.length === 0) {
+    if (typeof showToast === 'function') {
+      showToast("No posts selected", "warning");
+    }
+    return;
+  }
+
+  const postIds = selected.map(p => p.dataset.postId);
+  try {
+    const response = await feedApi.bulkBookmarkPosts(postIds);
+
+    if (response.status !== "success") {
+      if (typeof showToast === 'function') {
+        showToast(response.message || "Bookmark error", "error");
+        
+      }
+      return;
+    }
+
+    if (typeof showToast === 'function') {
+      showToast("Posts bookmarked!", "success");
+      postIds.map(postId => {
+        const post = document.getElementById(`post-${postId}`);
+        const btn = post.querySelector('.stat-item: lastChild');
+        updatePostBookmarkDisplay(postId, true);
+      });
+    }
+  } catch (error) {
+    if (typeof showToast === 'function') {
+      showToast("Bookmark error: " + error.message, "error");
+    }
+  } finally {
+    clearAllHighlights();
+    feedState.resetBookmarkCount();
+  }
+}
+
+function setupPostMedias() { // Add 'function' keyword
+  document.getElementById("thread-toggle").addEventListener("change", function(e) { // Fixed arrow function
+    if(e.target.checked){
+      document.getElementById('thread-modal').classList.remove('hidden');
+    }
+    else{
+      document.getElementById('thread-modal').classList.add('hidden');
+    }
+  });
+  
+  const imageInput = document.getElementById("input-image");
+  const videoInput = document.getElementById("input-video");
+  const fileInput = document.getElementById("input-file");
+  const previewArea = document.getElementById("preview-container"); // Fixed ID
+  
+  [imageInput, videoInput, fileInput].forEach(input => {
+    input.addEventListener("change", async function(e) { // Add async
+      const files = Array.from(e.target.files);
+      
+      if(!files || files.length == 0) return;
+      
+      for(const file of files){
+        if(!file) continue; // Changed from return to continue
+        
+        const previewDiv = document.createElement("div");
+        previewDiv.className = "preview-item";
+        previewDiv.style.cssText = "position: relative; display: inline-block; margin: 0.5rem;";
+        
+        let media;
+        if (file.type.startsWith("image/")) {
+          media = document.createElement("img");
+          media.src = URL.createObjectURL(file);
+          media.style.cssText = "max-width: 150px; max-height: 150px; border-radius: 8px;";
+        } else if (file.type.startsWith("video/")) {
+          media = document.createElement("video");
+          media.src = URL.createObjectURL(file);
+          media.controls = true;
+          media.style.cssText = "max-width: 150px; max-height: 150px; border-radius: 8px;";
+        } else {
+          media = document.createElement("div");
+          media.className = "file-name";
+          media.textContent = file.name;
+          media.style.cssText = "padding: 1rem; background: var(--bg-tertiary); border-radius: 8px; font-size: 0.875rem;";
+        }
+        
+        previewDiv.appendChild(media);
+        
+        const loader = document.createElement("div");
+        loader.className = "loader";
+        loader.style.cssText = "position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.7); color: white; padding: 0.5rem; border-radius: 4px; font-size: 0.75rem;";
+        loader.textContent = "Uploading...";
+        
+        const btn = document.createElement('button');
+        btn.className = "cancel-upload";
+        btn.textContent = "×";
+        btn.style.cssText = "position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; display: none;";
+        
+        previewDiv.appendChild(loader);
+        previewDiv.appendChild(btn);
+        previewArea.appendChild(previewDiv);
+        
+        try {
+          const result = await feedApi.uploadResource(file);
+          
+          if (result.status === "success") {
+            const resource = {
+              url: result.data.url,
+              type: result.data.type,
+              filename: result.data.filename
+            };
+            
+            feedState.addPostResources(resource); // Fixed method name
+            
+            loader.remove();
+            btn.style.display = "block";
+            
+            btn.onclick = function() {
+              previewDiv.remove();
+              feedState.removePostResource(resource.url);
+            };
+          } else {
+            loader.textContent = "Failed";
+            loader.style.background = "var(--danger)";
+            if (typeof showToast === 'function') {
+              showToast("Upload failed: " + (result.message || "Unknown error"), "error");
+            }
+          }
+        } catch (error) {
+          console.error("Upload error:", error);
+          loader.textContent = "Error";
+          loader.style.background = "var(--danger)";
+          if (typeof showToast === 'function') {
+            showToast("Error uploading file", "error");
+          }
+        }
+      }
+      
+      e.target.value = "";
+    });
+  });
+}
+  
+
+/**
+ * Setup file upload listeners
+ */
+function setupFileUploadListeners() {
+  const uploadImage = document.getElementById("uploadImage");
+  const uploadVideo = document.getElementById("uploadVideo");
+  const uploadDoc = document.getElementById("uploadDoc");
+  const previewArea = document.getElementById("previewArea");
+  
+  if (!uploadImage || !uploadVideo || !uploadDoc || !previewArea) {
+    console.warn("Comment upload inputs not found");
+    return;
+  }
+  
+  [uploadImage, uploadVideo, uploadDoc].forEach(input => {
+    input.addEventListener("change", async function(e) {
+      const files = Array.from(e.target.files);
+      
+      if (files.length === 0) return;
+      
+      for (const file of files) {
+        if (!file) continue;
+        
+        const previewDiv = document.createElement("div");
+        previewDiv.className = "preview-item";
+        previewDiv.style.cssText = "position: relative; display: inline-block; margin: 0.5rem;";
+        
+        let media;
+        if (file.type.startsWith("image/")) {
+          media = document.createElement("img");
+          media.src = URL.createObjectURL(file);
+          media.style.cssText = "max-width: 150px; max-height: 150px; border-radius: 8px;";
+        } else if (file.type.startsWith("video/")) {
+          media = document.createElement("video");
+          media.src = URL.createObjectURL(file);
+          media.controls = true;
+          media.style.cssText = "max-width: 150px; max-height: 150px; border-radius: 8px;";
+        } else {
+          media = document.createElement("div");
+          media.className = "file-name";
+          media.textContent = file.name;
+          media.style.cssText = "padding: 1rem; background: var(--bg-tertiary); border-radius: 8px; font-size: 0.875rem;";
+        }
+        
+        previewDiv.appendChild(media);
+        
+        const loader = document.createElement("div");
+        loader.className = "loader";
+        loader.style.cssText = "position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.7); color: white; padding: 0.5rem; border-radius: 4px; font-size: 0.75rem;";
+        loader.textContent = "Uploading...";
+        
+        const btn = document.createElement('button');
+        btn.className = "cancel-upload";
+        btn.textContent = "×";
+        btn.style.cssText = "position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; display: none;";
+        
+        previewDiv.appendChild(loader);
+        previewDiv.appendChild(btn);
+        previewArea.appendChild(previewDiv);
+        
+        try {
+          const result = await feedApi.uploadResource(file);
+          
+          if (result.status === "success") {
+            const resource = {
+              url: result.data.url,
+              type: result.data.type,
+              filename: result.data.filename
+            };
+            
+            feedState.addReplyResource(resource);
+            
+            loader.remove();
+            btn.style.display = "block";
+            
+            btn.onclick = function() {
+              previewDiv.remove();
+              feedState.removeReplyResource(resource.url);
+            };
+          } else {
+            loader.textContent = "Failed";
+            loader.style.background = "var(--danger)";
+            if (typeof showToast === 'function') {
+              showToast("Upload failed: " + (result.message || "Unknown error"), "error");
+            }
+          }
+        } catch (error) {
+          console.error("Upload error:", error);
+          loader.textContent = "Error";
+          loader.style.background = "var(--danger)";
+          if (typeof showToast === 'function') {
+            showToast("Error uploading file", "error");
+          }
+        }
+      }
+      
+      e.target.value = "";
+    });
+  });
+}
+
+/**
+ * Setup fork tags input listeners
+ */
+function setupForkTagsListeners() {
+  const forkTagsDropdown = document.getElementById("fork-tags-dropdown");
+  const forkTagInput = document.getElementById("fork-tags-input");
+  
+  if (!forkTagInput || !forkTagsDropdown) {
+    console.warn("Fork tags elements not found");
+    return;
+  }
+
+  forkTagInput.addEventListener("input", function(e) {
+    const input = e.target.value.toLowerCase();
+    
+    if (input.length === 0) {
+      forkTagsDropdown.classList.add("hidden");
+      return;
+    }
+    
+    if (feedState.getForkTags().length >= MAX_TAGS) {
+      forkTagsDropdown.classList.add('hidden');
+      return;
+    }
+    
+    const relatedTags = AVAILABLE_TAGS.filter(tag => 
+      tag.toLowerCase().includes(input) && !feedState.getForkTags().includes(tag)
+    );
+    
+    if (relatedTags.length > 0) {
+      forkTagsDropdown.innerHTML = relatedTags.slice(0, 10).map(tag => 
+        `<div class="tag-option" onclick="addForkTag('${tag}')">${tag}</div>`
+      ).join('');
+      forkTagsDropdown.classList.remove('hidden');
+    } else {
+      forkTagsDropdown.classList.add('hidden');
+    }
+  });
+
+  forkTagInput.addEventListener("keydown", function(e) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const value = e.target.value.trim();
+      if (value && feedState.getForkTags().length < MAX_TAGS) {
+        if (typeof window.addForkTag === 'function') {
+          window.addForkTag(value);
+        }
+      }
+    }
+  });
+}
+
+/**
+ * Setup bookmark modal listeners
+ */
+function setupBookmarkModalListeners() {
+  const bookmarkModal = document.getElementById("bookmark-folders-modal");
+  if (bookmarkModal) {
+    bookmarkModal.addEventListener("click", async function(e) {
+      if (e.target.closest(".bookmark-folder")) {
+        const folder = e.target.dataset.value;
+        const postId = bookmarkModal.dataset.postId;
+        if (folder && postId) {
+          await bookmarkPost(folder, postId);
+        }
+      }
+    });
+  }
+}
+
+/**
+ * Bookmark a post to a folder
+ */
+async function bookmarkPost(folder, postId, event) {
+  try {
+    event.stopPropagation();
+    const response = await feedApi.toggleBookmark(postId, folder);
+    
+    if (response.status === "success") {
+      if (typeof showToast === 'function') {
+        showToast("Post bookmarked successfully", "success");
+      }
+      updatePostBookmarkDisplay(postId, true);
+      if (typeof closeModal === 'function') {
+        closeModal('bookmark-folders-modal');
+      }
+    } else {
+      if (typeof showToast === 'function') {
+        showToast(response.message, "error");
+      }
+    }
+  } catch (error) {
+    if (typeof showToast === 'function') {
+      showToast("Error bookmarking post: " + error.message, 'error');
+    }
+  }
+}
+
+/**
+ * Setup global click listeners
+ */
+function setupGlobalClickListeners() {
+  document.addEventListener('click', function(e) {
+    const reactionMenu = document.getElementById("reactionMenu");
+    if (reactionMenu && !reactionMenu.contains(e.target) && !e.target.closest('.reaction-btn')) {
+      hideReactionMenu();
+    }
+    
+    if (!e.target.closest('.post-options-btn') && !e.target.closest('.advanced-post-options')) {
+      document.querySelectorAll('.advanced-post-options').forEach(menu => {
+        menu.classList.add('hidden');
+      });
+    }
+  });
+}
+
+/**
+ * Post action handlers
+ */
+export async function handleFollowPost(postId, event) {
+  event.stopPropagation();
+  try {
+    const response = await feedApi.followPost(postId);
+    if (response.status === "success") {
+      // FIX: Use correct selector
+      const post = document.getElementById(`post-${postId}`);
+      if (post) {
+        const btn = post.querySelector('.handle-follow-btn');
+        if (btn) {
+          btn.textContent = "👁️ Unfollow";
+          // FIX: Use proper onclick replacement
+          btn.setAttribute("onclick", `event.stopPropagation(); unfollowPost(${postId})`);
+        }
+      }
+      showToast("Post followed, you will receive updates related to this post", "success");
+    } else {
+      showToast(response.message, "error");
+    }
+  } catch (error) {
+    showToast("Error following post: " + error.message, 'error');
+  }
+}
+
+export async function handleUnfollowPost(postId, event) {
+  event.stopPropagation();
+  try {
+    const response = await feedApi.unfollowPost(postId);
+    if (response.status === "success") {
+      // FIX: Use correct selector
+      const post = document.getElementById(`post-${postId}`);
+      if (post) {
+        const btn = post.querySelector('.handle-follow-btn');
+        if (btn) {
+          btn.textContent = "👁️ Follow Post";
+          // FIX: Use proper onclick replacement
+          btn.setAttribute("onclick", `event.stopPropagation(); followPost(${postId})`);
+        }
+      }
+      showToast("Post unfollowed", "success");
+    } else {
+      showToast(response.message, "error");
+    }
+  } catch (error) {
+    showToast("Error unfollowing post: " + error.message, 'error');
+  }
+}
+
+export async function handleDeletePost(postId, event) {
+  event.stopPropagation();
+  try {
+    const response = await feedApi.deletePost(postId);
+    if (response.status == "success") {
+      removePostFromDOM(postId);
+      if (typeof showToast === 'function') {
+        showToast("Post deleted", "success");
+      }
+    } else {
+      if (typeof showToast === 'function') {
+        showToast(response.message, 'error');
+      }
+    }
+  } catch (error) {
+    if (typeof showToast === 'function') {
+      showToast("Error deleting post: " + error.message, 'error');
+    }
+  }
+}
+
+export async function handleDeleteComment(commentId, event) {
+  event.stopPropagation();
+  try {
+    const response = await feedApi.deleteComment(commentId);
+    if (response.status == "success") {
+      removeCommentFromDOM(commentId);
+      if (typeof showToast === 'function') {
+        showToast("Comment deleted", "success");
+      }
+    } else {
+      if (typeof showToast === 'function') {
+        showToast(response.message, 'error');
+      }
+    }
+  } catch (error) {
+    if (typeof showToast === 'function') {
+      showToast("Error deleting comment: " + error.message, 'error');
+    }
+  }
+}
+
+export async function handleToggleBookmark(postId, event) {
+  const btn = event.target;
+  event.stopPropagation();
+  
+  if (!btn.classList.contains('bookmarked')) {
+    await openBookmarkFoldersModal(postId);
+    return;
+  }
+  
+  try {
+    const response = await feedApi.toggleBookmark(postId);
+    if (response.status == "success") {
+      updatePostBookmarkDisplay(postId, false);
+      if (typeof showToast === 'function') {
+        showToast("Bookmark removed", "success");
+      }
+    } else {
+      if (typeof showToast === 'function') {
+        showToast(response.message, "error");
+      }
+    }
+  } catch (error) {
+    if (typeof showToast === 'function') {
+      showToast("Error removing bookmark: " + error.message, 'error');
+    }
+  }
+}
+
+export function handleOpenReportModal(postId, event) {
+  event.stopPropagation();
+  const reportModal = document.getElementById("post-report-modal");
+  if (!reportModal) {
+    showToast("Report modal not found", "error");
+    return;
+  }
+  
+  reportModal.classList.remove("hidden"); // FIX: was "hiddden" (typo)
+  reportModal.dataset.postId = postId; // Store the post ID
+}
+
+export async function handleReportPost(event) {
+  event.stopPropagation();
+  const reportModal = document.getElementById("post-report-modal");
+  const postId = reportModal.dataset.postId;
+  
+  if (!postId) {
+    showToast("No post selected", "error");
+    return;
+  }
+  const form = document.getElementById("post-report-modal");
+  const reason = form.reason.value;
+  try {
+    const response = await feedApi.reportPost(postId, reason);
+    if (response.status === "success") {
+      showToast("Post reported, our admin will review and take action", 'info');
+      closeModal("post-report-modal");
+      reportModal.removeAttribute("data-post-id");
+    } else {
+      showToast(response.message, 'error');
+    }
+  } catch (error) {
+    showToast("Report post error: " + error.message, 'error');
+  }
+}
+
+/*export async function handleToggleCommentLike(commentId) {
+  try {
+    const response = await feedApi.toggleCommentLike(commentId);
+    if (response && response.status === 'success') {
+      updateCommentLikeButton(commentId, true);
+    }
+  } catch (error) {
+    if (typeof showToast === 'function') {
+      showToast('Error toggling comment like: ' + error.message, 'error');
+    }
+  }
+}
+*/
+export async function handleToggleCommentLike(commentId, event) {
+    event.stopPropagation();
+    try {
+        const response = await feedApi.toggleCommentLike(commentId);
+        if (response?.status === 'success') {
+          updateCommentLikeButton(commentId, response.data.liked, response.data.count);
+        }
+            
+    } catch (error) {
+        if (typeof showToast === 'function') {
+            showToast('Error toggling comment like: ' + error.message, 'error');
+        }
+    }
+}
+export async function handleToggleCommentHelpful(commentId, event) {
+  event.stopPropagation();
+  try {
+    const response = await feedApi.toggleCommentHelpful(commentId);
+    if (response && response.status === 'success') {
+      updateCommentHelpfulButton(commentId, true);
+    }
+  } catch (error) {
+    console.error('Error toggling comment helpful:', error);
+  }
+}
+
+
+export async function handleViewThread(threadId, type, event) {
+  event.stopPropagation();
+  try {
+    const result = await feedApi.getThreadDetails(threadId, type);
+    
+    const threadModal = document.getElementById("thread-view-modal");
+    if (!threadModal) {
+      showToast("Thread modal not found", "error");
+      return;
+    }
+    
+    threadModal.classList.remove('hidden');
+    // FIX: Store the threadId in modal's dataset
+    threadModal.dataset.threadId = threadId;
+    threadModal.dataset.type = type;
+    
+    const contentEl = threadModal.querySelector("#thread-details-content");
+    if (!contentEl) {
+      showToast("Thread content container not found", "error");
+      return;
+    }
+    
+    if (!result || !result.data) {
+      contentEl.innerHTML = `<div class="empty-state">
+        <h1>No data found for this thread</h1>
+      </div>`;
+      return;
+    }
+    
+    contentEl.innerHTML = renderThreadDetailsHTML(result.data);
+    
+  } catch(error) {
+    console.error("View thread error:", error);
+    showToast("Error loading thread: " + error.message, "error");
+    
+    const threadModal = document.getElementById("thread-view-modal");
+    if (threadModal) {
+      const contentEl = threadModal.querySelector("#thread-details-content");
+      if (contentEl) {
+        contentEl.innerHTML = `<div class="error-state">
+          <h1>Error loading thread data</h1>
+          <p>${error.message}</p>
+          <button onclick="viewThread(${threadId})" class="btn btn-primary">Try again</button>
+        </div>`;
+      }
+    }
+  }
+}
+
+export async function handleJoinThread(event) {
+  event.stopPropagation();
+  const threadModal = document.getElementById("thread-view-modal");
+  const btn = document.getElementById("join-thread-btn");
+  
+  if (!btn || !threadModal) return;
+  
+  // FIX: Read threadId from modal's dataset
+  const threadId = threadModal.dataset.threadId;
+  const type = threadModal.dataset.type;
+  
+  if (!threadId) {
+    showToast("Thread ID not found", "error");
+    return;
+  }
+  
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "Joining...";
+  
+  try {
+    const response = await feedApi.joinThread(threadId, type);
+    
+    if (response && response.status === "success") {
+      btn.textContent = "✓ Joined";
+      btn.classList.add("success");
+      showToast("Successfully joined thread!", "success");
+      
+      // Clean up dataset
+      delete threadModal.dataset.threadId;
+      delete threadModal.dataset.type;
+      
+      setTimeout(() => {
+        btn.style.display = "none";
+        closeModal('thread-view-modal');
+      }, 2000);
+    } else {
+      btn.disabled = false;
+      btn.textContent = originalText;
+      showToast(response?.message || "Failed to join", 'error');
+    }
+  } catch (error) {
+    console.error("Join thread error:", error);
+    showToast("Join thread error: " + error.message, 'error');
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
+}
+function toggleThreadSettings(event){
+  event.stopPropagation();
+  document.getElementById('thread-modal').classList.toggle("hidden");
+}
+export async function handleConnectRequest(userId, event) {
+  event.stopPropagation();
+  try {
+    const response = await feedApi.sendConnectionRequest(userId);
+    if (response && response.status === 'success') {
+      if (typeof showToast === 'function') {
+        showToast('Connection request sent!', 'success');
+      }
+      const btn = event.target;
+      if (btn) {
+        btn.textContent = "Pending";
+        btn.disabled = true;
+      }
+    } else {
+      if (typeof showToast === 'function') {
+        showToast(response.message, 'error');
+      }
+    }
+  } catch (error) {
+    if (typeof showToast === 'function') {
+      showToast('Error sending request: ' + error.message, 'error');
+    }
+  }
+}
+export async function handleUnmarkSolved(postId, event){
+  event.stopPropagation();
+  const btn = event.target;
+  btn.textContent = "Unmarking...";
+  btn.disabled = true;
+  try{
+    const response = await feedApi.markPostUnsolved(postId);
+    if (response && response.status === "success") {
+      btn.textContent = "✓ Unmarked Solved";
+      btn.classList.add("success");
+      showToast("Post unmarked as solved!", "success");
+      document.getElementById("post-comments-modal").classList.add("hidden");
+      const postCard = document.getElementById(`post-${postId}`);
+      if (postCard) {
+        const header = postCard.querySelector('.post-header');
+        if (header && header.querySelector('.solved-badge')) {
+          const badge = header.querySelector('.solved-badge');
+          badge.remove();
+        }
+      }
+      setTimeout(() => {
+        btn.onclick = function(e) {
+        e.stopPropagation();
+        markSolved(postId);
+      };
+      btn.textContent = "Mark Solved";
+      btn.disabled = false;
+      btn.classList.remove("success");
+      }, 2000);
+    } else {
+        btn.disabled = false;
+        btn.textContent = originalText;
+        showToast(response?.message || "Failed to mark unsolved", 'error');
+      }
+    } catch (error) {
+        console.error("Unmark solved error:", error);
+        showToast(error.message, 'error');
+        btn.disabled = false;
+        btn.textContent = originalText;
+    }
+  }
+
+export async function handleMarkSolved(postId, event){
+  const btn = event.target;
+  btn.textContent = "Marking...";
+  btn.disabled = true;
+  try{
+    const response = await feedApi.markPostSolved(postId);
+    if (response && response.status === "success") {
+      btn.textContent = "✓ Marked Solved";
+      btn.classList.add("success");
+      showToast("Post marked as solved!", "success");
+      const postCard = document.getElementById(`post-${postId}`);
+      if (postCard) {
+      const header = postCard.querySelector('.post-header');
+      if (header && !header.querySelector('.solved-badge')) {
+        const badge = document.createElement('span');
+        badge.className = 'solved-badge';
+        badge.textContent = '✓ Solved';
+        header.appendChild(badge);
+        }
+      }
+      setTimeout(() => {
+        btn.onclick = function(e) {
+        e.stopPropagation();
+        markunSolved(postId);
+      };
+      btn.textContent = "❌ Mark Unsolved";
+      btn.disabled = false;
+      btn.classList.remove("success");
+      }, 2000);
+    } else {
+        btn.disabled = false;
+        btn.textContent = originalText;
+        showToast(response?.message || "Failed to mark as solved", 'error');
+      }
+    } catch (error) {
+        console.error("Mark solved error:", error);
+        showToast(error.message, 'error');
+        btn.disabled = false;
+        btn.textContent = originalText;
+    }
+  }
+// Mark a comment as solution
+async function handleMarkSolution(postId, commentId, event) {
+  let solutionButtons = [];
+  event.stopPropagation();
+  const btn = event.target;
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "Marking...";
+
+  try {
+    const res = await feedApi.markCommentAsSolution(postId, commentId);
+    if (!res || res.status !== "success") showToast(res.message, 'error');
+
+    // Remove solution badge from all comments in this post
+    document.querySelectorAll(`.comment-card[data-post-id="${postId}"] .solution-badge`)
+      .forEach(badge => badge.remove());
+
+    // Update all comment buttons to "Mark Solution" and set onclick
+    const cards = document.querySelectorAll(`.comment-card[data-post-id="${postId}"] `);
+    cards.forEach(card => {
+      const btn = card.querySelectorAll(".comment-action-btn")[2];
+      solutionButtons.push(btn);
+    });
+    solutionButtons.forEach(cbtn => {
+        cbtn.textContent = "Mark Solution";
+        cbtn.onclick = function(e) { markSolution(postId, parseInt(cbtn.dataset.commentId), e); };
+      });
+
+    // Add badge to selected comment
+    const commentCard = document.getElementById(`comment-card-${commentId}`);
+    const header = commentCard.querySelector(".comment-header");
+    const badge = document.createElement("span");
+    badge.className = "solution-badge";
+    badge.textContent = "✓ Solution";
+    header.appendChild(badge);
+
+    // Update this button to "Unmark Solution" and set onclick
+    btn.textContent = "Unmark Solution";
+    btn.onclick = function(e) { unmarkSolution(postId, commentId, e); };
+    
+    // Mark post as solved if not already
+    const postCard = document.getElementById(`post-${postId}`);
+    const postHeader = postCard.querySelector(".post-header");
+    if (!postHeader.querySelector(".solved-badge")) {
+      const solvedBadge = document.createElement("span");
+      solvedBadge.className = "solved-badge";
+      solvedBadge.textContent = "✓ Solved";
+      postHeader.appendChild(solvedBadge);
+    }
+
+  } catch (error) {
+    console.error(error);
+    showToast(error.message || "Failed to mark solution", "error");
+    btn.disabled = false;
+    btn.textContent = originalText;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// Unmark solution
+async function handleUnmarkSolution(postId, commentId, event) {
+  event.stopPropagation();
+  const btn = event.target;
+  let solutionButtons = [];
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "Unmarking...";
+
+  try {
+    const res = await feedApi.unmarkCommentAsSolution(postId, commentId);
+    if (!res || res.status !== "success") showToast(res.message, 'error');
+
+    // Remove badge from this comment
+    const commentCard = document.getElementById(`comment-card-${commentId}`);
+    const header = commentCard.querySelector(".comment-header");
+    header.querySelector(".solution-badge")?.remove();
+
+    // Update all comment buttons to "Mark Solution" and set onclick
+    const cards = document.querySelectorAll(`.comment-card[data-post-id="${postId}"] `);
+    cards.forEach(card => {
+      const btn = card.querySelectorAll(".comment-action-btn")[2];
+      solutionButtons.push(btn);
+    });
+    solutionButtons.forEach(cbtn => {
+        cbtn.textContent = "Mark Solution";
+        cbtn.onclick = function(e) { markSolution(postId, parseInt(cbtn.dataset.commentId), e); };
+    });
+
+    // Remove solved badge from post if it exists
+    const postCard = document.getElementById(`post-${postId}`);
+    const postHeader = postCard.querySelector(".post-header");
+    postHeader.querySelector(".solved-badge")?.remove();
+
+  } catch (error) {
+    console.error(error);
+    showToast(error.message || "Failed to unmark solution", "error");
+    btn.disabled = false;
+    btn.textContent = originalText;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+/**
+ * Unified Reaction Handler
+ * Handles both API calls and UI updates
+ */
+export async function toggleReactions(postId, newType, event) {
+    event.stopPropagation();
+    const postCard = document.getElementById(`post-${postId}`);
+    if (!postCard) {
+        if (typeof showToast === 'function') showToast("Post not found", 'error');
+        return;
+    }
+
+    const reactionBtn = postCard.querySelector('.reaction-btn');
+    if (!reactionBtn) return;
+
+    // Store original state for rollback
+    const originalHTML = reactionBtn.innerHTML;
+    const originalClass = reactionBtn.className;
+
+    const isReacted = reactionBtn.classList.contains('reacted');
+    const text = reactionBtn.textContent.trim();
+    const match = text.match(/(\p{Emoji_Presentation}|\p{Emoji})\s*(\d*)/u);
+    
+    const oldEmoji = match ? match[1] : '👍';
+    let count = match && match[2] ? parseInt(match[2]) : 0;
+
+    // Optimistic update
+    const newEmoji = getReactionType(newType) || '👍';
+    
+    if (isReacted && oldEmoji === newEmoji) {
+        // REMOVE reaction
+        reactionBtn.classList.remove('reacted');
+        count = Math.max(0, count - 1);
+        reactionBtn.innerHTML = `👍 ${count > 0 ? count : ''}`; // ← Show default thumbs up
+    } else {
+        // ADD/CHANGE reaction
+        reactionBtn.classList.add('reacted');
+        if (!isReacted) count++; // Only increment if wasn't reacted before
+        reactionBtn.innerHTML = `${newEmoji} ${count}`;
+    }
+
+    try {
+        const response = await feedApi.toggleReactions(postId, newType);
+        if (!response || response.status !== 'success') {
+            throw new Error(response ? response.message : "Request failed");
+        }
+        
+        // ✅ UPDATE WITH BACKEND DATA
+        if (response.data && typeof response.data.count === 'number') {
+            count = response.data.count;
+            const currentEmoji = reactionBtn.classList.contains('reacted') ? newEmoji : '👍';
+            reactionBtn.innerHTML = `${currentEmoji} ${count > 0 ? count : ''}`;
+        }
+    } catch (error) {
+        // Rollback UI
+        reactionBtn.innerHTML = originalHTML;
+        reactionBtn.className = originalClass;
+        
+        console.error('Reaction error:', error);
+        if (typeof showToast === 'function') {
+            showToast("Failed to react: " + error.message, 'error');
+        }
+    }
+}
+
+
+if (typeof window !== 'undefined') {
+  // Simple functions (no event.stopPropagation needed
+  // Functions that need event handling
+  window.markSolved = (postId, event) => {
+    if (event) event.stopPropagation();
+    handleMarkSolved(postId);
+  };
+  window.unmarkSolved = (postId, event) => {
+    if (event) event.stopPropagation();
+    handleUnmarkSolved(postId);
+  };
+  window.deletePost = (postId, event) => {
+    event.stopPropagation();
+    handleDeletePost(postId);
+};
+
+window.deleteComment = (commentId, event) => {
+    event.stopPropagation();
+    handleDeleteComment(commentId);
+};
+
+window.toggleBookmark = (postId, event) => {
+    event.stopPropagation();
+    handleToggleBookmark(postId);
+};
+
+window.reportPost = (event) => {
+    event.stopPropagation();
+    handleReportPost();
+};
+
+window.openReportModal = (postId, event) => {
+    event.stopPropagation();
+    handleOpenReportModal(postId);
+};
+
+window.togglePostOptions = (postId, event) => {
+    event.stopPropagation();
+    togglePostOptions(postId);
+};
+
+window.connectRequest = (userId, event) => {
+    event.stopPropagation();
+    handleConnectRequest(userId);
+};
+  
+  window.toggleReactions = toggleReactions;
+  
+  // Thread functions (no parameters needed for join, uses dataset)
+  window.viewThread = (resourceId,type, event) => {
+    event.stopPropagation();
+    handleViewThread(resourceId,type, event);
+  };
+  window.joinThread = (threadId, event) => {
+    event.stopPropagation();
+    handleJoinThread(threadId, event);
+  };
+  
+  // Bulk operations
+}
+
+window.deletePost = (postId, event) => {
+    event.stopPropagation();
+    handleDeletePost(postId);
+};
+
+window.deleteComment = (commentId, event) => {
+    event.stopPropagation();
+    handleDeleteComment(commentId);
+};
+
+window.toggleBookmark = (postId, event) => {
+    event.stopPropagation();
+    handleToggleBookmark(postId);
+};
+
+window.reportPost = (event) => {
+    event.stopPropagation();
+    handleReportPost();
+};
+
+window.openReportModal = (postId, event) => {
+    event.stopPropagation();
+    handleOpenReportModal(postId);
+};
+
+window.togglePostOptions = (postId, event) => {
+    event.stopPropagation();
+    togglePostOptions(postId);
+};
+
+window.connectRequest = (userId, event) => {
+    event.stopPropagation();
+    handleConnectRequest(userId);
+};
+

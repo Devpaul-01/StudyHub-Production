@@ -1,0 +1,1724 @@
+/* ============================================================================
+   STUDYHUB NOTIFICATION SYSTEM - COMPLETE CSS
+   Dark Navy Theme with Cyan Accents
+   ============================================================================ */
+
+/* ============================================================================
+   CSS VARIABLES - Notification Color Scheme
+   ============================================================================ */
+:root {
+  /* Background Colors - Clean White Theme */
+  --notif-bg-primary: #ffffff;
+  --notif-bg-secondary: #f9fafb;
+  --notif-bg-tertiary: #f3f4f6;
+  --notif-bg-hover: #f9fafb;
+  
+  /* Accent Colors - Purple for branding */
+  --notif-accent-cyan: #8b5cf6;
+  --notif-accent-teal: #a78bfa;
+  --notif-accent-purple: #8b5cf6;
+  --notif-glow-cyan: #8b5cf6;
+  
+  /* Text Colors - Dark on White */
+  --notif-text-primary: #1f2937;
+  --notif-text-secondary: #6b7280;
+  --notif-text-muted: #9ca3af;
+  --notif-text-bright: #111827;
+  
+  /* Border Colors - Light Gray */
+  --notif-border-cyan: #8b5cf6;
+  --notif-border-dark: #e5e7eb;
+  --notif-border-light: #e5e7eb;
+  
+  /* Status Colors - White with Purple accent */
+  --notif-unread-bg: #ffffff;
+  --notif-read-bg: #ffffff;
+  --notif-unread-indicator: #8b5cf6;
+  
+  /* Shadows & Effects - Subtle */
+  --notif-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --notif-shadow-md: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --notif-shadow-lg: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --notif-glow: 0 0 0 1px rgba(139, 92, 246, 0.1);
+  
+  /* Animation Timings */
+  --notif-transition-fast: 0.15s ease;
+  --notif-transition-normal: 0.3s ease;
+  --notif-transition-slow: 0.5s ease;
+}
+
+/* ============================================================================
+   NOTIFICATION MODAL OVERLAY & CONTAINER
+   ============================================================================ */
+
+#notifications-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(10, 14, 26, 0.95);
+  backdrop-filter: blur(8px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn var(--notif-transition-normal);
+}
+
+#notifications-modal.active,
+section#notifications.active #notifications-modal {
+  display: flex;
+}
+
+#notifications-modal .modal {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  position: relative;
+  animation: slideUp var(--notif-transition-normal);
+}
+
+/* ============================================================================
+   NOTIFICATION HEADER
+   ============================================================================ */
+
+#notifications-modal .modal-header {
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 16px 16px 0 0;
+}
+
+#notifications-modal .modal-title {
+  color: #1f2937;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+#notifications-modal .modal-title::before {
+  content: "🔔";
+  font-size: 1.5rem;
+}
+
+/* Header Action Buttons */
+#notifications-modal .icon-button {
+  background: transparent;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0.5rem;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all var(--notif-transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#notifications-modal .icon-button:hover {
+  background: #f3f4f6;
+  border-color: #8b5cf6;
+  color: #8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+#notifications-modal .modal-close {
+  background: transparent;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0.5rem;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all var(--notif-transition-fast);
+}
+
+#notifications-modal .modal-close:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+/* ============================================================================
+   NOTIFICATION SETTINGS DROPDOWN
+   ============================================================================ */
+
+.notification-settings {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.5rem;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 0.75rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  min-width: 280px;
+  z-index: 10000;
+  animation: slideDown var(--notif-transition-fast);
+}
+
+.notification-settings.hidden {
+  display: none;
+}
+
+/* Settings Toggle Switch */
+.notification-settings .switch {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 8px;
+  transition: background var(--notif-transition-fast);
+  color: #1f2937;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.notification-settings .switch:hover {
+  background: #f9fafb;
+}
+
+.notification-settings .switch input[type="checkbox"] {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  appearance: none;
+  background: #e5e7eb;
+  border: 2px solid #e5e7eb;
+  border-radius: 24px;
+  cursor: pointer;
+  transition: all var(--notif-transition-fast);
+  flex-shrink: 0;
+}
+
+.notification-settings .switch input[type="checkbox"]:checked {
+  background: #8b5cf6;
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+.notification-settings .switch input[type="checkbox"]::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background: white;
+  border-radius: 50%;
+  transition: transform var(--notif-transition-fast);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.notification-settings .switch input[type="checkbox"]:checked::before {
+  transform: translateX(20px);
+}
+
+/* ============================================================================
+   PULL-TO-REFRESH INDICATOR
+   ============================================================================ */
+
+#notification-pull-indicator {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%) translateY(-50px);
+  background: var(--notif-bg-tertiary);
+  border: 1px solid var(--notif-border-cyan);
+  border-radius: 24px;
+  padding: 0.5rem 1.25rem;
+  color: var(--notif-accent-cyan);
+  font-size: 0.875rem;
+  font-weight: 500;
+  box-shadow: var(--notif-shadow-md);
+  z-index: 10;
+  opacity: 0;
+  transition: all var(--notif-transition-normal);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  pointer-events: none; /* Prevent interference with touches */
+}
+
+#notification-pull-indicator.pulling,
+#notification-pull-indicator.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(10px); /* Show below header */
+}
+
+/* ============================================================================
+   NOTIFICATIONS LIST CONTAINER
+   ============================================================================ */
+
+#notifications-list-container {
+  background: #ffffff;
+  padding: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+  min-height: 60vh; /* Ensure enough height for scroll */
+}
+
+#notifications-list-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+#notifications-list-container::-webkit-scrollbar-track {
+  background: #f9fafb;
+  border-radius: 4px;
+}
+
+#notifications-list-container::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+  transition: background var(--notif-transition-fast);
+}
+
+#notifications-list-container::-webkit-scrollbar-thumb:hover {
+  background: #8b5cf6;
+}
+
+/* ============================================================================
+   INDIVIDUAL NOTIFICATION CARD
+   ============================================================================ */
+
+.hud-notification {
+  position: relative;
+  padding: 1rem 1.25rem;
+  padding-right: 3rem; /* Space for delete button */
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+  transition: all var(--notif-transition-fast);
+  animation: slideInRight 0.3s ease;
+}
+
+/* Unread notification styles */
+.hud-notification:not(.read) {
+  background: #ffffff;
+  border-left: 3px solid var(--notif-unread-indicator);
+}
+
+.hud-notification:not(.read)::before {
+  content: "";
+  position: absolute;
+  top: 1.25rem;
+  right: 3.5rem;
+  width: 8px;
+  height: 8px;
+  background: var(--notif-accent-purple);
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(139, 92, 246, 0.4);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.hud-notification:not(.read) .hud-title,
+.hud-notification:not(.read) .hud-body {
+  padding-left: 1rem;
+}
+
+/* Hover state */
+.hud-notification:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+  transform: translateX(0);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Read notification */
+.hud-notification.read {
+  opacity: 0.75;
+  background: #ffffff;
+}
+
+.hud-notification.read:hover {
+  opacity: 1;
+}
+
+/* ============================================================================
+   NOTIFICATION CONTENT
+   ============================================================================ */
+
+.hud-title {
+  color: var(--notif-text-primary);
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+  line-height: 1.4;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.hud-body {
+  color: var(--notif-text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  margin-bottom: 0.5rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hud-time {
+  color: var(--notif-text-muted);
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.hud-time::before {
+  content: "🕐";
+  font-size: 0.875rem;
+  opacity: 0.6;
+}
+
+/* ============================================================================
+   NOTIFICATION DELETE BUTTON
+   ============================================================================ */
+
+.hud-notification .cancel-btn {
+  position: absolute;
+  top: 50%;
+  right: 1rem;
+  transform: translateY(-50%);
+  background: transparent;
+  border: 1px solid var(--notif-border-light);
+  border-radius: 6px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--notif-text-muted);
+  cursor: pointer;
+  opacity: 1; /* Always visible on mobile */
+  transition: all var(--notif-transition-fast);
+  z-index: 2;
+}
+
+/* Desktop - hide by default, show on hover */
+@media (min-width: 768px) {
+  .hud-notification .cancel-btn {
+    opacity: 0;
+  }
+  
+  .hud-notification:hover .cancel-btn {
+    opacity: 1;
+  }
+}
+
+.hud-notification .cancel-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: #ef4444;
+  color: #ef4444;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.hud-notification .cancel-btn svg {
+  width: 14px;
+  height: 14px;
+  stroke-width: 2.5;
+}
+
+/* ============================================================================
+   NOTIFICATION BADGE (Header Icon)
+   ============================================================================ */
+
+#notification-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.5);
+  animation: bounceIn 0.5s ease;
+  border: 2px solid var(--notif-bg-secondary);
+}
+
+#notification-badge:empty {
+  display: none;
+}
+
+/* Pulse animation for badge when new notifications arrive */
+@keyframes badgePulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.5);
+  }
+  50% {
+    transform: scale(1.15);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.8);
+  }
+}
+
+/* ============================================================================
+   EMPTY STATE
+   ============================================================================ */
+
+.notification-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.notification-empty-state svg {
+  width: 80px;
+  height: 80px;
+  opacity: 0.3;
+  margin-bottom: 1.5rem;
+  color: var(--notif-accent-cyan);
+}
+
+.notification-empty-state h3 {
+  color: var(--notif-text-primary);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.notification-empty-state p {
+  color: var(--notif-text-secondary);
+  font-size: 0.95rem;
+  max-width: 320px;
+  line-height: 1.6;
+}
+/* ============================================================================
+   LOADING SKELETON
+   ============================================================================ */
+
+.notification-skeleton {
+  padding: 1rem;
+}
+
+.skeleton-notification {
+  padding: 1rem;
+  border-bottom: 1px solid var(--notif-border-dark);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-line {
+  background: linear-gradient(
+    90deg,
+    var(--notif-bg-secondary) 25%,
+    var(--notif-bg-hover) 50%,
+    var(--notif-bg-secondary) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+/* ============================================================================
+   INFINITE SCROLL SENTINEL
+   ============================================================================ */
+
+#notifications-sentinel {
+  height: 1px;
+  visibility: hidden;
+}
+
+/* Loading indicator when fetching more */
+#notifications-sentinel.loading::after {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--notif-accent-cyan),
+    transparent
+  );
+  animation: loading 1.5s ease-in-out infinite;
+}
+
+/* ============================================================================
+   ANIMATIONS
+   ============================================================================ */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.95);
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes loading {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* ============================================================================
+   RESPONSIVE DESIGN
+   ============================================================================ */
+
+/* Tablet */
+@media (max-width: 768px) {
+  #notifications-modal .modal {
+    max-width: 95vw;
+    max-height: 90vh;
+  }
+
+  #notifications-modal .modal-header {
+    padding: 0.875rem 1rem;
+  }
+
+  #notifications-modal .modal-title {
+    font-size: 1.125rem;
+  }
+
+  .hud-notification {
+    padding: 0.875rem 1rem;
+    padding-right: 2.75rem;
+  }
+
+  .hud-title {
+    font-size: 0.9rem;
+  }
+
+  .hud-body {
+    font-size: 0.8125rem;
+  }
+
+  .notification-settings {
+    min-width: 240px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  #notifications-modal .modal {
+    max-width: 100vw;
+    max-height: 100vh;
+    border-radius: 0;
+    margin: 0;
+  }
+
+  #notifications-modal .modal-header {
+    border-radius: 0;
+    padding: 1rem;
+  }
+
+  .hud-notification {
+    padding: 1rem;
+    padding-right: 3rem;
+  }
+
+  .hud-notification:hover {
+    transform: none;
+  }
+
+  .notification-settings {
+    position: fixed;
+    right: 0.5rem;
+    left: 0.5rem;
+    width: auto;
+  }
+
+  #notification-pull-indicator {
+    font-size: 0.8125rem;
+    padding: 0.375rem 1rem;
+  }
+}
+
+/* ============================================================================
+   ACCESSIBILITY
+   ============================================================================ */
+
+/* Focus states for keyboard navigation */
+.hud-notification:focus-visible {
+  outline: 2px solid var(--notif-accent-cyan);
+  outline-offset: -2px;
+  background: var(--notif-bg-hover);
+}
+
+#notifications-modal .icon-button:focus-visible,
+#notifications-modal .modal-close:focus-visible,
+.notification-settings .switch input:focus-visible {
+  outline: 2px solid var(--notif-accent-cyan);
+  outline-offset: 2px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .hud-notification {
+    border: 1px solid var(--notif-border-cyan);
+  }
+
+  .hud-notification:not(.read) {
+    border-left-width: 4px;
+  }
+
+  #notification-badge {
+    border-width: 3px;
+  }
+}
+
+/* Dark mode (already dark, but for completeness) */
+@media (prefers-color-scheme: dark) {
+  /* Already using dark theme */
+}
+
+/* ============================================================================
+   UTILITY CLASSES
+   ============================================================================ */
+
+.notification-hide {
+  display: none !important;
+}
+
+.notification-fade-out {
+  animation: fadeOut 0.3s ease forwards;
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+}
+
+/* ============================================================================
+   PRINT STYLES
+   ============================================================================ */
+
+@media print {
+  #notifications-modal,
+  #notification-pull-indicator,
+  .notification-settings,
+  .hud-notification .cancel-btn {
+    display: none !important;
+  }
+}
+
+/* ============================================================================
+   NOTIFICATION TEXT COLOR FIXES
+   Add these overrides to your notification.css
+   ============================================================================ */
+
+/* Fix notification title color */
+.hud-notification .hud-title {
+  color: #ffffff !important;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 0.375rem;
+  line-height: 1.4;
+}
+
+/* Fix notification body color */
+.hud-notification .hud-body {
+  color: #e5e7eb !important;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  opacity: 0.9;
+}
+
+/* Fix notification time color */
+.hud-notification .hud-time {
+  color: #8b92a8 !important;
+  font-size: 0.75rem;
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* Fix modal title */
+#notifications-modal .modal-title {
+  color: #ffffff !important;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Fix empty state text */
+.notification-empty-state h3 {
+  color: #ffffff !important;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.notification-empty-state p {
+  color: #8b92a8 !important;
+  font-size: 0.95rem;
+  max-width: 320px;
+  line-height: 1.6;
+}
+
+/* Fix settings text */
+.notification-settings .switch {
+  color: #e5e7eb !important;
+  font-size: 0.95rem;
+}
+
+/* Fix pull indicator text */
+#notification-pull-indicator {
+  color: #00d9ff !important;
+  background: var(--notif-bg-tertiary, #131820);
+}
+#notifications-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: var(--background, #ffffff);
+    z-index: 1000;
+    overflow: hidden;
+}
+
+#notifications-modal-content {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: var(--background, #ffffff);
+}
+
+/* Modern header styling */
+#notifications-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border, #e5e7eb);
+    background: var(--surface, #ffffff);
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+    flex-shrink: 0;
+}
+
+#notifications-modal-title {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary, #111827);
+    letter-spacing: -0.025em;
+}
+
+#notifications-modal-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+#notifications-modal-actions .icon-button,
+#notifications-modal-actions .modal-close {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--text-secondary, #6b7280);
+    transition: all 0.2s ease;
+}
+
+#notifications-modal-actions .icon-button:hover,
+#notifications-modal-actions .modal-close:hover {
+    background: var(--hover-bg, #f3f4f6);
+    color: var(--text-primary, #111827);
+}
+
+#notifications-modal-actions .icon-button:active,
+#notifications-modal-actions .modal-close:active {
+    transform: scale(0.95);
+}
+
+/* Pull to refresh indicator */
+#notification-pull-indicator {
+    text-align: center;
+    padding: 0.75rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary, #6b7280);
+    background: var(--surface-secondary, #f9fafb);
+    border-bottom: 1px solid var(--border, #e5e7eb);
+    flex-shrink: 0;
+}
+
+/* Notifications list container */
+#notifications-list-container {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0;
+    background: var(--background, #ffffff);
+    scroll-behavior: smooth;
+}
+
+/* Custom scrollbar for modern look */
+#notifications-list-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+#notifications-list-container::-webkit-scrollbar-track {
+    background: var(--surface, #f9fafb);
+}
+
+#notifications-list-container::-webkit-scrollbar-thumb {
+    background: var(--border, #d1d5db);
+    border-radius: 4px;
+}
+
+#notifications-list-container::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary, #9ca3af);
+}
+
+/* Sentinel for infinite scroll */
+#notifications-sentinel {
+    height: 1px;
+    width: 100%;
+}
+
+/* Settings dropdown positioning */
+#notification-settings-modal {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.5rem;
+    background: var(--surface, #ffffff);
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    min-width: 240px;
+    z-index: 10;
+}
+
+#notification-settings-modal.hidden {
+    display: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    #notifications-modal-header {
+        padding: 1rem;
+    }
+    
+    #notifications-modal-title {
+        font-size: 1.25rem;
+    }
+    
+    #notifications-modal-actions .icon-button,
+    #notifications-modal-actions .modal-close {
+        width: 32px;
+        height: 32px;
+    }
+}
+
+/* ==================== NOTIFICATIONS SECTION STYLING ==================== */
+
+/* Container - full-page mobile-first design */
+.notifications-container {
+    width: 100%;
+    padding: 1rem;
+    background: #fff;
+    min-height: 100vh;
+    max-width: 100%;
+}
+
+/* Tablet and larger - add max-width and center */
+@media (min-width: 768px) {
+    .notifications-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 1.5rem;
+    }
+}
+
+/* Header Styling */
+.notifications-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.notifications-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0;
+}
+
+.notifications-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
+}
+
+/* Icon Button */
+.notifications-actions .icon-button {
+    background: transparent;
+    border: none;
+    padding: 0.5rem;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6b7280;
+    transition: all 0.2s ease;
+}
+
+.notifications-actions .icon-button:hover {
+    background: #f3f4f6;
+    color: #4f46e5;
+}
+
+/* Settings Dropdown - Mobile-first with proper positioning */
+.notification-settings {
+    position: fixed;
+    top: auto;
+    right: 1rem;
+    bottom: auto;
+    margin-top: 0.5rem;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+    min-width: 220px;
+    max-width: calc(100vw - 2rem);
+    z-index: 10000;
+}
+
+/* Desktop - use absolute positioning relative to parent */
+@media (min-width: 768px) {
+    .notification-settings {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        min-width: 250px;
+    }
+}
+
+.notification-settings.hidden {
+    display: none;
+}
+
+.notification-settings .switch {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 0;
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: #374151;
+}
+
+.notification-settings .switch input[type="checkbox"] {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    appearance: none;
+    background: #d1d5db;
+    border-radius: 50px;
+    transition: background 0.3s;
+    cursor: pointer;
+    outline: none;
+}
+
+.notification-settings .switch input[type="checkbox"]:checked {
+    background: #4f46e5;
+}
+
+.notification-settings .switch input[type="checkbox"]::before {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: white;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.3s;
+}
+
+.notification-settings .switch input[type="checkbox"]:checked::before {
+    transform: translateX(20px);
+}
+
+/* Pull to Refresh Indicator */
+.pull-to-refresh-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    color: #6b7280;
+    font-size: 0.875rem;
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: all 0.3s ease;
+}
+
+.pull-to-refresh-indicator.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.pull-to-refresh-indicator.hidden {
+    display: none;
+}
+
+.refresh-spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Notifications List Container */
+#notifications-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+/* Empty State */
+.notifications-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    text-align: center;
+}
+
+.empty-state-icon {
+    color: #d1d5db;
+    margin-bottom: 1.5rem;
+}
+
+.empty-state-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #374151;
+    margin: 0 0 0.5rem 0;
+}
+
+.empty-state-text {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin: 0;
+}
+
+/* Individual Notification Item (when JavaScript populates) */
+.notification-item {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.notification-item:hover {
+    background: #f9fafb;
+    border-color: #d1d5db;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+.notification-item.unread {
+    background: #ffffff;
+    border-left: 3px solid #8b5cf6;
+}
+
+.notification-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.notification-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.notification-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.notification-text {
+    font-size: 0.875rem;
+    color: #374151;
+    line-height: 1.5;
+}
+
+.notification-text strong {
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.notification-time {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    white-space: nowrap;
+}
+
+.notification-action {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+}
+
+#notifications-sentinel {
+    height: 20px;
+    margin-top: 1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .notifications-container {
+        padding: 1rem;
+    }
+
+    .notifications-header {
+        margin-bottom: 1rem;
+    }
+
+    .notifications-title {
+        font-size: 1.25rem;
+    }
+
+    .notifications-empty-state {
+        padding: 3rem 1rem;
+    }
+
+    .empty-state-icon {
+        width: 64px;
+        height: 64px;
+    }
+
+    .notification-settings {
+        min-width: 220px;
+    }
+}
+
+@media (max-width: 480px) {
+    .notifications-container {
+        padding: 0.75rem;
+    }
+
+    .notification-item {
+        padding: 0.75rem;
+        gap: 0.75rem;
+    }
+
+    .notification-avatar {
+        width: 40px;
+        height: 40px;
+    }
+}
+
+/* Loader Wrapper */
+#notifications-loader-wrapper {
+  width: 100%;
+  padding: 1.5rem 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Loader Container */
+.ui-loader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  background: rgba(147, 51, 234, 0.1); /* Light purple background */
+  border-radius: 0.5rem;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.ui-loader--hidden {
+  opacity: 0;
+  transform: scale(0.95);
+  pointer-events: none;
+}
+
+/* Spinner */
+.ui-loader__spinner {
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid rgba(147, 51, 234, 0.2); /* Light purple border */
+  border-top-color: #9333ea; /* Purple */
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* Loading Text */
+.ui-loader__text {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #9333ea; /* Purple text */
+  letter-spacing: 0.01em;
+}
+
+/* Spinner Animation */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Alternative: Pulsing animation for the wrapper */
+.ui-loader:not(.ui-loader--hidden) {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    background: rgba(147, 51, 234, 0.1);
+  }
+  50% {
+    background: rgba(147, 51, 234, 0.15);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  #notifications-loader-wrapper {
+    padding: 1rem 0;
+  }
+  
+  .ui-loader {
+    padding: 0.625rem 1.25rem;
+  }
+  
+  .ui-loader__spinner {
+    width: 1rem;
+    height: 1rem;
+  }
+  
+  .ui-loader__text {
+    font-size: 0.8125rem;
+  }
+}
+/* ============================================================================
+   NOTIFICATION SETTINGS MODAL - POSITIONING FIX
+   ============================================================================ */
+
+/* Fix for notification settings modal appearing too far right and off-screen */
+.notification-settings {
+    position: absolute;
+    top: 100%;
+    right: 0; /* Changed from potentially being positioned too far right */
+    margin-top: 0.5rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    padding: 1rem;
+    min-width: 280px;
+    max-width: 320px;
+    z-index: 1000;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* Ensure the parent container for proper positioning */
+.notifications-actions {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Mobile specific fixes */
+@media (max-width: 768px) {
+    .notification-settings {
+        position: fixed;
+        right: 1rem;
+        left: auto;
+        top: auto;
+        margin-top: 0;
+        max-width: calc(100vw - 2rem);
+        min-width: 280px;
+    }
+    
+    /* Position below the button on mobile */
+    .notification-settings:not(.hidden) {
+        top: calc(var(--header-height, 60px) + 0.5rem);
+    }
+}
+
+/* Hide/show states */
+.notification-settings.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-10px);
+    display: none;
+}
+
+.notification-settings:not(.hidden) {
+    opacity: 1;
+    pointer-events: all;
+    transform: translateY(0);
+    display: block;
+}
+
+/* Switch styling inside the modal */
+.notification-settings .switch {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 0.9rem;
+    color: #333;
+    gap: 1rem;
+}
+
+.notification-settings .switch:last-child {
+    border-bottom: none;
+}
+
+/* Slider toggle styling */
+.notification-settings .slider {
+    position: relative;
+    width: 48px;
+    height: 26px;
+    background-color: #ccc;
+    border-radius: 26px;
+    transition: background-color 0.3s;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.notification-settings .slider::before {
+    content: "";
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    border-radius: 50%;
+    transition: transform 0.3s;
+}
+
+.notification-settings input[type="checkbox"]:checked + .slider {
+    background-color: #4f46e5;
+}
+
+.notification-settings input[type="checkbox"]:checked + .slider::before {
+    transform: translateX(22px);
+}
+
+.notification-settings input[type="checkbox"] {
+    display: none;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .notification-settings {
+        background: #1f2937;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
+    
+    .notification-settings .switch {
+        color: #f3f4f6;
+        border-bottom-color: #374151;
+    }
+}
+
+/* Pull to refresh hint positioning */
+.pull-to-refresh-hint {
+    text-align: center;
+    padding: 1rem;
+    color: #6b7280;
+    font-size: 0.875rem;
+    background: linear-gradient(to bottom, transparent, #f9fafb);
+    border-radius: 0 0 12px 12px;
+    margin-top: -0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.pull-to-refresh-hint svg {
+    opacity: 0.5;
+}
+
+.pull-to-refresh-hint.hidden {
+    display: none;
+}
+
+/* ============================================================================
+   FIX FOR FADED NOTIFICATION TEXT
+   ============================================================================ */
+
+/* PROBLEM: Read notifications had opacity: 0.75 making them look too faded
+   SOLUTION: Remove opacity, use subtle color change instead */
+
+/* Read notification - FIXED VERSION */
+.hud-notification.read {
+    /* REMOVED: opacity: 0.75; */
+    background: #ffffff;
+    /* Optional: Add subtle visual difference without fading text */
+    border-left-color: #e5e7eb; /* Lighter border for read items */
+}
+
+.hud-notification.read:hover {
+    opacity: 1; /* Keep at full opacity on hover */
+    background: #f9fafb;
+}
+
+/* Alternative: If you want a VERY subtle difference for read notifications,
+   you can use this instead (optional): */
+.hud-notification.read .hud-title,
+.hud-notification.read .hud-body {
+    color: #4b5563; /* Slightly lighter text, but still readable */
+}
+
+/* Unread notifications stay fully opaque and vibrant */
+.hud-notification:not(.read) {
+    background: #ffffff;
+    border-left: 3px solid #8b5cf6;
+    opacity: 1; /* Ensure full opacity */
+}
+
+/* Make sure all notification text is always readable */
+.notification-text {
+    font-size: 0.875rem;
+    color: #374151; /* Clear, readable color */
+    line-height: 1.5;
+    opacity: 1 !important; /* Force full opacity */
+}
+
+.notification-text strong {
+    font-weight: 600;
+    color: #1f2937; /* Dark, clear text */
+}
+
+.hud-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1f2937; /* Clear, dark text */
+    margin-bottom: 0.25rem;
+    opacity: 1 !important; /* Ensure title is never faded */
+}
+
+.hud-body {
+    font-size: 0.875rem;
+    color: #4b5563; /* Readable gray */
+    line-height: 1.5;
+    opacity: 1 !important; /* Ensure body text is never faded */
+}
+
+/* ============================================================================
+   CRITICAL FIX FOR FADED NOTIFICATION TEXT
+   Add this at the VERY BOTTOM of your notification.css file
+   ============================================================================ */
+
+/* Force all notification text to be fully visible - overrides faded read state */
+.hud-notification.read {
+    opacity: 1 !important;  /* Force override of the opacity: 0.75 */
+    background: #ffffff;
+}
+
+.hud-notification.read:hover {
+    opacity: 1 !important;
+    background: #f9fafb;
+}
+
+/* Ensure all notification text elements are never faded */
+.hud-notification .hud-title,
+.hud-notification .hud-body,
+.hud-notification .notification-text {
+    opacity: 1 !important;
+    color: #1f2937 !important;
+}
+
+/* Make sure read notifications still look slightly different but readable */
+.hud-notification.read .hud-body {
+    color: #4b5563 !important;  /* Slightly lighter but still very readable */
+}
+
+/* ============================================================================
+   ALTERNATIVE APPROACH: If the above doesn't work, use this instead
+   ============================================================================ */
+
+/* Option 2: Target the specific line and override it with higher specificity */
+section#notifications .hud-notification.read {
+    opacity: 1 !important;
+}
+
+section#notifications .hud-notification.read .hud-title,
+section#notifications .hud-notification.read .hud-body {
+    opacity: 1 !important;
+}
+
+.post-comment-btn {
+  margin-left: auto !important;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+  border: none !important;
+  color: white !important;
+  font-weight: 600 !important;
+  padding: 10px 18px !important;
+  border-radius: 10px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.post-comment-btn:hover {
+  background: linear-gradient(135deg, #5855eb, #7c3aed) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 18px rgba(99,102,241,0.35) !important;
+}
+
+.post-comment-btn:active {
+  transform: translateY(0) !important;
+  box-shadow: 0 3px 10px rgba(99,102,241,0.25) !important;
+}
+
+.floating-help-btn {
+  background: linear-gradient(135deg, #6366f1, #a855f7, #ec4899) !important;
+  color: white !important;
+  border: none !important;
+}
+/* ============================================================================
+   INSTRUCTIONS:
+   
+   1. Open your notification.css file
+   2. Scroll to the VERY BOTTOM
+   3. Copy EVERYTHING from this file
+   4. Paste it at the bottom
+   5. Save the file
+   6. Hard refresh your browser (Ctrl+Shift+R or Cmd+Shift+R)
+   
+   The !important flags will force these styles to override the faded ones.
+   ============================================================================ */
+   

@@ -1,0 +1,270 @@
+/**
+ * ============================================================================
+ * GLOBAL EVENT DELEGATION
+ * Handles: Modals, Navigation, Overlays, Document-level interactions
+ * Scope: Everything OUTSIDE feed containers
+ * ============================================================================
+ */
+
+import { feedState } from './move/feed.state.js';
+import * as feedApi from './move/feed.api.js';
+import {
+  addForkTag,
+  removeForkTag,
+  addPostTag,
+  removePostTag,
+  addThreadTag,
+  removeThreadTag,
+  startRefinement,
+  applyRefinement,
+  refineBeforePost,
+  startInlineRefinement,
+  applyInlineRefinement,
+  postComment,
+  saveForkedPost
+} from './move/feed.modals.js';
+import { 
+  handleCreatePost,
+  handleCreateThread,
+  handleJoinThread,
+  handleReportPost,
+} from './move/feed.events.js';
+import { closeModal, openModal } from './move/feed.utils.js';
+
+/**
+ * Global action handlers - for elements OUTSIDE feed containers
+ */
+const GLOBAL_ACTIONS = {
+  // ==================== MODAL CONTROLS ====================
+  'select-reaction': (target, event) => {
+  const reactionType = target.dataset.reaction;
+  if (!reactionType) return;
+
+  const reactionBtn = feedState.getReactionBtn();
+  if (!reactionBtn) {
+    console.warn('No reaction button stored');
+    return;
+  }
+
+  const postCard = reactionBtn.closest(".post-card");
+  const postId = postCard?.dataset.postId;
+  
+  if (!postId) {
+    console.warn('Post ID not found');
+    return;
+  }
+  
+  // Determine container type
+  let containerType = 'smart-feed';
+  const tagModal = document.getElementById('tag-posts-modal');
+  if (tagModal && !tagModal.classList.contains('hidden')) {
+    containerType = 'tag-modal';
+  }
+
+  // Import toggleReactions dynamically or make it available globally
+  if (window.toggleReactions) {
+    window.toggleReactions(postId, reactionType, null, containerType);
+  }
+
+  // Hide menu
+  const reactionMenu = document.getElementById("reactionMenu");
+  if (reactionMenu) {
+    reactionMenu.classList.add("hidden");
+  }
+},
+  'open-modal': (target) => {
+    const modalId = target.dataset.modalId;
+    const closeModalId = target.dataset.closeModal;
+    if (closeModalId) closeModal(closeModalId);
+    if (modalId) openModal(modalId);
+  },
+  
+  'close-modal': (target) => {
+    const modalId = target.dataset.modalId;
+    if (modalId) closeModal(modalId);
+  },
+  
+  // ==================== CREATE POST MODAL ====================
+  'submit-create-post': (target, event) => {
+    event.preventDefault();
+    handleCreatePost(event);
+  },
+  
+  'add-post-tag': (target) => {
+    const tag = target.dataset.value;
+    if (tag) addPostTag(tag);
+  },
+  
+  'remove-post-tag': (target) => {
+    const tag = target.dataset.value;
+    if (tag) removePostTag(tag);
+  },
+  
+  'toggle-thread-settings': (target) => {
+    const modal = document.getElementById('create-post-thread-details-modal');
+    if (modal) modal.classList.toggle('hidden');
+  },
+  
+  'refine-before-post': (target, event) => {
+    const context = target.dataset.context || 'create';
+    refineBeforePost(context, event);
+  },
+  
+  'start-inline-refinement': (target, event) => {
+    event.stopPropagation();
+    startInlineRefinement();
+  },
+  
+  'apply-inline-refinement': (target, event) => {
+    event.stopPropagation();
+    applyInlineRefinement();
+  },
+  
+  // ==================== CREATE THREAD MODAL ====================
+  'submit-create-thread': (target, event) => {
+    event.preventDefault();
+    handleCreateThread(event);
+  },
+  
+  'add-thread-tag': (target) => {
+    const tag = target.dataset.value;
+    if (tag) addThreadTag(tag);
+  },
+  
+  'remove-thread-tag': (target) => {
+    const tag = target.dataset.value;
+    if (tag) removeThreadTag(tag);
+  },
+  
+  'trigger-file-input': (target) => {
+    const inputId = target.dataset.inputId;
+    const modalId = target.dataset.closeModal;
+    
+    const input = document.getElementById(inputId);
+    if (input) input.click();
+    
+    if (modalId) closeModal(modalId);
+  },
+  
+  // ==================== FORK MODAL ====================
+  'submit-fork-post': (target, event) => {
+    event.preventDefault();
+    saveForkedPost(event);
+  },
+  
+  'add-fork-tag': (target) => {
+    const tag = target.dataset.tag || target.dataset.value;
+    if (tag) addForkTag(tag);
+  },
+  
+  'remove-fork-tag': (target) => {
+    const tag = target.dataset.tag || target.dataset.value;
+    if (tag) removeForkTag(tag);
+  },
+  
+  // ==================== THREAD VIEW MODAL ====================
+  'join-thread': (target, event) => {
+    event.stopPropagation();
+    handleJoinThread(event);
+  },
+  
+  // ==================== REPORT MODAL ====================
+  'submit-report-post': (target, event) => {
+    event.preventDefault();
+    handleReportPost(event);
+  },
+  
+  // ==================== REFINEMENT MODAL ====================
+  'start-refinement': (target, event) => {
+    event.stopPropagation();
+    const modal = document.getElementById('post-refine-modal');
+    const postId = modal?.dataset.id;
+    if (postId) startRefinement(postId);
+  },
+  
+  'apply-refinement': (target, event) => {
+    event.stopPropagation();
+    const modal = document.getElementById('post-refine-modal');
+    const postId = modal?.dataset.id;
+    if (postId) applyRefinement(postId);
+  },
+  
+  // ==================== COMMENTS MODAL ====================
+  'post-comment': (target, event) => {
+    event.preventDefault();      // ✅ Add this
+    event.stopPropagation();
+    postComment(event);
+  },
+  
+  // ==================== NAVIGATION ====================
+  'filter-feed': (target) => {
+    const filter = target.dataset.filter;
+    if (filter && typeof window.filterFeed === 'function') {
+      window.filterFeed(filter);
+    }
+  },
+  
+  'logout': (target, event) => {
+    if (typeof logout === 'function') {
+      logout(event);
+    }
+  }
+};
+
+/**
+ * Global click handler
+ */
+function globalClickHandler(event) {
+  const target = event.target.closest('[data-action]');
+  if (!target) return;
+  
+  const action = target.dataset.action;
+  showToast('🟩 GLOBAL DELEGATION caught:'+ action, 'info'); // ✅ Add this
+  const handler = GLOBAL_ACTIONS[action];
+  
+  if (handler) {
+    // Only stop propagation if we're handling it
+    event.stopPropagation();
+    handler(target, event);
+  }
+}
+
+/**
+ * Setup global delegation on document body
+ */
+export function setupGlobalDelegation() {
+  
+  // Remove existing listeners
+  document.body.removeEventListener('click', globalClickHandler);
+  document.body.removeEventListener('submit', globalSubmitHandler);
+  
+  // Add fresh listeners
+  document.body.addEventListener('click', globalClickHandler);
+  document.body.addEventListener('submit', globalSubmitHandler);
+  
+  console.log('✅ Global delegation initialized');
+}
+
+/**
+ * ✅ NEW: Handle form submissions
+ */
+function globalSubmitHandler(event) {
+  const form = event.target.closest('form[data-action]');
+  if (!form) return;
+  
+  const action = form.dataset.action;
+  const handler = GLOBAL_ACTIONS[action];
+  
+  if (handler) {
+    event.preventDefault();
+    event.stopPropagation();
+    handler(form, event);
+  }
+}
+
+/**
+ * Export for window (optional, for debugging)
+ */
+if (typeof window !== 'undefined') {
+  window.setupGlobalDelegation = setupGlobalDelegation;
+}

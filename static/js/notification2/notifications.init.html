@@ -1,0 +1,30 @@
+document.addEventListener("DOMContentLoaded", (e) => {
+  loadNotifications();
+  setupAllListeners()
+});
+let startY = null;
+let currentY = null;
+let pulling = false;
+const indicator = document.getElementById('notification-pull-indicator');
+const container = document.querySelector("section#connections");
+container.addEventListener("touchstart", (e) => {
+  if(!container.scrollTop == 0) return;
+  startY = e.touches[0].clientY;
+  pulling = true;
+} {passive:True});
+container.addEventListener("touchmove", (e) => {
+  if(refreshing || !pulling || !startY) return;
+  currentY = e.touches[0].clientY;
+} passive:false);
+container.addEventListener("touchend", async () => {
+  if (!pulling) return;
+
+  indicator.style.transform = "translateY(-50px)";
+  pulling = false;
+
+  if (container.scrollTop === 0) {
+    document.getElementById('notification-list-container').innerHTML = '';
+    notificationState.setCursor(null);
+    await loadNotifications();
+  }
+});

@@ -1,0 +1,378 @@
+/* ===========================
+   StudyHub Auth - Complete Registration
+   Indigo/Purple Theme
+   =========================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+/* --- CSS Variables --- */
+:root {
+  --indigo-50:  #eef2ff;
+  --indigo-100: #e0e7ff;
+  --indigo-200: #c7d2fe;
+  --indigo-400: #818cf8;
+  --indigo-500: #6366f1;
+  --indigo-600: #4f46e5;
+  --indigo-700: #4338ca;
+  --indigo-900: #312e81;
+
+  --purple-400: #c084fc;
+  --purple-500: #a855f7;
+  --purple-600: #9333ea;
+
+  --success:  #22c55e;
+  --warning:  #f59e0b;
+  --danger:   #ef4444;
+
+  --text-primary:   #1e1b4b;
+  --text-secondary: #6b7280;
+  --text-muted:     #9ca3af;
+
+  --bg-page:  #f5f3ff;
+  --bg-card:  #ffffff;
+  --border:   #e0e7ff;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+
+  --shadow-card: 0 8px 32px rgba(99, 102, 241, 0.10), 0 2px 8px rgba(99, 102, 241, 0.06);
+  --shadow-btn:  0 4px 14px rgba(99, 102, 241, 0.35);
+
+  --transition: 0.2s ease;
+
+  font-family: 'Inter', sans-serif;
+}
+
+/* --- Reset / Base --- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Subtle radial background glow */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 20% 10%, rgba(99,102,241,.12) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 40% at 80% 90%, rgba(168,85,247,.10) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* --- Auth Page Layout --- */
+.auth-page {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem 1rem;
+}
+
+/* --- Auth Card --- */
+.auth-container {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 2.5rem 2rem;
+  width: 100%;
+  max-width: 440px;
+  animation: slideUp .45s cubic-bezier(.22,.68,0,1.2) both;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(24px) scale(.98); }
+  to   { opacity: 1; transform: translateY(0)   scale(1);    }
+}
+
+/* --- Header --- */
+.auth-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.auth-logo {
+  font-size: 2.75rem;
+  line-height: 1;
+  margin-bottom: .75rem;
+  display: inline-block;
+  animation: bounce .6s .4s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0);   }
+  40%       { transform: translateY(-10px); }
+  60%       { transform: translateY(-5px);  }
+}
+
+.auth-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--indigo-700);
+  letter-spacing: -.02em;
+  margin-bottom: .35rem;
+}
+
+.auth-subtitle {
+  font-size: .9375rem;
+  color: var(--text-secondary);
+}
+
+/* --- Form --- */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: .4rem;
+}
+
+/* Label */
+.form-label {
+  font-size: .875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.form-label.required::after {
+  content: ' *';
+  color: var(--danger);
+}
+
+/* Input */
+.form-input {
+  width: 100%;
+  padding: .6875rem 1rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: .9375rem;
+  font-family: inherit;
+  color: var(--text-primary);
+  background: #fafafe;
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+}
+
+.form-input::placeholder {
+  color: var(--text-muted);
+}
+
+.form-input:hover {
+  border-color: var(--indigo-400);
+}
+
+.form-input:focus {
+  border-color: var(--indigo-500);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(99,102,241,.15);
+}
+
+.form-input.error {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 3px rgba(239,68,68,.12);
+}
+
+/* Help & Error Text */
+.form-help {
+  font-size: .8125rem;
+  color: var(--text-muted);
+}
+
+.form-error {
+  font-size: .8125rem;
+  color: var(--danger);
+  font-weight: 500;
+}
+
+.form-error.hidden,
+.form-help.hidden {
+  display: none;
+}
+
+/* --- Username Availability Check --- */
+.username-check {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  font-size: .8125rem;
+  font-weight: 500;
+  padding: .3rem .6rem;
+  border-radius: var(--radius-sm);
+  width: fit-content;
+  transition: background var(--transition), color var(--transition);
+}
+
+.username-check.hidden { display: none; }
+
+.username-check.available {
+  color: var(--success);
+  background: #f0fdf4;
+}
+
+.username-check.taken {
+  color: var(--danger);
+  background: #fef2f2;
+}
+
+.username-check.checking {
+  color: var(--indigo-500);
+  background: var(--indigo-50);
+}
+
+/* --- Password Strength Bar --- */
+.password-strength {
+  height: 5px;
+  border-radius: 99px;
+  background: var(--indigo-100);
+  overflow: hidden;
+  margin-top: .25rem;
+}
+
+.password-strength.hidden { display: none; }
+
+.password-strength-bar {
+  height: 100%;
+  border-radius: 99px;
+  transition: width .4s ease, background .4s ease;
+}
+
+.password-strength-bar.weak   { width: 33%; background: var(--danger);  }
+.password-strength-bar.medium { width: 66%; background: var(--warning); }
+.password-strength-bar.strong { width: 100%; background: var(--success); }
+
+/* Strength Label */
+.password-strength-text {
+  font-size: .8125rem;
+  font-weight: 600;
+}
+
+.password-strength-text.hidden { display: none; }
+.password-strength-text.weak   { color: var(--danger);  }
+.password-strength-text.medium { color: var(--warning); }
+.password-strength-text.strong { color: var(--success); }
+
+/* --- Buttons --- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  font-family: inherit;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--transition), box-shadow var(--transition), transform var(--transition), opacity var(--transition);
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--indigo-600) 0%, var(--purple-600) 100%);
+  color: #fff;
+  box-shadow: var(--shadow-btn);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--indigo-700) 0%, var(--purple-600) 100%);
+  box-shadow: 0 6px 20px rgba(99,102,241,.45);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: var(--shadow-btn);
+}
+
+.btn-primary:disabled {
+  opacity: .65;
+  cursor: not-allowed;
+}
+
+.btn-lg {
+  padding: .8125rem 1.5rem;
+  font-size: 1rem;
+  width: 100%;
+  border-radius: var(--radius-md);
+  margin-top: .25rem;
+}
+
+/* Loading spinner inside button */
+.btn .spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* --- Toast (global, if not already defined) --- */
+.toast-container {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: .75rem 1.125rem;
+  border-radius: var(--radius-md);
+  font-size: .9rem;
+  font-weight: 500;
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(0,0,0,.15);
+  animation: toastIn .3s ease both;
+  max-width: 340px;
+}
+
+.toast.success { background: var(--success); }
+.toast.error   { background: var(--danger);  }
+.toast.info    { background: var(--indigo-500); }
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0);    }
+}
+
+/* --- Utility --- */
+.hidden { display: none !important; }
+
+/* --- Responsive --- */
+@media (max-width: 480px) {
+  .auth-container {
+    padding: 2rem 1.25rem;
+    border-radius: var(--radius-md);
+  }
+
+  .auth-title {
+    font-size: 1.5rem;
+  }
+}

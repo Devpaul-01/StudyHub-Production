@@ -1,0 +1,3046 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LearnHub - Social Learning Platform</title>
+  
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/post/feed3.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/connection/connection.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/notification/notification.css') }}">
+     <link rel="stylesheet" href="{{ url_for('static', filename='css/homework/homework.css') }}">
+</head>
+<body>
+  <div class="app-container">
+    <!-- ==================== HEADER ==================== -->
+    <header class="header">
+        <button class="icon-button mobile-menu-btn" data-action="toggle-mobile-sidebar">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </button>
+
+        <div class="logo">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/>
+            </svg>
+            StudyHub
+        </div>
+
+        <div data-action='navigate-to' data-search='search' class="search-bar" id='global-search-bar'>
+            <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            <input id='global-search-input' data-action='search-info' type="text" class="search-input" placeholder="Search posts, people, topics...">
+            <div class='recent-search hidden' id='global-recent-search-modal'></div>
+            <div class='search-result hidden' id='global-search-result-modal'></div>
+        </div>
+        
+        <button data-action='open-modal'  class="create-btn" data-modal-id="create-modal">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            Create
+        </button>
+
+        <div class="header-actions">
+            <button class="icon-button" data-action="navigate-to" data-target="notifications">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+                <span class="badge" id="notification-badge"></span>
+            </button>
+
+            <button class="icon-button" data-action="navigate-to" data-target="messages">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+                <span class="badge" id="message-badge">3</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- ==================== MAIN LAYOUT ==================== -->
+    <div class="main-layout">
+        
+        <!-- ==================== SIDEBAR NAVIGATION ==================== -->
+        <aside id='sections-sidebar' class="sidebar">
+            <!-- Primary Navigation -->
+            <nav class="nav-section">
+                <div class="nav-item active" data-action="navigate-to" data-target="feed">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                    Feed
+                </div>
+                <div class="nav-item" data-action="navigate-to" data-target="activity-feed">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+  </svg>
+  Activity Feed
+</div>
+
+                <div class="nav-item" data-action="navigate-to" data-target="threads">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    Threads
+                </div>
+                
+                <div class="nav-item" data-action="navigate-to" data-target="homework">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    Homework Feed
+                </div>
+                
+
+                <div class="nav-item" data-action="navigate-to" data-target="connections">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="8.5" cy="7" r="4"></circle>
+                        <line x1="20" y1="8" x2="20" y2="14"></line>
+                        <line x1="23" y1="11" x2="17" y2="11"></line>
+                    </svg>
+                    Connections
+                </div>
+
+                <div class="nav-item" data-action="navigate-to" data-target="advanced-search">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                    </svg>
+                    Advanced Search
+                </div>
+              
+                <div class="nav-item" data-action="navigate-to" data-target="learnora">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                    </svg>
+                    Learnora
+                </div>
+
+                <div class="nav-item" data-action="navigate-to" data-target="profile">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    Profile
+                </div>
+            </nav>
+
+            <!-- Analytics & Tools Navigation -->
+            <nav class="nav-section">
+                <div class="nav-item" data-action="navigate-to" data-target="analytics">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="20" x2="18" y2="10"></line>
+                        <line x1="12" y1="20" x2="12" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="14"></line>
+                    </svg>
+                    Analytics
+                </div>
+
+                <div class="nav-item" data-action="navigate-to" data-target="leaderboard">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                        <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                        <path d="M4 22h16"></path>
+                        <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+                        <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+                        <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+                    </svg>
+                    Leaderboard
+                </div>
+                 <div class="nav-item" data-action="navigate-to" data-target="notifications">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                        <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                        <path d="M4 22h16"></path>
+                        <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+                        <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+                        <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+                    </svg>
+                    Notifications 
+                </div>
+            </nav>
+
+            <!-- Settings & Logout -->
+            <nav class="nav-section">
+                <div class="nav-item" data-action="logout">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    Logout
+                </div>
+            </nav>
+        </aside>
+
+        <!-- ==================== MAIN CONTENT AREA ==================== -->
+        <main class="content-area">
+            
+            <!-- ========== FEED SECTION ========== -->
+            <section data-action='navigate-to' id="feed" class="section active">
+                <h2 style="margin-bottom: 1.5rem; font-size: 1.5rem; display: none;">Feed</h2>
+                
+                <!-- FILTER BUTTONS -->
+                <div class="feed-filters">
+                    <button class="filter-btn active" data-action="filter-feed" data-filter="all">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        </svg>
+                        For You
+                    </button>
+                    
+                    <button class="filter-btn" data-action="filter-feed" data-filter="department">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="14" width="7" height="7"></rect>
+                            <rect x="3" y="14" width="7" height="7"></rect>
+                        </svg>
+                        My Department
+                    </button>
+                    
+                    <button class="filter-btn" data-action="filter-feed" data-filter="trending">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                            <polyline points="17 6 23 6 23 12"></polyline>
+                        </svg>
+                        Trending
+                    </button>
+                    
+                    <button class="filter-btn" data-action="filter-feed" data-filter="connections">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="8.5" cy="7" r="4"></circle>
+                            <line x1="20" y1="8" x2="20" y2="14"></line>
+                            <line x1="23" y1="11" x2="17" y2="11"></line>
+                        </svg>
+                        Connections
+                    </button>
+                    
+                    <button class="filter-btn" data-action="filter-feed" data-filter="unsolved">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="14" width="7" height="7"></rect>
+                            <rect x="3" y="14" width="7" height="7"></rect>
+                        </svg>
+                        Unsolved
+                    </button>
+                </div>
+
+                <div id="posts-container">
+                    <!-- For You Feed -->
+                    <div class="posts-feed active" id="feed-all">
+                        <div id="feed-sentinel-all" class="feed-sentinel" style="height: 1px; width: 100%;"></div>
+                    </div>
+                    
+                    <!-- My Department Feed -->
+                    <div class="posts-feed" id="feed-department">
+                        <div id="feed-sentinel-department" class="feed-sentinel" style="height: 1px; width: 100%;"></div>
+                    </div>
+                    
+                    <!-- Trending Feed -->
+                    <div class="posts-feed" id="feed-trending">
+                        <div id="feed-sentinel-trending" class="feed-sentinel" style="height: 1px; width: 100%;"></div>
+                    </div>
+                    
+                    <!-- Connections Feed -->
+                    <div class="posts-feed" id="feed-connections">
+                        <div id="feed-sentinel-connections" class="feed-sentinel" style="height: 1px; width: 100%;"></div>
+                    </div>
+                    
+                    <!-- Unsolved Feed -->
+                    <div class="posts-feed" id="feed-unsolved">
+                        <div id="feed-sentinel-unsolved" class="feed-sentinel" style="height: 1px; width: 100%;"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ========== SEARCH SECTION ========== -->
+            <section data-action='navigate-to' id="advanced-search" class="section"></section>
+              <!-- ================================================================ -->
+<!-- ADD THIS NEW SECTION TO feed.html (Activity Feed Section) -->
+<!-- Place this after your notifications section -->
+<!-- ================================================================ -->
+
+<section id="activity-feed" class="section">
+  <div class="activity-feed-container">
+    <!-- Header -->
+    <div class="activity-feed-header">
+      <button class="icon-button back-btn" data-action="close-section" data-section-id="activity-feed">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+      </button>
+      
+      <h2 class="activity-feed-title">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+        </svg>
+        Live Activity
+      </h2>
+      
+      <button class="icon-button refresh-btn" data-action="reload-activity-feed">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+        </svg>
+      </button>
+    </div>
+    
+    <!-- Description -->
+    <div class="activity-feed-description">
+      <p>See what your connections are working on right now</p>
+      <div class="activity-feed-live-indicator">
+        <span class="live-dot"></span>
+        <span>Live updates</span>
+      </div>
+    </div>
+    
+    <!-- Activity Feed List -->
+    <div id="activity-feed-list" class="activity-feed-list">
+      <!-- Activities will be populated by JavaScript -->
+      <div class="activity-loading">
+        <div class="hw-spinner"></div>
+        <p>Loading activities...</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ================================================================ -->
+<!-- UPDATE HOMEWORK SECTION - Replace your existing homework tabs -->
+<!-- ================================================================ -->
+
+<section id="homework" class="section">
+  <div class="hw-container">
+    <!-- Header -->
+    <div class="hw-header">
+      <h2 class="hw-title">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8" stroke="currentColor" stroke-width="2" fill="none"></polyline>
+        </svg>
+        Homework
+      </h2>
+      
+      <button class="hw-create-btn" data-action="open-create-homework-modal">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        New
+      </button>
+    </div>
+    
+    <!-- Tabs Navigation -->
+    <div class="hw-tabs">
+      <button class="hw-tab active" data-action="switch-homework-tab" data-tab="my-homework">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+        </svg>
+        My Work
+      </button>
+      
+      <button class="hw-tab" data-action="switch-homework-tab" data-tab="connections-homework">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+        Connections
+      </button>
+      
+      <button class="hw-tab" data-action="switch-homework-tab" data-tab="stats">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="20" x2="18" y2="10"></line>
+          <line x1="12" y1="20" x2="12" y2="4"></line>
+          <line x1="6" y1="20" x2="6" y2="14"></line>
+        </svg>
+        Stats
+      </button>
+    </div>
+    
+    <!-- Tab Content -->
+    <div class="hw-tab-content">
+      
+      <!-- My Homework Tab -->
+      <div class="hw-tab-panel active" data-tab-panel="my-homework">
+        <div id="my-homework-container">
+          <!-- Populated by homework.render.js -->
+        </div>
+      </div>
+      
+      <!-- Connections Homework Tab -->
+      <div class="hw-tab-panel" data-tab-panel="connections-homework">
+        <div id="connections-homework-container">
+          <!-- Populated by homework.render.js -->
+        </div>
+      </div>
+      
+      <!-- Stats Tab (NEW) -->
+      <div class="hw-tab-panel" data-tab-panel="stats">
+        <div class="hw-stats-container">
+          
+          <!-- Streak Widget -->
+          <div class="hw-stats-section">
+            <div id="streak-widget">
+              <!-- Populated by homework.streak.js -->
+            </div>
+          </div>
+          
+          <!-- Champions Banner -->
+          <div class="hw-stats-section">
+            <div id="champions-banner">
+              <!-- Populated by homework.champions.js -->
+            </div>
+          </div>
+          
+          <!-- Full Dashboard -->
+          <div class="hw-stats-section">
+            <div id="homework-dashboard">
+              <!-- Populated by homework.stats.js -->
+            </div>
+          </div>
+          
+        </div>
+      </div>
+      
+    </div>
+  </div>
+</section>
+
+
+<!-- ================================================================ -->
+<!-- ADD TO SIDEBAR NAVIGATION (for Activity Feed link) -->
+<!-- ================================================================ -->
+
+<!-- Add this after your notifications nav item -->
+
+
+              
+            <!-- ==================== NOTIFICATIONS SECTION ==================== -->
+<!-- ==================== NOTIFICATIONS SECTION (REFINED) ==================== -->
+<section id="notifications" class="section">
+    <div class="notifications-container">
+        <!-- Header -->
+        <div class="notifications-header">
+            <h2 class="notifications-title">Notifications</h2>
+            
+            <div class="notifications-actions">
+                <!-- Options Menu Button -->
+                <button class="icon-button" data-action="toggle-notification-options" aria-label="Notification options">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="1"></circle>
+                        <circle cx="12" cy="5" r="1"></circle>
+                        <circle cx="12" cy="19" r="1"></circle>
+                    </svg>
+                </button>
+                
+                <!-- Options Dropdown -->
+                <div class='notification-settings hidden' id='notification-settings-modal'>
+                    <label class="switch">
+                        <input type="checkbox" role="switch" id="toggle-notification-sound">
+                        <span class="slider"></span>
+                        Enable Notification Sound
+                    </label>
+                    <label class="switch">
+                        <input type="checkbox" role="switch" id="toggle-notification">
+                        <span class="slider"></span>
+                        Enable Notifications
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pull to Refresh Indicator -->
+        <div id="notification-pull-indicator" class="pull-to-refresh-indicator hidden">
+            <svg class="refresh-spinner" width="24" height="24" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" fill="none" stroke-width="2"/>
+            </svg>
+            <span>Pull to refresh</span>
+        </div>
+
+        <!-- Pull to Refresh Hint (NEW) -->
+        <div class="pull-to-refresh-hint" id="pull-to-refresh-hint">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <polyline points="19 12 12 19 5 12"></polyline>
+            </svg>
+            <span>Pull down to refresh notifications</span>
+        </div>
+
+        <!-- Notifications List Container -->
+        <div id="notifications-list-container">
+            <!-- Empty State (show when no notifications) -->
+            <div class="notifications-empty-state">
+                <svg class="empty-state-icon" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+                <h3 class="empty-state-title">No notifications yet</h3>
+                <p class="empty-state-text">When you get notifications, they'll show up here</p>
+            </div>
+            
+            <!-- Notifications will be populated by JavaScript -->
+        </div>
+    </div>
+</section>
+
+            <!-- ========== THREADS SECTION ========== -->
+            <section data-action='navigate-to' id="threads" class="section"></section>
+
+            <!-- ========== STUDY BUDDIES SECTION ========== -->
+            <section data-action='navigate-to' id="study-buddies" class="section"></section>
+
+            <!-- ========== CONNECTIONS SECTION ========== -->
+            <section data-action='navigate-to' id="connections" class="section">
+                <h2 style="margin-bottom: 1.5rem; font-size: 1.5rem;">Connections</h2>
+                
+                <!-- Pull to Refresh Indicator -->
+                <div class="pull-to-refresh-indicator hidden" id="connections-refresh-indicator">
+                    <svg class="refresh-spinner" width="24" height="24" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" fill="none" stroke-width="2"/>
+                    </svg>
+                    <span>Pull to refresh</span>
+                </div>
+                
+                <!-- Notification Toggle -->
+                <div class="connection-settings-bar">
+                    <label class="connection-setting">
+                        <input type="checkbox" class="connection-notification-toggle" data-action="toggle-connection-notification">
+                        <span>Enable Sound Notifications</span>
+                    </label>
+                </div>
+                
+                <!-- SEARCH BAR -->
+                <div class="connections-search">
+                    <div class="search-input-wrapper">
+                        <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.35-4.35"></path>
+                        </svg>
+                        <input 
+                            type="text" 
+                            class="connections-search-input" 
+                            id="connections-search-input"
+                            placeholder="Search connections by name, department, or skills..."
+                            autocomplete="off"
+                        >
+                        <button data-action='clear-search-input' class="search-clear-btn hidden" id="search-clear-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+                  <div class="connections-search-results hidden" id="connections-search-results">
+                        <!-- Results populated by JavaScript -->
+                    </div>
+                </div>
+                <!-- CONNECTION FILTER BAR (Only shows on Connected tab) -->
+                <div class="advanced-connected-options hidden" id="connections-filter-bar">
+                    <div class="filter-bar-content">
+                        
+                        <!-- Active Now Toggle -->
+                       <!-- Active Now Toggle -->
+                        <label class="toggle-filter">
+                            <input type="checkbox" class="toggle-input" data-action="filter-connections" data-filter="active" />
+                            <span class="toggle-slider"></span>
+                            <span class="toggle-label">Active Now</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- CONNECTION TABS -->
+                <div class="section-tabs">
+                    <button class="tab-btn active" data-action="switch-connection-tab" data-tab="received">
+                        Received
+                        <span data-type='received' class="tab-count badge-warning"></span>
+                    </button>
+                    <button class="tab-btn" data-action="switch-connection-tab" data-tab="connected">
+                        Connected
+                        <span data-type='connected' class="tab-count"></span>
+                    </button>
+                    <button class="tab-btn" data-action="switch-connection-tab" data-tab="sent">
+                        Sent
+                        <span data-type='sent' class="tab-count"></span>
+                    </button>
+                    <button class="tab-btn" data-action="switch-connection-tab" data-tab="suggestions">
+                        Suggestions
+                        <span data-type='suggestions' class="tab-count"></span>
+                    </button>
+                    <button class="tab-btn" data-action="switch-connection-tab" data-tab="discovery">
+                        Discovery
+                        <span data-type='discovery' class="tab-count"></span>
+                    </button>
+                </div>
+                
+                <!-- TAB CONTENT CONTAINERS -->
+                <div class="connections-tabs-container">
+                    
+                    <!-- Received Tab -->
+                    <div class="tab-content" id="connections-received">
+                        <!-- Received connection cards will be rendered here by JavaScript -->
+                    </div>
+                    
+                    <!-- Connected Tab -->
+                    <div class="tab-content hidden" id="connections-connected">
+                        <!-- Connected user cards will be rendered here by JavaScript -->
+                    </div>
+                    
+                    <!-- Sent Tab -->
+                    <div class="tab-content hidden" id="connections-sent">
+                        <!-- Sent request cards will be rendered here by JavaScript -->
+                    </div>
+                    
+                    <!-- Suggestions Tab -->
+                    <div class="tab-content hidden" id="connections-suggestions">
+                        <!-- Suggestion cards will be rendered here by JavaScript -->
+                    </div>
+                    
+                    <!-- Discovery Tab -->
+                    <div class="tab-content hidden" id="connections-discovery">
+                        <!-- Discovery cards will be rendered here by JavaScript -->
+                    </div>
+                </div>
+
+
+
+
+                <!-- ==================== CONNECTION MODALS (SCOPED TO THIS SECTION) ==================== -->
+                
+                <!-- CONNECTION NOTES MODAL -->
+                <div class="modal-overlay hidden connection-notes-modal" id="connection-notes-modal">
+                    <div class="modal" style="max-width: 600px;">
+                        <div class="modal-header">
+                            <h2 class="modal-title">Connection Notes</h2>
+                            <button class="modal-close" data-action="close-modal" data-modal-id="connection-notes-modal">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div class="modal-body notes-content">
+                            <!-- Empty State -->
+                            <div class="notes-empty-state">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity: 0.3; margin: 0 auto 1rem;">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                                </svg>
+                                <p style="margin-bottom: 1rem; color: var(--text-secondary);">No notes yet for this connection</p>
+                                <button class="btn btn-primary" data-action="create-note">Create Note</button>
+                            </div>
+
+                            <!-- Notes Input (hidden by default) -->
+                            <textarea 
+                                class="notes-input hidden form-textarea" 
+                                placeholder="Add notes about this connection...
+                                Examples:
+                                • Study topics discussed
+                                • Shared interests
+                                • Important reminders
+                                • Meeting notes"rows="8"></textarea>
+
+<div class="modal-footer">
+                            <button class="btn btn-secondary hidden" data-action="close-modal" data-modal-id="connection-notes-modal">Cancel</button>
+                            <button class="btn btn-primary save-note-btn hidden" data-action="save-note">Save Note</button>
+                        </div>
+                    </div>
+                </div>
+                </div>
+
+                <!-- MUTUAL CONNECTIONS MODAL -->
+                <div class="modal-overlay hidden mutual-connections-modal" id="mutual-connections-modal">
+                    <div class="modal" style="max-width: 700px;">
+                        <div class="modal-header">
+                            <h2 class="modal-title">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 0.5rem;">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="9" cy="7" r="4"></circle>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                </svg>
+                                Mutual Connections
+                            </h2>
+                            <button class="modal-close" data-action="close-modal" data-modal-id="mutual-connections-modal">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div class="modal-body modal-content" style="max-height: 70vh; overflow-y: auto;">
+                            <!-- Populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BLOCKED USERS MODAL -->
+                <div class="modal-overlay hidden blocked-users-modal" id="blocked-users-modal">
+                    <div class="modal" style="max-width: 700px;">
+                                                <div class="modal-header">
+                                <h2 class="modal-title">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 0.5rem;">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+                                    </svg>
+                                    Blocked Users
+                                </h2>
+                                <button class="modal-close" data-action="close-modal" data-modal-id="blocked-users-modal">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <div class="modal-body modal-content" style="max-height: 70vh; overflow-y: auto;">
+                                <!-- Populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+
+
+                </section>
+
+                <!-- ========== PROFILE SECTION ========== -->
+                <section data-action='navigate-to' id="profile" class="section"></section>
+
+                <!-- ========== ANALYTICS SECTION ========== -->
+                <section data-action='navigate-to' id="analytics" class="section"></section>
+
+                <!-- ========== LEADERBOARD SECTION ========== -->
+                <section data-action='navigate-to' id="leaderboard" class="section"></section>
+
+                <!-- ========== MESSAGES SECTION ========== -->
+                <section data-action='navigate-to' id="messages" class="section"></section>
+
+                <!-- ========== AI ASSISTANT SECTION ========== -->
+                <section data-action='navigate-to' id="ai-assistant" class="section"></section>
+
+            </main>
+        </div>
+        
+        <button 
+  class="floating-help-btn" 
+  data-action="open-modal" 
+  data-modal-id="find-help-modal"
+  title="Find Study Help">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <circle cx="11" cy="11" r="8"></circle>
+    <path d="m21 21-4.35-4.35"></path>
+    <path d="M11 8v6"></path>
+    <path d="M8 11h6"></path>
+  </svg>
+  <span>Find Help</span>
+</button>
+
+
+        
+        <!-- ==================== BOTTOM NAVIGATION (Mobile) ==================== -->
+        <nav class="bottom-nav">
+            <div class="bottom-nav-items">
+                <div class="bottom-nav-item active" data-target="feed">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    </svg>
+                    Feed
+                </div>
+
+                <div class="bottom-nav-item" data-target="threads">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    Threads
+                </div>
+
+                <div class="bottom-nav-item create-btn-mobile"  data-modal-id="create-modal">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                </div>
+
+                <div  class="bottom-nav-item" data-target="study-buddies">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                    </svg>
+                    Buddies
+                </div>
+
+                <div class="bottom-nav-item" data-target="profile">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    Profile
+                </div>
+            </div>
+        </nav>
+
+        <!-- ==================== GLOBAL MODALS CONTAINER ==================== -->
+        <!-- ALL MODALS FROM test.html GO HERE - RIGHT BEFORE CLOSING app-container -->
+        <div class='global-root-modal' id='global-root-modal'>
+          <div id="message-reaction-menu" class="modal-overlay hidden">
+  <!-- Filled by templates.js -->
+</div>
+
+<!-- Message Options Modal -->
+<div id="message-options-modal" class="modal-overlay hidden">
+  <div class="modal-content">
+    <button data-action="delete-message-for-me" class="modal-option">
+      Delete for Me
+    </button>
+    <button data-action="delete-message-for-everyone" class="modal-option">
+      Delete for Everyone
+    </button>
+    <button data-action="close-modal" data-modal-id="message-options-modal" class="modal-option-cancel">
+      Cancel
+    </button>
+  </div>
+</div>
+
+<!-- Conversation Options Modal -->
+<div id="conversation-options-modal" class="modal-overlay hidden">
+  <div class="modal-content">
+    <button data-action="clear-chat" class="modal-option">
+      Clear Chat
+    </button>
+    <button data-action="block-user" class="modal-option danger">
+      Block User
+    </button>
+    <button data-action="close-modal" data-modal-id="conversation-options-modal" class="modal-option-cancel">
+      Cancel
+    </button>
+  </div>
+</div>
+<!-- ==================== EDIT HOMEWORK MODAL ==================== -->
+<!-- Add this modal to your global modals section in feed.html -->
+
+<div class="hw-modal-overlay hidden" id="hw-edit-modal">
+  <div class="hw-modal hw-modal-fullscreen">
+    <div class="hw-modal-header">
+      <button class="hw-modal-back" data-action="close-homework-modal" data-modal-id="hw-edit-modal">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+      </button>
+      <h3 class="hw-modal-title">Edit Assignment</h3>
+      <button class="hw-modal-close" data-action="close-homework-modal" data-modal-id="hw-edit-modal">
+        &times;
+      </button>
+    </div>
+    
+    <div class="hw-modal-content-wrapper">
+      <div class="hw-modal-body">
+        <!-- Title -->
+        <div class="hw-form-group">
+          <label class="hw-form-label" for="hw-edit-title">Title *</label>
+          <input 
+            type="text" 
+            class="hw-form-input" 
+            id="hw-edit-title"
+            placeholder="e.g., Calculus Problem Set 5"
+            required
+            maxlength="200"
+          />
+        </div>
+
+        <!-- Subject -->
+        <div class="hw-form-group">
+          <label class="hw-form-label" for="hw-edit-subject">Subject</label>
+          <input 
+            type="text" 
+            class="hw-form-input" 
+            id="hw-edit-subject"
+            placeholder="e.g., Mathematics, Physics"
+            maxlength="100"
+          />
+        </div>
+
+        <!-- Description -->
+        <div class="hw-form-group">
+          <label class="hw-form-label" for="hw-edit-description">Description</label>
+          <textarea 
+            class="hw-form-textarea" 
+            id="hw-edit-description"
+            placeholder="Describe the assignment..."
+            rows="4"
+          ></textarea>
+        </div>
+
+        <!-- Due Date -->
+        <div class="hw-form-group">
+          <label class="hw-form-label" for="hw-edit-due-date">Due Date *</label>
+          <input 
+            type="datetime-local" 
+            class="hw-form-input" 
+            id="hw-edit-due-date"
+            required
+          />
+        </div>
+
+        <!-- Difficulty -->
+        <div class="hw-form-group">
+          <label class="hw-form-label" for="hw-edit-difficulty">Difficulty</label>
+          <select class="hw-form-select" id="hw-edit-difficulty">
+            <option value="easy">Easy 🟢</option>
+            <option value="medium">Medium 🟡</option>
+            <option value="hard">Hard 🔴</option>
+          </select>
+        </div>
+
+        <!-- Estimated Hours -->
+        <div class="hw-form-group">
+          <label class="hw-form-label" for="hw-edit-estimated-hours">Estimated Time (hours)</label>
+          <input 
+            type="number" 
+            class="hw-form-input" 
+            id="hw-edit-estimated-hours"
+            placeholder="e.g., 2"
+            min="0.5"
+            max="100"
+            step="0.5"
+          />
+        </div>
+
+        <!-- Resources Section -->
+        <div class="hw-form-group">
+          <label class="hw-form-label">Resources</label>
+          
+          <!-- Existing Resources -->
+          <div class="hw-resources-preview" id="hw-edit-resources-preview">
+            <!-- Will be populated dynamically -->
+          </div>
+          
+          <!-- Upload New Resource -->
+          <button 
+            type="button" 
+            class="hw-btn hw-btn-outline hw-upload-btn"
+            data-action="upload-edit-resource"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            Add Resource
+          </button>
+          
+          <!-- Hidden file input -->
+          <input 
+            type="file" 
+            id="hw-edit-resource-input" 
+            accept="image/*,video/*,.pdf,.doc,.docx,.txt"
+            style="display: none;"
+          />
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="hw-modal-footer">
+        <button 
+          type="button" 
+          class="hw-btn hw-btn-secondary" 
+          data-action="close-homework-modal" 
+          data-modal-id="hw-edit-modal"
+        >
+          Cancel
+        </button>
+        <button 
+          type="button"
+          class="hw-btn hw-btn-primary"
+          data-action="submit-edit-homework"
+        >
+          Save Changes
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="hw-modal-overlay hidden" id="hw-create-modal">
+  <div class="hw-modal">
+    <div class="hw-modal-header">
+      <h3 class="hw-modal-title">Create New Assignment</h3>
+      <button class="hw-modal-close" data-action="close-homework-modal" data-modal-id="hw-create-modal">
+        &times;
+      </button>
+    </div>
+    
+    <!-- IMPORTANT: NO data-action on this div! -->
+    <div class="hw-modal-content-wrapper">
+      <div class="hw-modal-body">
+        <!-- Title -->
+        <div class="hw-form-group">
+          <label class="hw-form-label" for="hw-create-title">Title *</label>
+          <input 
+            type="text" 
+            class="hw-form-input" 
+            id="hw-create-title"
+            placeholder="e.g., Calculus Problem Set 5"
+            required
+            maxlength="200"
+          />
+        </div>
+
+        <!-- Subject -->
+        <div class="hw-form-group">
+          <label class="hw-form-label" for="hw-create-subject">Subject</label>
+          <input 
+            type="text" 
+            class="hw-form-input" 
+            id="hw-create-subject"
+            placeholder="e.g., Mathematics, Physics"
+            maxlength="100"
+          />
+        </div>
+
+        <!-- Description -->
+        <div class="hw-form-group">
+          <label class="hw-form-label" for="hw-create-description">Description</label>
+          <textarea 
+            class="hw-form-textarea" 
+            id="hw-create-description"
+            placeholder="Describe the assignment..."
+            rows="4"
+          ></textarea>
+        </div>
+
+        <!-- Due Date -->
+        <div class="hw-form-group">
+          <label class="hw-form-label" for="hw-create-due-date">Due Date *</label>
+          <input 
+            type="datetime-local" 
+            class="hw-form-input" 
+            id="hw-create-due-date"
+            required
+          />
+          <small class="hw-form-hint">Select date and time when this assignment is due</small>
+        </div>
+
+        <!-- Difficulty -->
+        <div class="hw-form-group">
+          <label class="hw-form-label" for="hw-create-difficulty">Difficulty</label>
+          <select class="hw-form-select" id="hw-create-difficulty">
+            <option value="easy">Easy 🟢</option>
+            <option value="medium" selected>Medium 🟡</option>
+            <option value="hard">Hard 🔴</option>
+          </select>
+        </div>
+
+        <!-- Estimated Hours -->
+        <div class="hw-form-group">
+          <label class="hw-form-label" for="hw-create-estimated-hours">Estimated Time (hours)</label>
+          <input 
+            type="number" 
+            class="hw-form-input" 
+            id="hw-create-estimated-hours"
+            placeholder="e.g., 2"
+            min="0.5"
+            max="100"
+            step="0.5"
+          />
+        </div>
+
+        <!-- Resource Upload Section -->
+        <div class="hw-form-group">
+          <label class="hw-form-label">Resources (Optional)</label>
+          <button 
+            type="button" 
+            class="hw-btn hw-btn-outline hw-upload-btn"
+            data-action="upload-homework-resource"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            Upload File
+          </button>
+          <small class="hw-form-hint">Add images, videos, PDFs, or documents (max 10MB)</small>
+          
+          <!-- Hidden file input -->
+          <input 
+            type="file" 
+            id="hw-resource-upload-input" 
+            accept="image/*,video/*,.pdf,.doc,.docx,.txt"
+            style="display: none;"
+          />
+          
+          <!-- Resource Preview Container -->
+          <div class="hw-resources-preview hidden" id="hw-create-resources-preview">
+            <!-- Resources will be shown here dynamically -->
+          </div>
+        </div>
+
+        <!-- Share Checkbox -->
+        <div class="hw-form-group">
+          <label class="hw-form-checkbox-container">
+            <input 
+              type="checkbox" 
+              class="hw-form-checkbox-input"
+              id="hw-create-share-for-help"
+            />
+            <span class="hw-form-checkbox-label">Share with connections for help</span>
+            <span class="hw-form-checkbox-checkmark"></span>
+          </label>
+          <small class="hw-form-hint">Let your connections see and help with this assignment</small>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="hw-modal-footer">
+        <button 
+          type="button" 
+          class="hw-btn hw-btn-secondary" 
+          data-action="close-homework-modal" 
+          data-modal-id="hw-create-modal"
+        >
+          Cancel
+        </button>
+        <!-- IMPORTANT: data-action ONLY on this button! -->
+        <button 
+          type="button"
+          class="hw-btn hw-btn-primary"
+          data-action="submit-create-homework"
+        >
+          Create Assignment
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Resource Preview Modal -->
+<div class="hw-modal-overlay hidden" id="hw-resource-preview-modal">
+  <div class="hw-modal hw-modal-large">
+    <div class="hw-modal-header">
+      <h3 class="hw-modal-title">Resource Preview</h3>
+      <button class="hw-modal-close" data-action="close-homework-modal" data-modal-id="hw-resource-preview-modal">
+        &times;
+      </button>
+    </div>
+    
+    <div class="hw-modal-body hw-resource-preview-body">
+      <div id="hw-resource-preview-content">
+        <!-- Preview content will be inserted here -->
+      </div>
+    </div>
+
+    <div class="hw-modal-footer">
+      <button 
+        type="button" 
+        class="hw-btn hw-btn-primary" 
+        data-action="download-resource"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Download
+      </button>
+      <button 
+        type="button" 
+        class="hw-btn hw-btn-secondary" 
+        data-action="close-homework-modal" 
+        data-modal-id="hw-resource-preview-modal"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ==================== RESOURCE PREVIEW MODAL (NEW) ==================== -->
+<!-- Add this modal to your global modals section in feed.html -->
+
+<div class="hw-modal-overlay hidden" id="hw-resource-preview-modal">
+  <div class="hw-modal hw-modal-large">
+    <div class="hw-modal-header">
+      <h3 class="hw-modal-title">Resource Preview</h3>
+      <button class="hw-modal-close" data-action="close-homework-modal" data-modal-id="hw-resource-preview-modal">
+        &times;
+      </button>
+    </div>
+    
+    <div class="hw-modal-body hw-resource-preview-body">
+      <div id="hw-resource-preview-content">
+        <!-- Preview content will be inserted here -->
+      </div>
+    </div>
+
+    <div class="hw-modal-footer">
+      <button 
+        type="button" 
+        class="hw-btn hw-btn-primary" 
+        data-action="download-resource"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Download
+      </button>
+      <button 
+        type="button" 
+        class="hw-btn hw-btn-secondary" 
+        data-action="close-homework-modal" 
+        data-modal-id="hw-resource-preview-modal"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Homework Details Modal -->
+<div class="hw-modal-overlay hidden" id="hw-details-modal">
+  <div class="hw-modal">
+    <div class="hw-modal-header">
+      <h3 class="hw-modal-title">Homework Details</h3>
+      <button class="hw-modal-close" data-action="close-homework-modal" data-modal-id="hw-details-modal">
+        &times;
+      </button>
+    </div>
+    
+    <div class="hw-modal-body" id="hw-details-content">
+      <!-- Content will be populated dynamically -->
+    </div>
+
+    <div class="hw-modal-footer">
+      <button 
+        type="button" 
+        class="hw-btn hw-btn-secondary" 
+        data-action="close-homework-modal" 
+        data-modal-id="hw-details-modal"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Homework Helpers Modal -->
+<!-- REFINED HELPERS MODAL -->
+<div class="hw-modal-overlay hidden" id="hw-helpers-modal">
+  <div class="hw-modal hw-modal-lg">
+    <div class="hw-modal-header">
+      <h3 class="hw-modal-title">People Helping You</h3>
+      <button class="hw-modal-close" data-action="close-homework-modal" data-modal-id="hw-helpers-modal">
+        &times;
+      </button>
+    </div>
+    
+    <div class="hw-modal-body">
+      <div id="hw-helpers-list">
+        <!-- Assignment details and helpers list will be populated dynamically -->
+      </div>
+    </div>
+
+    <div class="hw-modal-footer">
+      <button 
+        type="button" 
+        class="hw-btn hw-btn-secondary" 
+        data-action="close-homework-modal" 
+        data-modal-id="hw-helpers-modal"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Submission Details Modal -->
+<div class="hw-modal-overlay hidden" id="hw-submission-modal">
+  <div class="hw-modal">
+    <div class="hw-modal-header">
+      <h3 class="hw-modal-title">Submission Details</h3>
+      <button class="hw-modal-close" data-action="close-homework-modal" data-modal-id="hw-submission-modal">
+        &times;
+      </button>
+    </div>
+    
+    <div class="hw-modal-body">
+      <!-- Submission details will be populated dynamically -->
+    </div>
+
+    <div class="hw-modal-footer">
+      <button 
+        type="button" 
+        class="hw-btn hw-btn-secondary" 
+        data-action="close-homework-modal" 
+        data-modal-id="hw-submission-modal"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Resource Preview Modal -->
+<div class="hw-modal-overlay hidden" id="hw-resource-preview-modal">
+  <div class="hw-modal">
+    <div class="hw-modal-header">
+      <h3 class="hw-modal-title">Resource Preview</h3>
+      <button class="hw-modal-close" data-action="close-homework-modal" data-modal-id="hw-resource-preview-modal">
+        &times;
+      </button>
+    </div>
+    
+    <div class="hw-modal-body">
+      <div id="hw-resource-preview-content">
+        <!-- Resource preview will be populated dynamically -->
+      </div>
+    </div>
+
+    <div class="hw-modal-footer">
+      <button 
+        type="button" 
+        class="hw-btn hw-btn-primary" 
+        data-action="download-resource"
+        data-url=""
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Download
+      </button>
+      <button 
+        type="button" 
+        class="hw-btn hw-btn-secondary" 
+        data-action="close-homework-modal" 
+        data-modal-id="hw-resource-preview-modal"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden file input for resource uploads -->
+<input 
+  type="file" 
+  id="hw-resource-upload-input" 
+  class="hidden" 
+  data-action="handle-resource-upload"
+  accept="image/*,video/*,.pdf,.doc,.docx,.txt,.ppt,.pptx,.xls,.xlsx"
+/>
+
+<!-- Stats Dashboard Modal -->
+<div class="hw-modal-overlay hidden" id="hw-stats-modal">
+  <div class="hw-modal hw-modal-large">
+    <div class="hw-modal-header">
+      <h3 class="hw-modal-title">📊 Homework Dashboard</h3>
+      <button class="hw-modal-close" data-action="close-homework-modal" data-modal-id="hw-stats-modal">
+        &times;
+      </button>
+    </div>
+    
+    <div class="hw-modal-body">
+      <!-- Dashboard content will be populated dynamically -->
+    </div>
+
+    <div class="hw-modal-footer">
+      <button 
+        type="button" 
+        class="hw-btn hw-btn-secondary" 
+        data-action="close-homework-modal" 
+        data-modal-id="hw-stats-modal"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Submission Detail Modal (Enhanced) -->
+<div class="hw-modal-overlay hidden" id="hw-submission-detail-modal">
+  <div class="hw-modal hw-modal-large">
+    <div class="hw-modal-body" style="padding: 0;">
+      <!-- Submission detail content will be populated dynamically -->
+      <!-- This modal has custom styling without header/footer -->
+    </div>
+  </div>
+</div>
+
+
+<!-- CONNECTION REQUEST MESSAGE MODAL -->
+<div id="connection-request-message-modal" class="modal-overlay hidden">
+  <div class="modal-content" style="max-width: 500px;">
+    <div class="modal-header">
+      <h3 id="connection-modal-title">Connect with User</h3>
+      <button data-action="close-modal" data-modal-id="connection-request-message-modal" class="modal-close">×</button>
+    </div>
+    
+    <div class="modal-body">
+      <label for="connection-message-input">Add a personal message (optional)</label>
+      <textarea 
+        id="connection-message-input" 
+        maxlength="200"
+        rows="4"
+        placeholder="Hi! I'd love to connect and study together..."></textarea>
+      <small><span id="connection-char-count">0</span>/200 characters</small>
+    </div>
+    
+    <div class="modal-footer">
+      <button data-action="close-modal" data-modal-id="connection-request-message-modal" class="btn btn-secondary">
+        Cancel
+      </button>
+      <button data-action="send-connection-with-message" class="btn btn-primary">
+        Send Request
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="find-help-modal" class="modal-overlay hidden">
+  <div class="fullpage-modal">
+    <!-- Header -->
+    <div class="fullpage-modal-header">
+      <button data-action="close-modal" data-modal-id="find-help-modal" class="back-btn">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+      </button>
+      <h3>Find Study Help</h3>
+      <!-- Hidden until user broadcasts a request -->
+      <button
+        id="view-my-request-btn"
+        data-action="open-modal"
+        data-modal-id="help-volunteers-modal"
+        class="hidden"
+        style="
+          background: none;
+          border: 1.5px solid var(--primary-color);
+          color: var(--primary-color);
+          border-radius: 20px;
+          padding: 5px 12px;
+          font-size: 12px;
+          font-weight: 600;
+          cursor: pointer;
+          white-space: nowrap;
+        "
+      >
+        My Request
+      </button>
+    </div>
+
+    <!-- Search Bar with Inline Button -->
+    <div class="fullpage-search-section">
+      <div class="modern-search-container">
+        <svg class="search-icon-inline" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="11" cy="11" r="8"></circle>
+          <path d="m21 21-4.35-4.35"></path>
+        </svg>
+        <input
+          type="text"
+          id="help-subject-input"
+          class="modern-search-input"
+          placeholder="Search subjects..."
+        />
+        <button id="help-search-btn" data-action="search-help" class="inline-search-btn">
+          Search
+        </button>
+      </div>
+
+      <!-- Quick suggestion chips -->
+      <div class="quick-suggestions">
+        <button data-action="search-subject" class="suggestion-chip" data-subject="Mathematics">
+          <span>📐</span> Math
+        </button>
+        <button data-action="search-subject" class="suggestion-chip" data-subject="Physics">
+          <span>⚛️</span> Physics
+        </button>
+        <button data-action="search-subject" class="suggestion-chip" data-subject="Chemistry">
+          <span>🧪</span> Chemistry
+        </button>
+        <button data-action="search-subject" class="suggestion-chip" data-subject="Programming">
+          <span>💻</span> Coding
+        </button>
+        <button data-action="search-subject" class="suggestion-chip" data-subject="Biology">
+          <span>🧬</span> Biology
+        </button>
+      </div>
+    </div>
+
+    <!-- Results Section -->
+    <div id="find-help-results" class="fullpage-results-section">
+      <div class="fullpage-empty-state">
+        <div class="empty-icon-modern">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+            <path d="M11 8v6"></path>
+            <path d="M8 11h6"></path>
+          </svg>
+        </div>
+        <h4>Find Your Study Partner</h4>
+        <p>Search for a subject to discover students who can help you master it</p>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="help-volunteers-modal" class="modal-overlay hidden">
+  <div class="fullpage-modal">
+
+    <!-- Header -->
+    <div class="fullpage-modal-header">
+      <button data-action="close-modal" data-modal-id="help-volunteers-modal" class="back-btn">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+      </button>
+      <h3>My Help Request</h3>
+      <button
+        data-action="close-help-request"
+        style="
+          background: none;
+          border: 1.5px solid #ef4444;
+          color: #ef4444;
+          border-radius: 20px;
+          padding: 5px 12px;
+          font-size: 12px;
+          font-weight: 600;
+          cursor: pointer;
+        "
+      >
+        Close Request
+      </button>
+    </div>
+
+    <!-- Request Summary -->
+    <div style="padding: 16px 16px 0;">
+      <div style="
+        background: var(--bg-secondary, #f8f8f8);
+        border-radius: 12px;
+        padding: 14px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      ">
+        <div>
+          <p style="margin: 0 0 2px 0; font-size: 11px; opacity: 0.5; text-transform: uppercase; letter-spacing: 0.5px;">Subject</p>
+          <p id="volunteers-modal-subject" style="margin: 0; font-weight: 700; font-size: 16px;">—</p>
+        </div>
+        <div style="text-align: right;">
+          <p style="margin: 0 0 2px 0; font-size: 11px; opacity: 0.5; text-transform: uppercase; letter-spacing: 0.5px;">Expires in</p>
+          <p id="volunteers-modal-expiry" style="margin: 0; font-weight: 600; font-size: 14px; color: var(--primary-color);">—</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Volunteer Count -->
+    <div style="padding: 16px 16px 8px; display: flex; align-items: center; justify-content: space-between;">
+      <p style="margin: 0; font-weight: 600; font-size: 15px;">
+        Volunteers
+        <span
+          id="volunteers-modal-count"
+          style="
+            background: var(--primary-color);
+            color: white;
+            border-radius: 20px;
+            padding: 1px 8px;
+            font-size: 12px;
+            margin-left: 6px;
+          "
+        >0</span>
+      </p>
+    </div>
+
+    <!-- Volunteer List -->
+    <div id="volunteers-modal-list" class="fullpage-results-section" style="padding: 0 16px 24px;">
+
+      <!-- Empty state — shown when no one has volunteered yet -->
+      <div id="volunteers-empty-state" style="text-align: center; padding: 40px 20px;">
+        <div style="font-size: 40px; margin-bottom: 12px;">⏳</div>
+        <p style="font-weight: 500; margin: 0 0 4px 0;">Waiting for volunteers</p>
+        <p style="font-size: 13px; opacity: 0.5; margin: 0;">
+          Your connections have been notified. They'll appear here when they volunteer.
+        </p>
+      </div>
+
+      <!-- Volunteer cards injected here by appendVolunteerCard() -->
+
+    </div>
+  </div>
+</div>
+
+    
+          <!-- Connected User Actions Modal -->
+          <div id="userActionsModal" class="modal-overlay hidden">
+            <div class="modal user-actions-modal">
+              <div class="modal-header">
+                <h3 class="modal-title">Connection Actions</h3>
+                <button data-action='close-modal' data-modal-id='userActionsModal' class="modal-close">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </button>
+              </div>
+              
+              <div class="modal-body">
+                <!-- User Info Section -->
+                <div class="user-actions-header">
+                  <img src="" alt="User Avatar" class="user-actions-avatar" id="modalUserAvatar">
+                  <div class="user-actions-info">
+                    <h4 class="user-actions-name" id="modalUserName"></h4>
+                    <p class="user-actions-username" id="modalUserUsername"></p>
+                  </div>
+                </div>
+
+                <!-- Actions Grid -->
+                <div class="user-actions-grid" id="modalActionsContainer">
+                  <!-- Actions will be inserted here by JavaScript -->
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Reschedule Study Session Modal -->
+<div id="reschedule-study-session-modal" class="study-session-modal-container hidden">
+  <div class="study-session-modal-content reschedule-study-session-content">
+    <div class="study-session-modal-header">
+      <h3>🔄 Reschedule Study Session</h3>
+      <button data-modal-id='reschedule-study-session-modal' class="study-session-modal-close-btn" data-action="close-modal">&times;</button>
+    </div>
+    <div class="study-session-modal-body">
+      <!-- Session Info Summary -->
+      <div class="reschedule-session-info">
+        <h4 id="reschedule-session-title"></h4>
+        <p class="reschedule-session-subject" id="reschedule-session-subject"></p>
+        <p class="reschedule-session-partner" id="reschedule-session-partner"></p>
+      </div>
+
+      <!-- Current Time Display -->
+      <div class="reschedule-current-time" id="reschedule-current-time-container">
+        <strong>Current Scheduled Time:</strong>
+        <p id="reschedule-current-time"></p>
+      </div>
+
+      <!-- Form Fields -->
+      <div class="reschedule-form-group">
+        <label for="reschedule-title">Session Title</label>
+        <input 
+          type="text" 
+          id="reschedule-title" 
+          class="reschedule-input"
+          placeholder="e.g., Calculus Study Session"
+          data-field="title"
+        />
+      </div>
+
+      <div class="reschedule-form-group">
+        <label for="reschedule-subject">Subject</label>
+        <input 
+          type="text" 
+          id="reschedule-subject" 
+          class="reschedule-input"
+          placeholder="e.g., Mathematics"
+          data-field="subject"
+        />
+      </div>
+
+      <div class="reschedule-form-group">
+        <label for="reschedule-description">Description</label>
+        <textarea 
+          id="reschedule-description" 
+          class="reschedule-textarea"
+          placeholder="What will you study?"
+          rows="3"
+          data-field="description"
+        ></textarea>
+      </div>
+
+      <div class="reschedule-form-group">
+        <label for="reschedule-duration">Duration (minutes)</label>
+        <select id="reschedule-duration" class="reschedule-select" data-field="duration_minutes">
+          <option value="30">30 minutes</option>
+          <option value="45">45 minutes</option>
+          <option value="60">1 hour</option>
+          <option value="90">1.5 hours</option>
+          <option value="120">2 hours</option>
+          <option value="180">3 hours</option>
+        </select>
+      </div>
+
+      <div class="reschedule-form-group">
+        <label for="reschedule-notes">Your Notes</label>
+        <textarea 
+          id="reschedule-notes" 
+          class="reschedule-textarea"
+          placeholder="Any additional notes or requirements"
+          rows="2"
+          data-field="requester_notes"
+        ></textarea>
+      </div>
+      <div class="reschedule-resources-section">
+  <h4 class="resources-section-title">📎 Session Resources</h4>
+  
+  <!-- Receiver Resources (Read-only for requester) -->
+  <div class="resource-group">
+    <label class="resource-group-label">Their Resources</label>
+    <div class="reschedule-session-resource-container receiver" id="reschedule-receiver-resources">
+      <!-- Receiver resources will be populated here -->
+    </div>
+  </div>
+  
+  <!-- Requester Resources (Editable for requester) -->
+  <div class="resource-group">
+    <label class="resource-group-label">Your Resources</label>
+    <div class="reschedule-session-resource-container requester" id="reschedule-requester-resources">
+      <!-- Requester resources will be populated here -->
+    </div>
+    
+    <!-- Upload Button (only shown for requester's own resources) -->
+    <button 
+      type="button" 
+      class="btn-upload-resource" 
+      data-action="upload-reschedule-study-session-resource"
+      style="margin-top: 0.5rem;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+        <polyline points="17 8 12 3 7 8"></polyline>
+        <line x1="12" y1="3" x2="12" y2="15"></line>
+      </svg>
+      Add Resource
+    </button>
+  </div>
+</div>
+<!-- Hidden file input for reschedule uploads -->
+<input type="file" id="reschedule-session-upload-input" accept="image/*,video/*,.pdf,.doc,.docx" multiple hidden>
+
+      <!-- Proposed Times -->
+      <div class="reschedule-form-group">
+        <label>Propose New Times</label>
+        <p class="reschedule-help-text">Add at least one proposed time for the session</p>
+        <div id="reschedule-proposed-times-container">
+          <!-- Dynamic time inputs will be added here -->
+        </div>
+        <button 
+          type="button" 
+          class="reschedule-add-time-btn" 
+          data-action="add-reschedule-time-slot">
+          ➕ Add Time Slot
+        </button>
+      </div>
+    
+      <div id='reschedule-session-resource-preview-container'></div>
+              
+
+    
+    
+  
+    <div class="study-session-modal-footer">
+      <button data-modal-id='reschedule-study-session-modal' class="btn btn-secondary" data-action="close-modal">Cancel</button>
+      <button class="btn btn-primary" data-action="submit-reschedule-study-session">
+        🔄 Reschedule Session
+      </button>
+    </div>
+  </div>
+</div>
+</div>
+          <!-- Study Session Resource Preview Modal -->
+<div id="study-session-resource-preview-modal" class="study-session-modal-container hidden">
+  <div class="study-session-modal-content study-session-resource-preview-content">
+    <div class="study-session-modal-header">
+      <h3 id="study-session-resource-preview-title">Resource Preview</h3>
+      <button data-modal-id='study-session-resource-preview-modal' class="study-session-modal-close-btn" data-action='close-study-session-resource-modal'>&times;</button>
+    </div>
+    <div class="study-session-modal-body study-session-resource-preview-body">
+      <div id="study-session-resource-preview-container"></div>
+    </div>
+    <div class="study-session-modal-footer">
+      <!-- Simple Download Button -->
+      <button data-url='' data-action='download-resource' id="study-session-resource-download-btn" class="btn btn-primary">
+        📥 Download
+      </button>
+      <buttondata-modal-id='study-session-resource-preview-modal'  class="btn btn-secondary" data-action='close-study-session-resource-modal'>Close</button>
+    </div>
+  </div>
+</div>
+          <!-- Decline Session Modal -->
+<div id="decline-session-reason-modal" class="decline-modal-container hidden">
+  <div class="decline-modal-content">
+    <div class="decline-modal-header">
+      <h3>Decline Study Session</h3>
+      <button data-modal-id='decline-session-reason-modal' class="decline-modal-close-btn" data-action="close-modal">&times;</button>
+    </div>
+    <div class="decline-modal-body">
+      <label for="decline-reason">Please provide a reason for declining(optional):</label>
+      <input 
+        type="text" 
+        id="decline-reason" 
+        placeholder="Enter your reason..."
+        data-field="decline-reason"
+      />
+    </div>
+    <div class="decline-modal-footer">
+      <button data-modal-id='decline-session-reason-modal' class="decline-modal-btn-cancel" data-action="close-modal">Cancel</button>
+      <button class="decline-modal-btn-submit" data-action="submit-decline-session-reason">Decline Session</button>
+    </div>
+  </div>
+</div>
+<div id="cancel-session-reason-modal" class="cancel-modal-container hidden">
+  <div class="cancel-modal-content">
+    <div class="cancel-modal-header">
+      <h3>Cancel Study Session</h3>
+      <button data-modal-id='cancel-session-reason-modal' class="cancel-modal-close-btn" data-action="close-modal">&times;</button>
+    </div>
+    <div class="cancel-modal-body">
+      <label for="cancel-reason">Please provide a reason for canceling (optional):</label>
+      <input 
+        type="text" 
+        id="cancel-reason" 
+        placeholder="Enter your reason..."
+        data-field="cancel-reason"
+      />
+    </div>
+    <div class="cancel-modal-footer">
+      <button data-modal-id='cancel-session-reason-modal' class="cancel-modal-btn-cancel" data-action="close-modal">Cancel</button>
+      <button class="cancel-modal-btn-submit" data-action="submit-cancel-session-reason">Cancel Session</button>
+    </div>
+  </div>
+</div>
+
+
+          
+    <!-- VIEW STUDY SESSIONS MODAL -->
+    <div class="modal-overlay hidden" id="viewSessionsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>📅 Study Sessions</h2>
+                <button class="modal-close" data-action="close-modal" data-modal-id="viewSessionsModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Filters -->
+                <div class="filters-bar">
+                    <button class="filter-chip active" data-action="filter-sessions" data-filter="all">All</button>
+                    <button class="filter-chip" data-action="filter-sessions" data-filter="pending">Pending</button>
+                    <button class="filter-chip" data-action="filter-sessions" data-filter="confirmed">Confirmed</button>
+                    <button class="filter-chip" data-action="filter-sessions" data-filter="completed">Completed</button>
+                    <button class="filter-chip" data-action="filter-sessions" data-filter="rescheduled">Rescheduled</button>
+                    <button class="filter-chip" data-action="filter-sessions" data-filter="declined">Declined</button>
+                </div>
+
+                <!-- Sessions List -->
+                <div class="sessions-list" id="sessionsList">
+                    <!-- Sessions will be rendered here using renderStudySession() -->
+                </div>
+            </div>
+        </div>
+    </div>
+          <div class="modal-overlay hidden" id="create-study-session-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>📚 Schedule Study Session</h2>
+                <button data-modal-id='create-study-session-modal' class="modal-close" data-action="close-modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label required">Session Title</label>
+                    <input 
+                        type="text" 
+                        class="form-input" 
+                        id="sessionTitle"
+                        placeholder="e.g., Calculus Study Session"
+                        maxlength="100"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Subject</label>
+                    <input 
+                        type="text" 
+                        class="form-input" 
+                        id="sessionSubject"
+                        placeholder="e.g., Mathematics, Physics, Chemistry"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea 
+                        class="form-textarea" 
+                        id="sessionDescription"
+                        placeholder="What topics do you want to cover?"
+                    ></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Duration (minutes)</label>
+                    <select class="form-select" id="sessionDuration">
+                        <option value="30">30 minutes</option>
+                        <option value="45">45 minutes</option>
+                        <option value="60" selected>1 hour</option>
+                        <option value="90">1.5 hours</option>
+                        <option value="120">2 hours</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">Propose Time Slots</label>
+                    <div class="time-slots-container" id="timeSlotsContainer">
+                        <div class="time-slot">
+                            <input type="datetime-local" class="form-input time-slot-input">
+                            <button class="btn-remove-time" data-action="remove-time-slot" style="visibility: hidden;">Remove</button>
+                        </div>
+                    </div>
+                    <button class="btn-add-time" data-action="add-time-slot">
+                        <span>+</span> Add Another Time Option
+                    </button>
+                    <p class="form-hint">Suggest 2-3 time options for your study partner to choose from</p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Additional Notes</label>
+                    <textarea 
+                        class="form-textarea" 
+                        id="sessionNotes"
+                        placeholder="Any special requirements or topics to prepare?"
+                    ></textarea>
+                </div>
+                <button 
+      type="button" 
+      class="btn-upload-resource" 
+      data-action='upload-create-study-session-resource'
+      style="margin-top: 0.5rem;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+        <polyline points="17 8 12 3 7 8"></polyline>
+        <line x1="12" y1="3" x2="12" y2="15"></line>
+      </svg>
+      Add Resource
+    </button>
+              
+                <input type='file' class='hidden' id='create-session-upload-input'>
+                
+            </div>
+            <div id='create-session-resource-preview-container'>
+              
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-action="close-modal" data-modal-id='create-study-session-modal'>Cancel</button>
+                <button class="btn btn-primary" data-action="submit-create-session" id="createSessionBtn">Send Request</button>
+            </div>
+        </div>
+    </div>
+    <div id="sessionDetailsModal" class="modal hidden">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Study Session Details</h2>
+      <span class='close' data-action='close-modal' data-modal-id='sessionDetailsModal'>&times;</span>
+    </div>
+    
+    <div class="modal-body">
+      <!-- Title -->
+      <div class="form-group">
+        <label>Title</label>
+        <div class="editable-field" id="modal-session-title" contenteditable="true">
+          Study Session
+        </div>
+      </div>
+      
+      <!-- Subject -->
+      <div class="form-group">
+        <label>Subject</label>
+        <div class="editable-field" id="modal-session-subject" contenteditable="true">
+          General
+        </div>
+      </div>
+      
+      <!-- Description -->
+      <div class="form-group">
+        <label>Description</label>
+        <div class="editable-field" id="modal-session-description" contenteditable="true">
+          No description
+        </div>
+      </div>
+      
+      <!-- Duration -->
+      <div class="form-group">
+        <label>Duration (minutes)</label>
+        <input type="number" id="modal-session-duration" min="15" max="240" step="15" value="30">
+      </div>
+      
+      <!-- Proposed Times -->
+      <div class="form-group">
+        <label>Proposed Times</label>
+        <div id="modal-proposed-times" class="proposed-times-container">
+          <!-- Times will be populated here -->
+        </div>
+      </div>
+      
+      <!-- Notes -->
+      <div class="form-group">
+        <label>Notes</label>
+        <textarea id="modal-session-notes" rows="4" placeholder="Add any notes or special instructions..."></textarea>
+      </div>
+    </div>
+    
+    <div class="modal-footer">
+      <button class="btn btn-secondary" data-action='close-modal' data-modal-id='sessionDetailsModal'>Cancel</button>
+      <button class="btn btn-primary" data-action='save-session-changes'>Save Changes</button>
+    </div>
+  </div>
+</div>
+            
+            <div class="inline-post-refine hidden" id="inline-post-refine-modal">
+                <div class="modal">
+                    <!-- Content will be populated by JavaScript -->
+                </div>
+            </div>
+                                <!-- AVATAR VIEWER MODAL -->
+                    <!-- Avatar Modal - WhatsApp Style -->
+                    <div class="avatar-modal-overlay hidden" id="connection-avatar-modal" data-action="close-modal" data-modal-id="connection-avatar-modal">
+                        <div class="avatar-modal-content">
+                            <button class="avatar-modal-close" data-action="close-modal" data-modal-id="connection-avatar-modal">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                            <div class="avatar-modal-image-container">
+                                <img src="" alt="User Avatar" class="avatar-modal-image">
+                            </div>
+                        </div>
+                    </div>
+
+            <!-- ==================== CREATE MODAL ==================== -->
+            <div class="modal-overlay hidden" id="create-modal">
+                <div class="modal">
+                    <div class="modal-header">
+                        <h2 class="modal-title">Create</h2>
+                        <button data-action="close-modal" data-modal-id="create-modal" class="modal-close">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- CREATE MODAL OPTIONS -->
+                        <div class="create-options">
+                            <div class="create-option" 
+                                 data-action="open-modal"
+                                 data-modal-id="create-post-modal" 
+                                 data-close-modal="create-modal">
+                                <div class="create-option-icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                        <polyline points="14 2 14 8 20 8"></polyline>
+                                    </svg>
+                                </div>
+                                <div class="create-option-content">
+                                    <h3>Create Post</h3>
+                                    <p>Share your thoughts, questions, or resources with the community</p>
+                                </div>
+                            </div>
+
+                            <div class="create-option" 
+                                 data-action="open-modal"
+                                 data-modal-id="create-thread-modal" 
+                                 data-close-modal="create-modal">
+                                <div class="create-option-icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                    </svg>
+                                </div>
+                                <div class="create-option-content">
+                                    <h3>Start Thread</h3>
+                                    <p>Begin a focused discussion on a specific topic</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== CREATE POST MODAL ==================== -->
+            <div class="modal-overlay hidden" id="create-post-modal">
+                <div class="modal">
+                    <div class="modal-header">
+                        <h2 class="modal-title">Create Post</h2>
+                        <button class="modal-close" data-action="close-modal" data-modal-id="create-post-modal">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="create-post-form" data-action="submit-create-post">
+                            <div class="form-group">
+                                <label class="form-label">Title (optional)</label>
+                                <input type="text" class="form-input" id="post-title" placeholder="Give your post a title...">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">What's on your mind?</label>
+                                <textarea class="form-textarea" id="post-content" placeholder="Share your thoughts, ask questions, or share resources..." required></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Post Type</label>
+                                <select class="post-select" id="post-type">
+                                    <option value="question" class="post-type">Question</option>
+                                    <option value="problem" class="post-type">Problem</option>
+                                    <option value="discussion" class="post-type">Discussion</option>
+                                    <option value="resource" class="post-type">Resource</option>
+                                    <option value="announcement" class="post-type">Announcement</option>
+                                </select>
+                            </div>
+
+                            <!-- Tags Section -->
+                            <div class="form-group">
+                                <label class="form-label">Tags (optional)</label>
+                                <div class="tags-container">
+                                    <div class="tags-input-wrapper">
+                                        <div class="selected-post-tags" id="selected-post-tags">
+                                            <!-- Selected tags will appear here dynamically -->
+                                        </div>
+                                        <input 
+                                            type="text" 
+                                            class="post-tags-input" 
+                                            id="post-tags-input" 
+                                            placeholder="Search or add tags..."
+                                            autocomplete="off"
+                                        >
+                                    </div>
+                                    <div class="tags-dropdown hidden" id="post-tags-dropdown">
+                                        <!-- Suggested tags will appear here dynamically -->
+                                    </div>
+                                </div>
+                                <small class="form-hint">Add up to 5 tags to help others find your post</small>
+                            </div>
+
+                            <div class="upload-div" id="upload-div" data-action="open-modal" data-modal-id="uploads-modal">
+                                <span>📎</span> Add media
+                            </div>
+                            <div id="post-medias-preview-container" class="preview-container"></div>
+                            
+                            <!-- Uploads Modal -->
+                            <div class="modal-overlay hidden" id="uploads-modal">
+                                <div class="modal" style="max-width: 400px;">
+                                    <div class="modal-header">
+                                        <h2 class="modal-title">Add Media</h2>
+                                        <button class="modal-close" data-action="close-modal" data-modal-id="uploads-modal">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="create-options">
+                                            <div class="create-option" data-action="trigger-file-input" data-input-id="input-image" data-close-modal="uploads-modal">
+                                                <div class="create-option-icon">🖼️</div>
+                                                <div class="create-option-content">
+                                                    <h3>Upload Images</h3>
+                                                    <p>JPG, PNG, GIF up to 5MB</p>
+                                                </div>
+                                            </div>
+
+                                            <div class="create-option" data-action="trigger-file-input" data-input-id="input-video" data-close-modal="uploads-modal">
+                                                <div class="create-option-icon">🎥</div>
+                                                <div class="create-option-content">
+                                                    <h3>Upload Video</h3>
+                                                    <p>MP4, MOV up to 50MB</p>
+                                                </div>
+                                            </div>
+
+                                            <div class="create-option" data-action="trigger-file-input" data-input-id="input-file" data-close-modal="uploads-modal">
+                                                <div class="create-option-icon">📄</div>
+                                                <div class="create-option-content">
+                                                    <h3>Upload Files</h3>
+                                                    <p>PDF, DOC, TXT, CSV</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Thread Toggle -->
+                            <div class="form-group thread-toggle-group">
+                                <label class="toggle-label">
+                                    <input type="checkbox" id="thread-toggle" data-action="toggle-thread-settings">
+                                    <span class="toggle-text">Form Thread</span>
+                                </label>
+                            </div>
+
+                            <!-- Thread Settings Modal/Section -->
+                            <div class="thread-settings hidden" id="create-post-thread-details-modal">
+                                <h3 class="thread-settings-title">Thread Settings</h3>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">Thread Title</label>
+                                    <input 
+                                        type="text" 
+                                        class="form-input" 
+                                        id="thread-title" 
+                                        placeholder="Enter thread title..."
+                                    >
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Thread Description</label>
+                                    <textarea 
+                                        class="form-textarea thread-description" 
+                                        id="thread-description" 
+                                        placeholder="Describe what this thread is about..."
+                                    ></textarea>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Maximum Members</label>
+                                    <input 
+                                        type="number" 
+                                        class="form-input" 
+                                        id="thread-max-members" 
+                                        placeholder="Leave empty for unlimited"
+                                        min="2"
+                                    >
+                                    <small class="form-hint">Minimum 2 members required</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="toggle-label">
+                                        <input type="checkbox" id="thread-approval-toggle">
+                                        <span class="toggle-text">Require approval to join</span>
+                                    </label>
+                                    <small class="form-hint">You'll need to approve each member before they can join</small>
+                                </div>
+                            </div>
+                        <div class="form-actions">
+                                <button type="button" class="btn btn-outline" data-action="refine-before-post" data-context="create">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="5"></circle>
+                                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                                    </svg>
+                                    Refine with AI
+                                </button>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-secondary" data-action="close-modal" data-modal-id="create-post-modal">Cancel</button>
+                                <button type="submit" class="btn btn-primary">Post</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Hidden file inputs -->
+                    <input type="file" class='input-file' id="input-image" accept="image/*" multiple style="display: none;">
+                    <input type="file" class='input-file' id="input-video" accept="video/*" style="display: none;">
+                    <input type="file" class='input-file' id="input-file" accept="*/*" multiple style="display: none;">
+                </div>
+            </div>
+
+          <!-- ==================== CREATE THREAD MODAL ==================== -->
+            <div class="modal-overlay hidden" id="create-thread-modal">
+                <div class="modal">
+                    <div class="modal-header">
+                        <h2 class="modal-title">Start Thread</h2>
+                        <button class="modal-close" data-action="close-modal" data-modal-id="create-thread-modal">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="modal-body">  
+                        <form id="create-thread-form" data-action="submit-create-thread">  
+
+                            <!-- Thread Avatar -->  
+                            <div class="form-group thread-avatar-group">  
+                                <label class="form-label">Thread Avatar</label>  
+
+                                <div class="avatar-upload" style="display: flex; align-items: center; gap: 12px;">  
+                                    <input   
+                                        type="file"  
+                                        id="thread-avatar-input"  
+                                        accept="image/*"  
+                                        hidden  
+                                    >  
+
+                                    <!-- Avatar Image -->  
+                                    <img  
+                                        class="thread-avatar"  
+                                        id="thread-avatar"  
+                                        src=""  
+                                        alt="Add Image"  
+                                        data-action="trigger-file-input"
+                                        data-input-id="thread-avatar-input"
+                                    >  
+
+                                    <!-- Upload Button -->  
+                                    <button
+                                        type="button"
+                                        class="btn btn-outline"
+                                        data-action="trigger-file-input"
+                                        data-input-id="thread-avatar-input"
+                                    >
+                                        Upload Image
+                                    </button>  
+                                </div>  
+
+                                <small class="form-hint">  
+                                    Optional · JPG, PNG, or WebP · Max 2MB  
+                                </small>  
+                            </div>  
+
+                            <!-- Thread Topic -->  
+                            <div class="form-group">  
+                                <label class="form-label">Thread Topic</label>  
+                                <input   
+                                    type="text"   
+                                    class="form-input"   
+                                    id="thread-title-input"  
+                                    placeholder="What do you want to discuss?"   
+                                    required>  
+                            </div>  
+
+                            <!-- Description -->  
+                            <div class="form-group">  
+                                <label class="form-label">Description</label>  
+                                <textarea   
+                                    class="form-textarea"   
+                                    id="thread-description-input"  
+                                    placeholder="Provide more details about this discussion..."   
+                                    required></textarea>  
+                            </div>  
+
+                            <!-- Tags Search -->  
+                            <div class="form-group">  
+                                <label class="form-label">Tags</label>  
+                                <input   
+                                    type="text"   
+                                    class="form-input"  
+                                    id="thread-tag-input"  
+                                    placeholder="Search tags...">  
+
+                                <div class="tag-dropdown hidden" id="thread-tags-dropdown"></div>  
+                                <div class="tag-preview" id="thread-selected-tags"></div>  
+                            </div>  
+
+                            <!-- Max Members -->  
+                            <div class="form-group">  
+                                <label class="form-label">Maximum Members</label>  
+                                <input   
+                                    type="number"   
+                                    class="form-input"  
+                                    id="thread-maximum-members"  
+                                    placeholder="Leave empty for unlimited"   
+                                    min="2">  
+                                <small class="form-hint">Minimum of 2 members required</small>  
+                            </div>  
+
+                            <!-- Approval Toggle -->  
+                            <div class="form-group">  
+                                <label class="toggle-label">  
+                                    <input type="checkbox" id="thread-require-approval">  
+                                    <span class="toggle-text">Require approval to join</span>  
+                                </label>  
+                                <small class="form-hint">  
+                                    You'll need to approve each member before they can join  
+                                </small>  
+                            </div>  
+
+                            <!-- Buttons -->  
+                            <div class="form-actions">  
+                                <button type="button" class="btn btn-secondary" data-action="close-modal" data-modal-id="create-thread-modal">  
+                                    Cancel  
+                                </button>  
+
+                                <button data-action='submit-create-thread' class="btn btn-primary">  
+                                    Create  
+                                </button>  
+                            </div>  
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== POST FORK MODAL ==================== -->
+            <div class="modal-overlay hidden" id="post-fork-modal">
+                <div class="modal">
+                    <div class="modal-header">
+                        <h2 class="modal-title">Fork Post</h2>
+                        <button class="modal-close" data-action="close-modal" data-modal-id="post-fork-modal">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form data-action="submit-fork-post">
+                            <div class="form-group">
+                                <label class="form-label">Title</label>
+                                <input type="text" class="form-input post-title" placeholder="Post title..." required>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Content</label>
+                                <textarea class="form-textarea post-content" rows="6" placeholder="Post content..." required></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Post Type</label>
+                                <select class="form-input post-type-selection">
+                                    <option value="problem">Problem</option>
+                                    <option value="question">Question</option>
+                                    <option value="discussion">Discussion</option>
+                                    <option value="resource">Resource</option>
+                                    <option value="announcement">Announcement</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="toggle-label">
+                                    <input type="checkbox" class="thread-enabled">
+                                    <span>Enable Thread</span>
+                                </label>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Tags (optional)</label>
+                                <div class="tags-container">
+                                    <div class="tags-input-wrapper">
+                                        <div class="selected-fork-tags" id="selected-fork-tags"></div>
+                                        <input 
+                                            type="text" 
+                                            class="tags-input" 
+                                            id="fork-tags-input" 
+                                            placeholder="Search or add tags..."
+                                            autocomplete="off"
+                                        >
+                                    </div>
+                                    <div class="tags-dropdown hidden" id="fork-tags-dropdown"></div>
+                                </div>
+                                <small class="form-hint">Add up to 5 tags</small>
+                            </div>
+                            
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-outline" data-action="refine-before-post" data-context="fork">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="5"></circle>
+                                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                                    </svg>
+                                    Refine with AI
+                                </button>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-secondary" data-action="close-modal" data-modal-id="post-fork-modal">Cancel</button>
+                                <button type="submit" class="btn btn-primary save-post">Fork Post</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== REACTION MENU ==================== -->
+            <div id="reactionMenu" class="reaction-menu hidden">
+                <span data-action="select-reaction" data-reaction="like">👍</span>
+                <span data-action="select-reaction" data-reaction="love">❤️</span>
+                <span data-action="select-reaction" data-reaction="helpful">💡</span>
+                <span data-action="select-reaction" data-reaction="fire">🔥</span>
+                <span data-action="select-reaction" data-reaction="wow">🤯</span>
+                <span data-action="select-reaction" data-reaction="laugh">😂</span>
+            </div>
+                        <!-- ==================== POST REFINE MODAL ==================== -->
+            <div class="post-refine hidden" id="post-refine-modal">
+                <div class="modal">
+                    <!-- Content will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- ==================== POST COMMENTS MODAL ==================== -->
+            <div class="modal-overlay hidden" id="post-comments-modal">
+                <div class="modal" style="max-width: 800px; max-height: 90vh; display: flex; flex-direction: column;">
+
+                    <!-- Header -->
+                    <div class="modal-header" style="display: flex; align-items: center; gap: 0.75rem; padding: 1rem 1.5rem;">
+                        <!-- Title -->
+                        <h2 class="modal-title" style="flex: 1; text-align: center; margin: 0;">
+                            Comments
+                        </h2>
+
+                        <!-- Close Button -->
+                        <button class="modal-close" id="close-comments-btn"
+                                data-action="close-modal"
+                                data-modal-id="post-comments-modal"
+                                aria-label="Close"
+                                style="background: none; border: none; cursor: pointer;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                 stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Body -->
+                    <div class="modal-body"
+                         id="comments-container"
+                         style="flex: 1; overflow-y: auto; padding: 1rem 1.5rem;">
+                        <!-- Comments populated by JavaScript -->
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="modal-footer"
+                         style="border-top: 1px solid var(--border);
+                                padding: 1rem 1.5rem;
+                                background: var(--bg-primary);">
+
+                        <div class="comment-box">
+                            <textarea id="commentInput"
+                                      class="form-textarea"
+                                      placeholder="Write a comment..."
+                                      rows="3"
+                                      style="width: 100%; resize: vertical; min-height: 60px;">
+                            </textarea>
+
+                            <div class="comment-actions"
+                                 style="display: flex; gap: 0.5rem;
+                                        margin-top: 0.75rem; align-items: center;">
+
+                                <!-- Image -->
+                                <label class="upload-btn">
+                                    <input type="file" id="comment-image-input" accept="image/*" hidden>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                         stroke="currentColor" stroke-width="2">
+                                        <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                        <polyline points="21 15 16 10 5 21"></polyline>
+                                    </svg>
+                                    Image
+                                </label>
+
+                                <!-- Video -->
+                                <label class="upload-btn">
+                                    <input type="file" id="comment-video-input" accept="video/*" hidden>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                         stroke="currentColor" stroke-width="2">
+                                        <rect x="2" y="6" width="15" height="12" rx="2"></rect>
+                                        <polygon points="17 8 22 12 17 16 17 8"></polygon>
+                                    </svg>
+                                    Video
+                                </label>
+
+                                <!-- Document -->
+                                <label class="upload-btn">
+                                    <input type="file" id="comment-doc-input" accept=".pdf,.doc,.docx,.txt" hidden>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                         stroke="currentColor" stroke-width="2">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                        <polyline points="14 2 14 8 20 8"></polyline>
+                                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                                    </svg>
+                                    Document
+                                </label>
+
+                                <button data-action="post-comment"
+                                        id="postCommentBtn"
+                                        class="btn btn-primary"
+                                        style="margin-left: auto;">
+                                    Post Comment
+                                </button>
+                            </div>
+
+                            <div id="post-comments-preview-area" class="comment-medias-preview"
+                                 style="margin-top: 0.75rem;
+                                        display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+          <!-- ==================== THREAD VIEW MODAL ==================== -->
+            <div class="modal-overlay hidden" id="thread-view-modal">
+                <div class="modal" style="max-width: 700px;">
+                    <div class="modal-header">
+                        <h2 class="modal-title">Thread Details</h2>
+                        <button class="modal-close" data-action="close-modal" data-modal-id="thread-view-modal">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="modal-body" id="thread-details-content">
+                        <!-- Content populated by renderThreadDetails() -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== RESOURCE VIEWER MODAL ==================== -->
+            <div class="resource-viewer hidden" id="resource-viewer-modal">
+                <!-- Content populated by JavaScript -->
+            </div>
+
+            <!-- ==================== POST REPORT MODAL ==================== -->
+            <div class="modal-overlay hidden" id="post-report-modal">
+                <div class="modal">
+                    <div class="modal-header">
+                        <div class="modal-header-content">
+                            <div class="modal-icon">🚩</div>
+                            <h2 class="modal-title">Report Post</h2>
+                        </div>
+                        <button class="modal-close" data-action="close-modal" data-modal-id="post-report-modal">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <form data-action="submit-report-post" id="report-form">
+                        <div class="modal-body">
+                            <p class="form-description">
+                                Help us understand what's wrong with this post. Your report is anonymous and will be reviewed by our moderation team.
+                            </p>
+
+                            <div class="form-group">
+                                <label class="form-label">Select a reason</label>
+                                <div class="radio-group">
+                                    <label class="radio-option">
+                                        <input type="radio" name="reason" value="spam" required>
+                                        <div class="radio-content">
+                                            <div class="radio-label">Spam or misleading</div>
+                                            <div class="radio-description">Repetitive content, scams, or fake information</div>
+                                        </div>
+                                    </label>
+
+                                    <label class="radio-option">
+                                        <input type="radio" name="reason" value="harassment" required>
+                                        <div class="radio-content">
+                                            <div class="radio-label">Harassment or bullying</div>
+                                            <div class="radio-description">Targeted abuse or intimidation</div>
+                                        </div>
+                                    </label>
+
+                                    <label class="radio-option">
+                                        <input type="radio" name="reason" value="inappropriate" required>
+                                        <div class="radio-content">
+                                            <div class="radio-label">Inappropriate content</div>
+                                            <div class="radio-description">Offensive, explicit, or harmful material</div>
+                                        </div>
+                                    </label>
+
+                                    <label class="radio-option">
+                                        <input type="radio" name="reason" value="misinformation" required>
+                                        <div class="radio-content">
+                                            <div class="radio-label">False information</div>
+                                            <div class="radio-description">Deliberately misleading or incorrect facts</div>
+                                        </div>
+                                    </label>
+
+                                    <label class="radio-option">
+                                        <input type="radio" name="reason" value="other" required>
+                                        <div class="radio-content">
+                                            <div class="radio-label">Something else</div>
+                                            <div class="radio-description">Other concerns not listed above</div>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-action="close-modal" data-modal-id="post-report-modal">
+                                Cancel
+                            </button>
+                            <button type="submit" class="btn btn-danger">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                </svg>
+                                Submit Report
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- ==================== TAG POSTS MODAL ==================== -->
+            <div class="posts-modal hidden" id="tag-posts-modal">
+                <div class="modal">
+                    <div class="modal-header">
+                        <h2 class="modal-title" id="tag-modal-title">Tagged Posts</h2>
+                        <button class="modal-close" data-action="close-modal" data-modal-id="tag-posts-modal">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="modal-body" id="tag-posts-container">
+                        <!-- Tag posts will be rendered here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== COMMENT RESOURCE MODALS ==================== -->
+            <div class='modal-overlay' id='comment-resource-download-modal hidden'></div>
+            <div class='resource-modal hidden' id='comment-resource-view-modal'></div>
+            <div class='comment-resources-modal'>
+                <button style='position:fixed' data-action='close-modal' data-modal-id='comment-resources-modal'>X</button>
+            </div>
+
+            <!-- ==================== ADVANCED POST OPTIONS MODAL ==================== -->
+            <div class='modal-overlay hidden' id='advanced-post-options-modal'>
+                <div class="modal">
+                    <button class="modal-close" data-action='close-modal' data-modal-id='advanced-post-options-modal'>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                    <div class='modal-content'></div>
+                </div>
+            </div>
+
+            <!-- ==================== ADVANCED SEARCH MODAL ==================== -->
+            <div id='advanced-search-modal' class="modal-body hidden">
+                <p class="modal-description">
+                    Choose what you'd like to search for. Each search type provides specialized filters and results tailored to your needs.
+                </p>
+
+                <!-- Search Options -->
+                <div class="search-options">
+                    <!-- Search Users -->
+                    <div data-action='choose-search-type' class="search-option" data-search-type="users">
+                        <div class="search-option-icon">👥</div>
+                        <div class="search-option-title">Search Users</div>
+                        <div class="search-option-description">
+                            Find students by name, department, skills, or reputation level
+                        </div>
+                    </div>
+
+                    <!-- Search Threads -->
+                    <div class="search-option" data-search-type="threads" data-action='choose-search-type'>
+                        <div class="search-option-icon">🧵</div>
+                        <div class="search-option-title">Search Threads</div>
+                        <div class="search-option-description">
+                            Find study groups and collaboration threads
+                        </div>
+                    </div>
+
+                    <!-- Search All -->
+                    <div class="search-option" data-search-type="all" onclick="selectSearchType('all')">
+                        <span class="search-option-badge">Popular</span>
+                        <div class="search-option-icon">🌐</div>
+                        <div class="search-option-title">Search All</div>
+                        <div class="search-option-description">
+                            Search across users, posts, and threads simultaneously
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== USER OVERVIEW MODAL ==================== -->
+            <div class="modal-overlay hidden user-overview-modal" id="user-overview-modal">
+                <div class="modal" style="max-width: 800px;">
+                    <div class="modal-header">
+                        <h2 class="modal-title">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 0.5rem;">
+                                <circle cx="12" cy="12" r="3"></circle>
+                                <path d="M12 1v6m0 6v6"></path>
+                                <path d="m4.93 4.93 4.24 4.24m5.66 5.66 4.24 4.24"></path>
+                                <path d="M1 12h6m6 0h6"></path>
+                                <path d="m4.93 19.07 4.24-4.24m5.66-5.66 4.24-4.24"></path>
+                            </svg>
+                            Connection Overview
+                        </h2>
+                        <button class="modal-close" data-action="close-modal" data-modal-id="user-overview-modal">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="modal-body">
+                        <!-- Error Container -->
+                        <div id="error-container"></div>
+                        
+                        <!-- Loading Section -->
+                        <div id="loading-section" class="loader" style="text-align: center; padding: 2rem;">
+                            <div class="loader-dots" style="display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 1rem;">
+                                <div class="loader-dot" style="width: 12px; height: 12px; border-radius: 50%; background: var(--primary); animation: pulse 1.5s ease-in-out infinite;"></div>
+                                <div class="loader-dot" style="width: 12px; height: 12px; border-radius: 50%; background: var(--primary); animation: pulse 1.5s ease-in-out 0.2s infinite;"></div>
+                                <div class="loader-dot" style="width: 12px; height: 12px; border-radius: 50%; background: var(--primary); animation: pulse 1.5s ease-in-out 0.4s infinite;"></div>
+                            </div>
+                            <div class="loader-text" style="color: var(--text-secondary);">Loading connection overview...</div>
+                        </div>
+                        
+                         <!-- AI Section (hidden by default) -->
+                        <div id="ai-section" style="display: none;">
+                            <div class="ai-content" style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem;">
+                                <div class="ai-content-header" style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border);">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+                                    </svg>
+                                    <span style="font-weight: 600; color: var(--text-primary);">AI Connection Insights</span>
+                                    <span class="streaming-indicator" id="streaming-indicator" style="margin-left: auto; width: 8px; height: 8px; border-radius: 50%; background: var(--primary); animation: pulse 1s ease-in-out infinite;"></span>
+                                </div>
+                                <div class="ai-text" id="ai-text" style="white-space: pre-wrap; line-height: 1.6; color: var(--text-primary);"></div>
+                            </div>
+                            <div id="success-message"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <!-- END OF GLOBAL MODALS CONTAINER -->
+
+    </div>
+    <!-- END OF APP CONTAINER -->
+
+    <!-- ==================== ERROR HANDLER ==================== -->
+    <script>
+        window.onerror = function (msg, url, line, col, error) {
+            const fileName = url ? url.split('/').pop() : 'unknown file';
+
+            alert(
+                "JS ERROR:\n" +
+                msg +
+                "\nFile: " + fileName +
+                "\nLine: " + line +
+                "\nColumn: " + col
+            );
+
+            return false;
+        };
+    </script>
+
+    <!-- ==================== JAVASCRIPT MODULES ==================== -->
+
+    <!-- Core API Helper -->
+    <script src="{{url_for('static', filename='/js/core/api.js')}}"></script>
+
+    <!-- Resource Viewer (non-module, global) -->
+    <script src="{{url_for('static', filename='/js/resource/resource-viewer.js')}}"></script>
+
+    <!-- Feed Modules - ALL as modules, in dependency order -->
+    <script type="module" src="{{url_for('static', filename='/js/move/feed.constants.js')}}"></script>
+    <script type="module" src="{{url_for('static', filename='/js/move/feed.state.js')}}"></script>
+    <script type="module" src="{{url_for('static', filename='/js/move/feed.utils.js')}}"></script>
+    <script type="module" src="{{url_for('static', filename='/js/move/feed.templates.js')}}"></script>
+    <script type="module" src="{{url_for('static', filename='/js/move/feed.api.js')}}"></script>
+    <script type="module" src="{{url_for('static', filename='/js/move/feed.render.js')}}"></script>
+    <script type="module" src="{{url_for('static', filename='/js/move/feed.widgets.js')}}"></script>
+    <script type="module" src="{{url_for('static', filename='/js/move/feed.modals.js')}}"></script>
+    <script type="module" src="{{url_for('static', filename='/js/move/feed.events.js')}}"></script>
+    <script type="module" src="{{url_for('static', filename='/js/move/feed.init.js')}}"></script>
+
+
+    <!-- CRITICAL: Global delegation MUST load BEFORE feed.init -->
+    <script type="module" src="{{url_for('static', filename='/js/app.unified.js')}}"></script>
+
+<script type="module" src="{{url_for('static', filename='/js/homework/homework.state.js')}}"></script>
+<script type="module" src="{{url_for('static', filename='/js/homework/homework.utils.js')}}"></script>
+<script type="module" src="{{url_for('static', filename='/js/homework/homework.templates.js')}}"></script>
+<script type="module" src="{{url_for('static', filename='/js/homework/homework.api.js')}}"></script>
+<script type="module" src="{{url_for('static', filename='/js/homework/homework.render.js')}}"></script>
+<script type="module" src="{{url_for('static', filename='/js/homework/homework.modals.js')}}"></script>
+<script type="module" src="{{url_for('static', filename='/js/homework/homework.stats.js')}}"></script>
+<script type="module" src="{{url_for('static', filename='/js/homework/homework.quick-actions.js')}}"></script>
+<script type="module" src="{{url_for('static', filename='/js/homework/homework.submission.js')}}"></script>
+<script type="module" src="{{url_for('static', filename='/js/homework/homework.events.js')}}"></script>
+<script type="module" src="{{url_for('static', filename='/js/homework/homework.delegation.js')}}"></script>
+<script type="module" src="{{url_for('static', filename='/js/homework/homework.init.js')}}"></script>
+<script type="module" src="{{url_for('static', filename='/js/activity/activity.js')}}"></script>
+
+<script>
+let currentSection = 'feed';
+
+document.addEventListener('DOMContentLoaded', function() {
+    const hint = document.getElementById('pull-to-refresh-hint');
+    const container = document.getElementById('notifications-list-container');
+    
+    if (hint && container) {
+        let hasScrolled = false;
+        container.addEventListener('scroll', function() {
+            if (!hasScrolled && container.scrollTop > 50) {
+                hasScrolled = true;
+                hint.classList.add('hidden');
+                localStorage.setItem('pull-to-refresh-hint-shown', 'true');
+            }
+        }, { once: true });
+        
+        setTimeout(() => {
+            hint.classList.add('hidden');
+        }, 10000);
+        
+        if (localStorage.getItem('pull-to-refresh-hint-shown') === 'true') {
+            hint.classList.add('hidden');
+        }
+    }
+});
+
+function navigateTo(sectionId, event) {
+    if (event) event.preventDefault();
+    
+    
+    
+    document.querySelectorAll('.section').forEach(section => {
+        section.classList.remove('active');
+    });
+    
+    const targetSection = document.getElementById(sectionId);
+    if (targetSection) {
+        targetSection.classList.add('active');
+        currentSection = sectionId;
+    }
+    
+    document.querySelectorAll('.nav-item, .bottom-nav-item').forEach(item => {
+        item.classList.remove('active');
+        const target = item.dataset.target;
+        if (target === sectionId) {
+            item.classList.add('active');
+        }
+    });
+    
+    closeMobileSidebar();
+}
+
+
+function toggleMobileSidebar(event) {
+    if (event) event.preventDefault();
+    const sidebar = document.getElementById('sections-sidebar');
+    if (sidebar) sidebar.classList.toggle('active');
+}
+
+function closeMobileSidebar() {
+    const sidebar = document.getElementById('sections-sidebar');
+    if (sidebar) sidebar.classList.remove('active');
+}
+
+function logout(event) {
+    if (event) event.preventDefault();
+    if (confirm('Are you sure you want to logout?')) {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+    }
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay.active').forEach(modal => {
+            modal.classList.remove('active');
+            modal.classList.add('hidden');
+        });
+        document.body.style.overflow = '';
+        closeMobileSidebar();
+    }
+
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        const searchInput = document.getElementById('global-search-input');
+        if (searchInput) searchInput.focus();
+    }
+});
+
+document.addEventListener('click', function(e) {
+    const sidebar = document.getElementById('sections-sidebar');
+    const menuBtn = e.target.closest('.mobile-menu-btn');
+    
+    if (sidebar && sidebar.classList.contains('active') && !sidebar.contains(e.target) && !menuBtn) {
+        closeMobileSidebar();
+    }
+});
+
+window.navigateTo = navigateTo;
+window.toggleMobileSidebar = toggleMobileSidebar;
+window.logout = logout;
+</script>
+
+<!--
+    ============================================================================
+    INSTRUCTIONS FOR USE:
+    ============================================================================
+    
+    In your feed.html file:
+    
+    1. Find line 2051 which starts with: <script>
+    
+    2. Delete everything from line 2051 up to and including the closing </script> tag
+       (This should be around line 2120)
+    
+    3. Replace with the ENTIRE content from this file
+    
+    4. Save and test
+    
+    ============================================================================
+    
+    WHAT THIS FIXES:
+    - Corrects indentation issues that caused JavaScript to appear as visible text
+    - Properly formats all functions
+    - Ensures script tag is properly closed
+    - Maintains all existing functionality
+    
+    ============================================================================
+-->
+
+
+</body>
+</html>
+
+
+                        
+      

@@ -1,0 +1,617 @@
+(async function init(){
+  populateFilters();
+  await showUserRank();
+  await setupEventListeners();
+  await loadGlobal();
+})();
+const leaderboardContainer = document.getElementById("leaderboard-container");
+const departmentModal = document.getElementById("department-select");
+const userRankDiv = document.getElementById("user-rank-details");
+const tabsDiv = document.querySelector(".tabs");
+const changesModal = document.getElementById("recent-changes-modal");
+const exportBtn = document.createElement("button");
+const cancelBtn =document.createElement("button");
+exportBtn.textContent = "Export Data";
+exportBtn.classList.add("export-btn");
+cancelBtn.classList.add("cancel-btn");
+cancelBtn.textContent = "Cancel";
+const badgeBtn = document.createElement("button");
+badgeBtn.classList.add("badge-btn");
+badgeBtn.textContent = "Cancel";
+
+function populateFilters(){
+  const DEPARTMENTS = [
+        "My Department",
+        "Architecture", 
+        "Computer Science", 
+        "Engineering (Civil)", 
+        "Engineering (Electrical)",
+        "Engineering (Mechanical)", 
+        "Medicine & Surgery", 
+        "Pharmacy", 
+        "Nursing", 
+        "Law",
+        "Accounting", 
+        "Business Administration", 
+        "Economics", 
+        "Mass Communication", 
+        "English",
+        "History", 
+        "Biology", 
+        "Chemistry", 
+        "Physics", 
+        "Mathematics", 
+        "Statistics",
+        "Psychology", 
+        "Sociology", 
+        "Political Science", 
+        "Agricultural Science",
+        "Fine Arts", 
+        "Music", 
+        "Theatre Arts"
+    ];
+    // Add departments
+    DEPARTMENTS.forEach(department => {
+        const option = document.createElement("option");
+        option.value = department;
+        option.textContent = department;
+        departmentModal.appendChild(option);
+    });
+    
+}
+async function showUserRank(){
+  try{
+    userRankDiv.innerHTML = `<div class="skeleton-loader>
+    <div class="skeleton-loader">`
+    const response = await api.get("/reputation/me");
+    if(response.status == "success"){
+      const data = response.data;
+      if(!data || data.length == 0){
+        userRankDiv.innerHTML = `<h1 class="empty-state">No Rank Data Found</h1>
+        <button class="reload-btn" onclick="showUserRank()">Try again</button>`
+        return;
+      }
+      showUserDetails(data.reputation)
+      showChanges(data.recent_changes);
+    }
+    else{
+      showToast(response.messsage, "error");
+      userRankDiv.innerHTML = `<h1 class="empty-state">Eror loading user rank details</h1>
+        <button class="reload-btn" id="load-user-rank">Try again</button>`
+      
+    }
+  catch(erorr){
+    showToast("Erorr loading user rank details" + error, "error");
+  }
+  
+}
+async function loadDepartment(department){
+  leaderboardContainer.innerHTML =  `<div class="skeleton-wrapper">
+  <div class="skeleton skeleton-avatar"></div>
+  <div class="skeleton skeleton-line w-60"></div>
+  <div class="skeleton skeleton-line w-40"></div>
+</div>`;
+  try{
+     const response = await api.get(`/reputation/leaderboard/department`, {"department": department});
+     if(response.status == "success"){
+       data = response.data;
+       if(!data || data.length == 0){
+         leaderboardContainer.innerHTML = `<div class="empty-state">No Users Found at the moment</div>`;
+         return;
+       }
+       showDepartment(data);
+    }
+    else{
+      showToast(response.message, "error");
+      leaderboardContainer.innerHTML = `<button class="reload-btn" id="reload-department-leaderboard>Try again</button>`;
+    }
+    
+  }
+  catch(error){
+    showToast("Error loading department leaderboard" + error, "error");
+    leaderboardContainer.innerHTML =  = `<div class="empty-state">Error encountred while loading department leaderboard</div>
+      <button class="reload-btn" id="reload-department-leaderboard>Try again</button>`;
+  }
+}
+  
+}
+
+async function loadStats(){
+  leaderboardContainer.innerHTML =  `<div class="skeleton-wrapper">
+  <div class="skeleton skeleton-avatar"></div>
+  <div class="skeleton skeleton-line w-60"></div>
+  <div class="skeleton skeleton-line w-40"></div>
+</div>`;
+  
+  try{
+    const response = await api.get("/reputation/stats");
+    if(response.status == "success"){
+      const data = response.data;
+      if(!data || data.length == 0){
+        leaderboardContainer.innerHTML = `<div class="empty-state">No Stats data Found </div>`;
+        return;
+      }
+      showStats(data);
+    }
+    else{
+      showToast(response.message, "error");
+      leaderboardContainer.innerHTML = `<button class="reload-btn" id="reload-stats-leaderboard>Try again</button>`;
+    }
+  }
+  catch(error){
+    showToast("Error loading stats" + error, "error");
+    leaderboardContainer.innerHTML =  = `<div class="empty-state">Error encountred while loading leaderboard stats</div>
+      <button class="reload-btn" id="reload-stats-leaderboard>Try again</button>`;
+  }
+  finally{
+    await loadRisingStars();
+  }
+}
+
+async function loadRisingStars(){
+  leaderboardContainer.insertAdjacentElement("beforeend", `<div id="skeleton-wrapper" class="skeleton-wrapper">
+  <div class="skeleton skeleton-avatar"></div>
+  <div class="skeleton skeleton-line w-60"></div>
+  <div class="skeleton skeleton-line w-40"></div>
+</div>`);
+  try{
+    const response = await api.get("/reputation/rising-stars");
+    if(response.status == "success"){
+      data = response.data;
+      if(!data || data.length == 0){
+        document.getElementById("skeleton-wrapper")?.innerHTML =`<div class= "empty-state">No Risings Stars Data found</div>`
+        return;
+      }
+      showRisingStars(data);
+    }
+    else{
+      showToast(response.message, "error");
+      document.getElementById("skeleton-wrapper")?.innerHTML = `<button class="reload-btn" id="reload-leaderboard-rising-stars>Try again</button>`;
+    }
+  }
+  catch(error){
+    showToast("Error loading rising stars" + error, "error");
+    leaderboardContainer.insertAdjacentElement("beforeend", `<div class="empty-state">Error encountred while loading rising stars</div>
+      <button class="reload-btn" id="reload-leaderboard-rising-stars>Try again</button>`);
+  }
+}
+
+function showRisingStars(data) {
+  data.rising_stars.forEach(item => {
+    const { user, weekly_gain, is_you,  status,  trend } = item;
+    const card = document.createElement("div");
+    card.classList.add("rising-card");
+    if(is_you) card.classList.add("you");
+    card.innerHTML = `
+            <div class="left">
+                <img src="${user.avatar || '/static/img/default-avatar.png'}" 
+                     class="avatar">
+
+                <div class="info">
+                    <div class="username">${user.username}</div>
+                    <div class="department">${user.department ?? ""}</div>
+                    ${status ?
+                    `<button class="connection-btn-${status} data-type = ${status}>handleStatus(status, this)</button>`:
+                    ${!is_you?
+                    `<button class="connection-btn" data-type="not-connected" data-id=${user.id}>Connect</button>` : ""}
+                    }
+                    <div class="level">
+                        ${user.reputation_level} • ${user.reputation} pts
+                    </div>
+                </div>
+            </div>
+
+            <div class="right">
+                <div class="gain">+${weekly_gain}</div>
+                <div class="trend">${trend}</div>
+            </div>
+        `;
+
+        leaderboardContainer.appendChild(card);
+    });
+}
+
+function showStats(data){
+  leaderboardContainer.innerHTML = "";
+  leaderboardContainer.innerHTML = `<div class="total-students">Total Active Students: ${data.active_students}</div>
+  <div class="average-reputation">${data.average_reputation}</div>
+  <div class="top-department">Top Department:${data.top_department}</div>
+  <h2 class="top-department-point">${data.points}</h2>
+  `
+}
+function showUserDetails(data){
+  userRankDiv.innerHTML = "";
+  userRankDiv.innerHTML = data.map(d => {
+    return `
+    <h1 class="user-rank-heading">🏆 YOUR LEADERBOARD POSITION</h1>        
+    <h2 class="user-global-rank">Rank: #${d.rank.global}/${d.rank.total_users}</h1>
+    <h2 class="user-reputation-level">Level: ${d.level.icon} ${d.level.name}(${d.points})
+    ${d.next_level?
+       `<h2 class="reputation-progress">Progress to ${d.next_level.icon}${d.next_level.name}: Need ${d.next_level.points_needed} more points</h2>`: "Max level Reached"
+    }
+    <button onclick="event.stopPropagation" ${changesModal.classList.remove("hidden")} class="view-recent-changes">View Recent Changes</button>
+    <button class="view-analytics">View Analytics</button>
+  `;}).join("");
+}
+function switchType(event, type){
+  tabsDiv.forEach(tab => {
+    tab.classList.remove("active");
+  });
+  event.target.classList.add("active");
+
+  switch(type){
+    case "stat":
+      await loadStats();
+      break;
+    case "achievement":
+      await loadAchievements();
+      break;
+    case "department":
+      await loadDepartment();
+      document.getElementById("select-department").classList.remove("hidden");
+      break;
+    case "global"
+    await loadGlobal();
+    break;
+  }
+}
+function showChanges(data) {
+  changesModal.innerHTML = "";
+  // If no changes
+  if (!data || data.length === 0) {
+    changesModal.innerHTML = `
+      <div class="no-changes">
+        No recent reputation changes yet.
+      </div>
+    `;
+    return;
+  }
+
+  // Build HTML for each change entry
+  const html = data.map(change => {
+    const date = new Date(change.created_at).toLocaleString();
+
+    // Add + sign for positive points
+    const points = change.points_change > 0 
+      ? `+${change.points_change}` 
+      : change.points_change;
+
+    return `
+      <div class="change-item">
+        <div class="change-action">
+          ${change.action}
+        </div>
+
+        <div class="change-details">
+          <span class="points-change">${points} pts</span>
+          <span class="reputation-after">New rep: ${change.reputation_after}</span>
+          <span class="change-date">${date}</span>
+        </div>
+      </div>
+    `;
+  }).join("");
+  changesModal.innerHTML = html;
+  changesModal.insertAdjacentElement("beforeend", cancelBtn);
+  changesModal.insertAdjacentElement("beforeend", exportBtn);
+}
+function convertToCsv(records) {
+    if (!records.length) return "";
+
+    const keys = Object.keys(records[0]);
+    const lines = [
+        keys.join(","),  
+        ...records.map(row => keys.map(k => JSON.stringify(row[k] ?? "")).join(","))
+    ];
+    return lines.join("\n");
+}
+
+document.getElementById("export-btn").onclick = async function () {
+    const json = await api.get("/analytics/export", {"type": "reputation"});
+    const csv = convertToCsv(json.data.records);
+
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `analytics-${json.data.export_type}.csv`;
+    a.click();
+
+    URL.revokeObjectURL(url);
+};
+
+function showGlobal(data){
+  leaderboardContainer.innerHTML = "";
+  data.leaderboard.map(item => {
+    const {rank, status, user, reputation, stats, isYou} = item
+    const card = document.createElement("div");
+    card.classList.add("leaderboard-card");
+    card.dataset.username = user.username;
+    if(isYou) card.classList.add("you");
+    // Build card HTML
+    card.innerHTML = `
+    <div class="rank">${rank}</div>
+    <img src="${user.avatar || '/static/img/default-avatar.png'}" class="avatar">
+    <div class="user-info">
+    <div class="username">${user.username}</div>
+    <div class="department">${user.department ?? ""}</div>
+    ${status ?
+      `<button class="connection-btn-${stat
+        us} data-type = ${status}>handleStatus(status, this)</button>`:
+        ${!isYou?
+        `<button class="connection-btn" data-type="not-connected" data-id=${user.id}>Connect</button>`: ""}
+        }
+    <div class="level">
+    <span class="icon">${reputation.level.icon}</span>
+    ${reputation.level.name}
+    </div>
+    </div>
+    <div class="points">${reputation.points} pts</div>
+    <div class="stats">
+    <span>📝 ${stats.total_posts}</span>
+    <span>💡 ${stats.total_helpful}</span>
+    </div>
+    `;
+    leaderboardContainer.appendChild(card);
+    });
+}
+
+function showAchivement(){
+  leaderboardContainer.innerHTML = "";
+  data.map(item => {
+    const {rank, status, user, reputation, stats, is_you} = item
+    const card = document.createElement("div");
+    card.classList.add("top-earners-card");
+    card.dataset.username = user.username;
+    if(is_you) card.classList.add("you");
+    // Build card HTML
+    card.innerHTML = `
+    <div class="rank">${rank}</div>
+    <img src="${user.avatar || '/static/img/default-avatar.png'}" class="avatar">
+    <div class="user-info">
+    <div class="username">${user.username}</div>
+    <div class="department">${user.department ?? ""}</div>
+    ${status ?
+      `<button class="connection-btn-${stat
+        us} data-type = ${status}>handleStatus(status, this)</button>`:
+        ${!is_you?
+        `<button class="connection-btn" data-type="not-connected" data-id=${user.id}>Connect</button>`: ""}
+    }
+    <button class="view-badges" id="view-user-badges" data-id=${user.id}>View Badge Collection</button>
+    <div style="background-color: ${reputation.level.color}; class="level">
+    <span class="icon">${reputation.level.icon}</span>
+    ${reputation.level.name}
+    </div>
+    </div>
+    <div class="points">${reputation.points} pts</div>
+    <div class="stats">
+    <span>📝 ${stats.total_badges}</span>
+    <span>💡 ${stats.total_helpful}</span>
+    </div>
+    `;
+    leaderboardContainer.appendChild(card);
+    });
+}
+
+function showBadges(badges){
+  badgesModal.innerHTML = "";
+  badges.forEach(badge => {
+    const div = document.createElement("div");
+    div.className = "badge-item";
+    div.innerHTML = `
+    <img src="${badge.icon}" alt="${badge.name}" class="badge-icon"/>
+    <h3>${badge.name}</h3>
+    <p>${badge.description}</p>
+    <span class="rarity">${badge.rarity}</span>
+    <small>Earned: ${badge.earned_at}</small>
+    `;
+    badgesModal.appendChild(div);
+    });
+  badgesModal.appendChild(badgeBtn);
+}
+function showDepartment(data){
+  leaderboardContainer.innerHTML = "";
+  data.leaderboard.map(item => {
+    const {rank, status, user, reputation, stats, is_you} = item
+    const card = document.createElement("div");
+    card.classList.add("leaderboard-card");
+    card.dataset.username = user.username;
+    if(is_you) card.classList.add("you");
+    // Build card HTML
+    card.innerHTML = `
+    <div class="rank">${rank}</div>
+    <img src="${user.avatar || '/static/img/default-avatar.png'}" class="avatar">
+    <div class="user-info">
+    <div class="username">${user.username}</div>
+    <div class="department">${user.department ?? ""}</div>
+    ${status ?
+      `<button class="connection-btn-${stat
+        us} data-type = ${status}>handleStatus(status, this)</button>`:
+        ${!is_you?
+        `<button class="connection-btn" data-type="not-connected" data-id=${user.id}>Connect</button>`: ""}
+    }
+    <div class="level">
+    <span class="icon">${reputation.level.icon}</span>
+    ${reputation.level.name}
+    </div>
+    </div>
+    <div class="points">${reputation.points} pts</div>
+    <div class="stats">
+    <span>📝 ${stats.total_posts}</span>
+    <span>💡 ${stats.total_helpful}</span>
+    </div>
+    `;
+    leaderboardContainer.appendChild(card);
+    });
+}
+    
+
+
+function handleStatus(status, this){
+  if(status){
+    if(status == "pending"){
+      this.textContent = "Pending";
+      this.classList.add("disable");
+    }
+    else if(status == "blocked"){
+      this.textContent = "Blocked";
+      this.classList.add("disable");
+    }
+    else{
+      this.textContent = "Connected";
+    }
+  }
+}
+async function loadAchievements(){
+  leaderboardContainer.innerHTML = `<div class="skeleton-wrapper">
+  <div class="skeleton skeleton-avatar"></div>
+  <div class="skeleton skeleton-line w-60"></div>
+  <div class="skeleton skeleton-line w-40"></div>
+</div>`
+  try{
+     const response = await api.get("/reputation/top-earners");
+     if(response.status == "success"){
+       data = response.data;
+       if(!data || data.length == 0){
+         leaderboardContainer.innerHTML = `<div class="empty-state">No badge top earners found at the moment</div>`;
+         return;
+       }
+       showAchivement(data);
+    }
+    else{
+      showToast(response.messsage,"error");
+      leaderboardContainer.innerHTML = `
+      <button class="reload-btn" id="reload-achievement-leaderboard>Try again</button>`;
+    }
+    
+  }
+  catch(error){
+    showToast("Error loading achievement leaderboard" + error, "error");
+    leaderboardContainer.innerHTML =  = `<div class="empty-state">Error encountred while loading badge top earners leaderboard</div>
+      <button class="reload-btn" id="reload-achievement-leaderboard>Try again</button>`;
+  }
+}
+async function loadGlobal(){
+  leaderboardContainer.innerHTML = `<div class="skeleton-wrapper">
+  <div class="skeleton skeleton-avatar"></div>
+  <div class="skeleton skeleton-line w-60"></div>
+  <div class="skeleton skeleton-line w-40"></div>
+</div>`
+  try{
+     const response = await api.get("/reputation/leaderboard");
+     if(response.status == "success"){
+       data = response.data;
+       if(!data || data.length == 0){
+         leaderboardContainer.innerHTML = `<div class="empty-state">No Users Found at the moment</div>`;
+         return;
+       }
+       showGlobal(data);
+    }
+    else{
+      showToast(response.messsage,"error");
+      leaderboardContainer.innerHTML = `<div class="empty-state">No Users Found at the moment</div>
+      <button class="reload-btn" id="reload-globalleaderboard>Try again</button>`;
+    }
+    
+  }
+  catch(error){
+    showToast("Error loading global leaderboard" + error, "error");
+    leaderboardContainer.innerHTML =  = `<div class="empty-state">Error encountred while loading global leaderboard</div>
+      <button class="reload-btn" id="reload-global-leaderboard>Try again</button>`;
+  }
+}
+async function loadBadges(id){
+  const badgeModal = document.getElementById("view-badges-modal")
+  badgeModal.classList.remove("hidden");
+
+  badgeModal.innerHTML = `<div class="skeleton-wrapper">
+  <div class="skeleton skeleton-avatar"></div>
+  <div class="skeleton skeleton-line w-60"></div>
+  <div class="skeleton skeleton-line w-40"></div>
+</div>`
+  try{
+     const response = await api.get(`/reputation/user-badges/${id}`);
+     if(response.status == "success"){
+       data = response.data;
+       if(!data || data.length == 0){
+         badgeModal.innerHTML = `<div class="empty-state">No Badges Data Found at the moment</div>`;
+         return;
+       }
+       showBadges(data);
+    }
+    else{
+      showToast(response.messsage,"error");
+      badgeModal.innerHTML = `
+      <button class="reload-btn" id="reload-user-badges>Try again</button>`;
+    }
+    
+  }
+  catch(error){
+    showToast("Error loading user badges" + error, "error");
+    badgeModal.innerHTML =  = `<div class="empty-state">Error encountred while loading user badges</div>
+      <button data-id=${id} class="reload-btn" id="reload-user-badges">Try again</button>`;
+  }
+}
+
+
+function setupEventListeners(){
+  document.getElementById("export-btn").onclick = async function () {
+    const json = await api.get("/analytics/export", {"type": "reputation"});
+    const csv = convertToCsv(json.data.records);
+
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `analytics-${json.data.export_type}.csv`;
+    a.click();
+
+    URL.revokeObjectURL(url);
+};
+  document.getElementById("reload-global-leaderboard").addEventListener("click", async(e) => loadGlobal());
+  document.getElementById("reload-department-leaderboard").addEventListener("click", async(e) => loadDepartment());
+  document.getElementById("load-user-rank").addEventListener("click" async(e) => showUserRank());
+  document.getElementById("reload-achievement-leaderboard").addEventListener("click", async(e) => loadAchievements());
+  document.getElementById("reload-leaderboard-rising-stars").addEventListener("click", async(e) => loadRisingStars());
+  document.getElementById("cancel-btn").addEventListener("click", () => changesModal.classList.add("hidden"));
+  document.getElementById("reload-user-badges").addEventListener("click", async(e) => {
+    const id = e.target.dataset.id;
+    loadBadges(id);
+  });
+  badgeBtnaddEventListener("click", () => badgeModal.classList.add("hidden"))!
+  tabsDiv.addEventListener("click", async(e) => {
+    const btn = e.target.closest(".select-cancel")
+    const selectBtn = e.target.closest(".department-select");
+    if(btn) document.getElementById("select-department").classList.add("hidden");
+    if(selectBtn) document.getElementById("deparment-option").click();
+  }
+  });
+  document.getElementById("deparment-option").addEventListener("change", async(e) => {
+    const value = e.target.value;
+    await loadDepartment(value);
+  leaderboardContainer.addEventListener("click", async(e) => {
+    const btn = e.target.closest(".connection-btn");
+    const div = e.target.closest("leaderboard-card");
+    const badgeBtn = e.target.closest(".view-badges");
+    if(badgeBtn){
+      e.stopPropagation();
+      const id = badgeBtn.dataset.id;
+      await loadBadges(id);
+    }
+    if(btn){
+      e.stopPropagation();
+      const id = btn.dataser.id;
+      await connectRequest(id);
+    }
+    if(div){
+      const username = e.target.dataset.username;
+      window.location.href = `/student/profile/${username}`
+    }
+  })
+}
+    
+    
+      
+    
+    

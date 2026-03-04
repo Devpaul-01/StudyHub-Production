@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Email - StudyHub</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth/auth.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth/verify_reset.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="auth-page">
+        <div class="auth-container">
+            <div class="verification-page" id="verification-content">
+                <!-- Loading State -->
+                <div class="verification-icon">⏳</div>
+                <h2 class="auth-title">Verifying Your Email...</h2>
+                <p class="verification-message">
+                    Please wait while we verify your email address.
+                </p>
+            </div>
+        </div>
+    </div>
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/core/api.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/core/utils.js') }}"></script>
+    <script>
+  (async () => {  // ← WRAP IN ASYNC IIFE
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = window.location.pathname.split("/").pop();
+    
+    if(!token){
+      showError('Invalid password reset link');
+      return;
+    }
+    
+    try {
+      const response = await api.post(`/verify-reset/${token}`);  // ← ADD /student prefix
+      if (response.status === 'success') {
+        setTimeout(() => {
+          window.location.href = response.data.redirect_url;
+        }, 1000);
+      } else {
+        showError(response.message || 'Verification failed');
+      }
+    } catch (error) {
+      console.error('Verification error:', error);
+      showError('Verification failed. Please try again.');
+    }
+  })();  // ← INVOKE IMMEDIATELY
+  
+  function showError(message) {
+    const content = document.getElementById('verification-content');
+    content.innerHTML = `
+      <div class="verification-icon">❌</div>
+      <h2 class="auth-title" style="color: var(--error-red);">Verification Failed</h2>
+      <p class="verification-message">${message}. The password reset link is invalid or has expired.</p>
+      <a href="/student/reset-password" class="btn btn-primary btn-lg">Try Again</a>
+    `;
+  }
+</script>
+</body>
+</html>
+    
