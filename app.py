@@ -9,7 +9,7 @@ from flask_migrate import Migrate
 from services.websocket_messages import init_message_websocket
 from extensions import db, mail
 import os
-import set_env
+
 from routes.student.helpers import (
     token_required, success_response, error_response
 )
