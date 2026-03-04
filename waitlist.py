@@ -9,7 +9,7 @@ import random
 import string
 import json
 import requests
-import set_env
+
 import os
 from datetime import datetime, timedelta, date
 
