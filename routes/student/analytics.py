@@ -55,13 +55,12 @@ def get_activity_level(activity_score):
 
 
 def generate_insights(user_id):
-    """
-    Generate AI-like insights based on user's activity patterns
-    Uses pattern matching and statistical analysis (no external ML)
-    """
     insights = []
     user = User.query.get(user_id)
     
+    if not user:  # Guard against missing user
+        return insights
+
     # Insight 1: Best posting day
     posts_by_day = db.session.query(
         func.strftime('%w', Post.posted_at).label('day'),
@@ -73,15 +72,21 @@ def generate_insights(user_id):
     ).group_by('day').all()
     
     if posts_by_day:
-        best_day = max(posts_by_day, key=lambda x: x.avg_likes)
-        day_name = calendar.day_name[int(best_day.day)]
-        insights.append({
-            "type": "timing",
-            "icon": "📅",
-            "title": "Best Posting Day",
-            "message": f"Your posts get {best_day.avg_likes:.1f} likes on {day_name}s - {int(best_day.avg_likes / (sum(p.avg_likes for p in posts_by_day) / len(posts_by_day)) * 100)}% above average!",
-            "actionable": f"Try posting more on {day_name}s"
-        })
+        # Filter out rows where avg_likes is None before any math
+        valid_days = [p for p in posts_by_day if p.avg_likes is not None]
+        if valid_days:
+            best_day = max(valid_days, key=lambda x: x.avg_likes)
+            day_name = calendar.day_name[int(best_day.day)]
+            avg_likes_overall = sum(p.avg_likes for p in valid_days) / len(valid_days)
+            pct_above = int(best_day.avg_likes / avg_likes_overall * 100) if avg_likes_overall else 0
+            insights.append({
+                "type": "timing",
+                "icon": "📅",
+                "title": "Best Posting Day",
+                "message": f"Your posts get {best_day.avg_likes:.1f} likes on {day_name}s - {pct_above}% above average!",
+                "actionable": f"Try posting more on {day_name}s"
+            })
+
     avg_response_time = db.session.query(
         func.avg(
             func.julianday(Comment.posted_at) - func.julianday(Post.posted_at)
@@ -89,8 +94,6 @@ def generate_insights(user_id):
     ).join(Post, Comment.post_id == Post.id).filter(
         Comment.student_id == user_id
     ).scalar()
-   
-        
     
     if avg_response_time is not None and avg_response_time < 3:
         insights.append({
@@ -100,7 +103,7 @@ def generate_insights(user_id):
             "message": f"You respond to posts in {avg_response_time:.1f} hours on average - faster than 75% of users!",
             "actionable": "Your quick responses help build reputation"
         })
-    
+
     # Insight 3: Trending content
     recent_post = Post.query.filter_by(student_id=user_id).order_by(
         Post.posted_at.desc()
@@ -120,13 +123,12 @@ def generate_insights(user_id):
                 "message": f'Your post "{recent_post.title[:40]}..." has {views_today} views today!',
                 "actionable": "Keep engaging with comments to maintain momentum"
             })
-    
+
     # Insight 4: Badge progress
     from routes.student.badges import calculate_badge_progress
-    
-    # Check closest badge
-    earned_badge_ids = [ub.badge_id for ub in UserBadge.query.filter_by(user_id=user_id).all()]
     from models import Badge
+
+    earned_badge_ids = [ub.badge_id for ub in UserBadge.query.filter_by(user_id=user_id).all()]
     unearned = Badge.query.filter(Badge.id.notin_(earned_badge_ids), Badge.is_active == True).all()
     
     closest_badge = None
@@ -134,43 +136,52 @@ def generate_insights(user_id):
     
     for badge in unearned:
         progress = calculate_badge_progress(user_id, badge.id)
-        if progress and progress.get("percentage", 0) > highest_progress:
+        # Guard: progress must be a dict with a numeric 'percentage'
+        if progress and isinstance(progress, dict) and progress.get("percentage", 0) > highest_progress:
             highest_progress = progress["percentage"]
             closest_badge = (badge, progress)
     
     if closest_badge and highest_progress >= 50:
         badge, progress = closest_badge
+        # Guard: ensure expected keys exist before formatting
+        remaining = progress.get('remaining', '?')
+        prog_type = progress.get('type', 'actions')
         insights.append({
             "type": "achievement",
             "icon": "🏆",
             "title": "Badge Almost Unlocked!",
-            "message": f"{badge.icon} {progress['remaining']} more {progress['type']} to earn '{badge.name}'",
-            "actionable": f"You're {progress['percentage']:.0f}% there!"
+            "message": f"{badge.icon} {remaining} more {prog_type} to earn '{badge.name}'",
+            "actionable": f"You're {highest_progress:.0f}% there!"
         })
-    
+
     # Insight 5: Audience engagement
-    dept_rank = db.session.query(func.count(User.id)).join(StudentProfile).filter(
-        StudentProfile.department == StudentProfile.query.filter_by(user_id=user_id).first().department,
-        User.reputation > user.reputation
-    ).scalar() + 1
-    
-    total_dept_users = db.session.query(func.count(User.id)).join(StudentProfile).filter(
-        StudentProfile.department == StudentProfile.query.filter_by(user_id=user_id).first().department
-    ).scalar()
-    
-    percentile = round((1 - (dept_rank / total_dept_users)) * 100)
-    
-    if percentile >= 90:
-        insights.append({
-            "type": "achievement",
-            "icon": "🌟",
-            "title": "Top Contributor",
-            "message": f"You're in the top {100-percentile}% of your department!",
-            "actionable": "Your expertise is valued by the community"
-        })
-    
+    # Resolve profile once and guard against None
+    student_profile = StudentProfile.query.filter_by(user_id=user_id).first()
+    if student_profile and student_profile.department:
+        dept_filter = StudentProfile.department == student_profile.department
+
+        dept_rank = db.session.query(func.count(User.id)).join(StudentProfile).filter(
+            dept_filter,
+            User.reputation > user.reputation
+        ).scalar() or 0
+
+        total_dept_users = db.session.query(func.count(User.id)).join(StudentProfile).filter(
+            dept_filter
+        ).scalar() or 0
+
+        if total_dept_users > 0:
+            percentile = round((1 - ((dept_rank + 1) / total_dept_users)) * 100)
+            if percentile >= 90:
+                insights.append({
+                    "type": "achievement",
+                    "icon": "🌟",
+                    "title": "Top Contributor",
+                    "message": f"You're in the top {100 - percentile}% of your department!",
+                    "actionable": "Your expertise is valued by the community"
+                })
+
     # Insight 6: Consistency check
-    if user.login_streak >= 7:
+    if getattr(user, 'login_streak', 0) and user.login_streak >= 7:
         insights.append({
             "type": "consistency",
             "icon": "🔥",
@@ -178,9 +189,8 @@ def generate_insights(user_id):
             "message": f"{user.login_streak} day streak! You're building a strong learning habit.",
             "actionable": "Don't break the streak - come back tomorrow!"
         })
-    
-    return insights[:5]  # Return top 5 insights
 
+    return insights[:5]
 
 def get_average_user_stats():
     """Calculate platform-wide average statistics"""
