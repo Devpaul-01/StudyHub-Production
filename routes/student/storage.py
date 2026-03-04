@@ -1,6 +1,6 @@
 import requests
 import os
-import set_env
+
 import cloudinary
 import mimetypes
 import cloudinary.uploader
