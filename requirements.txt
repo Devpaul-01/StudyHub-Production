@@ -72,5 +72,5 @@ gunicorn==21.2.0                # Render start command: gunicorn app:app --worke
 
 
 # ── Utilities / Internal Deps ─────────────────────────────
-greenlet==3.0.3                 # Required by SQLAlchemy async + eventlet
+greenlet==3.1.1                 # Required by SQLAlchemy async + eventlet
 blinker==1.8.2                  # Required by Flask signals and Flask-Dance
