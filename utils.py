@@ -20,7 +20,7 @@ from flask_limiter.util import get_remote_address
 from sqlalchemy import or_, and_
 
 # Local imports
-import set_env
+
 from models import Connection, User
 
 # Configure Resend API key
