@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to StudyHub — Onboarding</title>
+  <link rel="stylesheet" href="/static/css/onboard.css">
+</head>
+<body>
+
+  <div class="page-bg"></div>
+  <div id="toast"></div>
+
+  <div class="onboarding-container">
+
+    <!-- Brand mark -->
+    <div class="brand-mark">
+      <div class="brand-icon">SH</div>
+      <span class="brand-name">StudyHub</span>
+    </div>
+
+    <!-- Progress Track -->
+    <div class="progress-track" id="progress-track">
+      <div class="progress-step active" id="pt-1">
+        <div class="step-bubble">1</div>
+        <span class="step-label">Welcome</span>
+      </div>
+      <div class="progress-step" id="pt-2">
+        <div class="step-bubble">2</div>
+        <span class="step-label">Studies</span>
+      </div>
+      <div class="progress-step" id="pt-3">
+        <div class="step-bubble">3</div>
+        <span class="step-label">Learning</span>
+      </div>
+      <div class="progress-step" id="pt-4">
+        <div class="step-bubble">4</div>
+        <span class="step-label">Schedule</span>
+      </div>
+      <div class="progress-step" id="pt-5">
+        <div class="step-bubble">5</div>
+        <span class="step-label">Connect</span>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+         STEP 1 — WELCOME + NAME
+    ═══════════════════════════════════════════ -->
+    <div id="step-1" class="section active">
+      <div class="section-header">
+        <span class="section-emoji">🎓</span>
+        <h2 class="section-title">Welcome to StudyHub!</h2>
+        <p class="section-subtitle">Let's personalise your experience so you find the perfect study partners and content — it only takes a few minutes.</p>
+        <div class="gradient-rule"></div>
+      </div>
+
+      <!-- Name field — pre-filled from Google, editable -->
+      <div class="form-group" style="margin-bottom:1.5rem;">
+        <label class="form-label" for="onboard-name">
+          Your name <span style="color:#ef4444">*</span>
+          <span style="font-weight:400; opacity:0.6; font-size:0.8rem; margin-left:0.4rem;">from Google — edit if needed</span>
+        </label>
+        <input
+          type="text"
+          id="onboard-name"
+          class="form-input"
+          placeholder="Your full name"
+          autocomplete="name"
+          style="font-size:1rem;"
+        >
+        <div id="name-error" style="color:#ef4444; font-size:0.8rem; margin-top:0.35rem; display:none;">Please enter your name.</div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:0.75rem; margin-bottom:2rem;">
+        <div style="text-align:center; padding:1.2rem 0.8rem; background:rgba(99,102,241,0.06); border-radius:12px; border:1px solid rgba(99,102,241,0.15);">
+          <div style="font-size:1.6rem; margin-bottom:0.4rem;">🤝</div>
+          <div style="font-size:0.78rem; font-weight:700; color:#4c4882;">Find study buddies</div>
+        </div>
+        <div style="text-align:center; padding:1.2rem 0.8rem; background:rgba(139,92,246,0.06); border-radius:12px; border:1px solid rgba(139,92,246,0.15);">
+          <div style="font-size:1.6rem; margin-bottom:0.4rem;">📚</div>
+          <div style="font-size:0.78rem; font-weight:700; color:#4c4882;">Personalised feed</div>
+        </div>
+        <div style="text-align:center; padding:1.2rem 0.8rem; background:rgba(236,72,153,0.06); border-radius:12px; border:1px solid rgba(236,72,153,0.15);">
+          <div style="font-size:1.6rem; margin-bottom:0.4rem;">⏰</div>
+          <div style="font-size:0.78rem; font-weight:700; color:#4c4882;">Schedule matching</div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-wide" onclick="startOnboarding()">
+        Get started →
+      </button>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+         STEP 2 — ACADEMIC INFO (required)
+    ═══════════════════════════════════════════ -->
+    <div id="step-2" class="section">
+      <div class="section-header">
+        <span class="section-emoji">📚</span>
+        <h2 class="section-title">Tell us about your studies</h2>
+        <p class="section-subtitle">Your department is required — it's the foundation of your personalised experience.</p>
+        <div class="gradient-rule"></div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Department <span style="color:#ef4444">*</span></label>
+        <select id="department" class="form-select">
+          <option value="">Select your department</option>
+        </select>
+        <div id="other-dept-group" class="other-input-group">
+          <input type="text" id="other-department" class="form-input" placeholder="Enter your department name">
+          <button class="btn btn-primary" onclick="setCustomDepartment()">Set</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Current year <span style="color:#ef4444">*</span></label>
+        <div class="radio-group">
+          <div class="radio-option">
+            <input type="radio" id="level-100" name="year" value="100 Level">
+            <label for="level-100">100 Level</label>
+          </div>
+          <div class="radio-option">
+            <input type="radio" id="level-200" name="year" value="200 Level">
+            <label for="level-200">200 Level</label>
+          </div>
+          <div class="radio-option">
+            <input type="radio" id="level-300" name="year" value="300 Level">
+            <label for="level-300">300 Level</label>
+          </div>
+          <div class="radio-option">
+            <input type="radio" id="level-400" name="year" value="400 Level">
+            <label for="level-400">400 Level</label>
+          </div>
+          <div class="radio-option">
+            <input type="radio" id="level-500" name="year" value="500 Level">
+            <label for="level-500">500 Level</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Subjects you're studying <span style="color:#ef4444">*</span></label>
+        <div class="subjects-grid" id="subjects-grid"></div>
+        <button class="add-custom-btn" onclick="showCustomSubjectInput()">
+          ＋ Add custom subject
+        </button>
+        <div id="custom-subject-group" class="other-input-group">
+          <input type="text" id="custom-subject" class="form-input" placeholder="Subject name">
+          <button class="btn btn-primary" onclick="addCustomSubject()">Add</button>
+        </div>
+      </div>
+
+      <div class="navigation-buttons">
+        <button class="btn btn-ghost" onclick="prevStep()">← Back</button>
+        <button class="btn btn-primary" onclick="nextStep()">Continue →</button>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+         STEP 3 — LEARNING PREFERENCES (skippable)
+    ═══════════════════════════════════════════ -->
+    <div id="step-3" class="section">
+      <div class="section-header">
+        <span class="section-emoji">🎯</span>
+        <h2 class="section-title">How do you learn best?</h2>
+        <p class="section-subtitle">Helps us match you with compatible study partners.</p>
+        <div class="gradient-rule"></div>
+      </div>
+
+      <!-- Skip warning banner -->
+      <div class="skip-warning" id="skip-warn-3">
+        <span class="skip-warning-icon">💡</span>
+        <div class="skip-warning-text">
+          <strong>You're about to skip this step</strong>
+          Completing your learning preferences significantly improves your study match quality and personalises your feed. We'd strongly recommend filling this in!
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Learning style</label>
+        <div class="radio-group">
+          <div class="radio-option">
+            <input type="radio" id="visual" name="learning-style" value="visual">
+            <label for="visual">Visual<br><small style="opacity:0.7;font-weight:500">Diagrams, videos</small></label>
+          </div>
+          <div class="radio-option">
+            <input type="radio" id="auditory" name="learning-style" value="auditory">
+            <label for="auditory">Auditory<br><small style="opacity:0.7;font-weight:500">Lectures, discussions</small></label>
+          </div>
+          <div class="radio-option">
+            <input type="radio" id="kinesthetic" name="learning-style" value="kinesthetic">
+            <label for="kinesthetic">Kinesthetic<br><small style="opacity:0.7;font-weight:500">Hands-on, practice</small></label>
+          </div>
+          <div class="radio-option">
+            <input type="radio" id="reading" name="learning-style" value="reading">
+            <label for="reading">Reading/Writing</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Study preferences</label>
+        <div class="checkbox-group" id="study-preferences">
+          <div class="checkbox-option">
+            <input type="checkbox" id="pref-group" value="group-study">
+            <label for="pref-group">I prefer studying in groups</label>
+          </div>
+          <div class="checkbox-option">
+            <input type="checkbox" id="pref-morning" value="morning-study">
+            <label for="pref-morning">I like early morning study sessions</label>
+          </div>
+          <div class="checkbox-option">
+            <input type="checkbox" id="pref-explain" value="explaining-concepts">
+            <label for="pref-explain">I enjoy explaining concepts to others</label>
+          </div>
+          <div class="checkbox-option">
+            <input type="checkbox" id="pref-projects" value="practical-projects">
+            <label for="pref-projects">I learn best through real projects</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Subjects you need the most help with</label>
+        <div id="help-subjects" class="priority-list">
+          <div class="priority-item">
+            <span class="priority-number">1</span>
+            <input type="text" class="form-input help-subject" placeholder="Subject name">
+          </div>
+          <div class="priority-item">
+            <span class="priority-number">2</span>
+            <input type="text" class="form-input help-subject" placeholder="Subject name">
+          </div>
+          <div class="priority-item">
+            <span class="priority-number">3</span>
+            <input type="text" class="form-input help-subject" placeholder="Subject name (optional)">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Subjects you're strongest in</label>
+        <div id="strong-subjects" class="priority-list">
+          <div class="priority-item">
+            <span class="priority-number">1</span>
+            <input type="text" class="form-input strong-subject" placeholder="Subject name">
+          </div>
+          <div class="priority-item">
+            <span class="priority-number">2</span>
+            <input type="text" class="form-input strong-subject" placeholder="Subject name">
+          </div>
+        </div>
+      </div>
+
+      <div class="navigation-buttons">
+        <button class="btn btn-ghost" onclick="prevStep()">← Back</button>
+        <div class="nav-right">
+          <button class="btn-skip" onclick="skipStep(3)" title="Skip this step">Skip for now ›</button>
+          <button class="btn btn-primary" onclick="nextStep()">Continue →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+         STEP 4 — STUDY SCHEDULE (skippable)
+    ═══════════════════════════════════════════ -->
+    <div id="step-4" class="section">
+      <div class="section-header">
+        <span class="section-emoji">⏰</span>
+        <h2 class="section-title">When are you usually free?</h2>
+        <p class="section-subtitle">Helps us find study partners who share your schedule.</p>
+        <div class="gradient-rule"></div>
+      </div>
+
+      <!-- Skip warning banner -->
+      <div class="skip-warning" id="skip-warn-4">
+        <span class="skip-warning-icon">💡</span>
+        <div class="skip-warning-text">
+          <strong>You're about to skip this step</strong>
+          Your study schedule is used to find partners available at the same time as you. Filling it in will make your recommendations much more accurate.
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Typical study session length</label>
+        <div class="radio-group">
+          <div class="radio-option">
+            <input type="radio" id="session-30" name="session-length" value="30-minutes">
+            <label for="session-30">30 min</label>
+          </div>
+          <div class="radio-option">
+            <input type="radio" id="session-60" name="session-length" value="1-hour">
+            <label for="session-60">1 hour</label>
+          </div>
+          <div class="radio-option">
+            <input type="radio" id="session-90" name="session-length" value="1.5-hours">
+            <label for="session-90">1.5 hours</label>
+          </div>
+          <div class="radio-option">
+            <input type="radio" id="session-120" name="session-length" value="2-hours">
+            <label for="session-120">2+ hours</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Select your typical study times</label>
+        <div class="schedule-grid">
+          <!-- Monday -->
+          <div class="schedule-row">
+            <span class="day-label">Monday</span>
+            <div class="time-slots">
+              <div class="time-slot"><input type="checkbox" id="mon-morning" data-day="Monday" data-time="morning"><label for="mon-morning">Morning</label></div>
+              <div class="time-slot"><input type="checkbox" id="mon-afternoon" data-day="Monday" data-time="afternoon"><label for="mon-afternoon">Afternoon</label></div>
+              <div class="time-slot"><input type="checkbox" id="mon-evening" data-day="Monday" data-time="evening"><label for="mon-evening">Evening</label></div>
+            </div>
+          </div>
+          <!-- Tuesday -->
+          <div class="schedule-row">
+            <span class="day-label">Tuesday</span>
+            <div class="time-slots">
+              <div class="time-slot"><input type="checkbox" id="tue-morning" data-day="Tuesday" data-time="morning"><label for="tue-morning">Morning</label></div>
+              <div class="time-slot"><input type="checkbox" id="tue-afternoon" data-day="Tuesday" data-time="afternoon"><label for="tue-afternoon">Afternoon</label></div>
+              <div class="time-slot"><input type="checkbox" id="tue-evening" data-day="Tuesday" data-time="evening"><label for="tue-evening">Evening</label></div>
+            </div>
+          </div>
+          <!-- Wednesday -->
+          <div class="schedule-row">
+            <span class="day-label">Wednesday</span>
+            <div class="time-slots">
+              <div class="time-slot"><input type="checkbox" id="wed-morning" data-day="Wednesday" data-time="morning"><label for="wed-morning">Morning</label></div>
+              <div class="time-slot"><input type="checkbox" id="wed-afternoon" data-day="Wednesday" data-time="afternoon"><label for="wed-afternoon">Afternoon</label></div>
+              <div class="time-slot"><input type="checkbox" id="wed-evening" data-day="Wednesday" data-time="evening"><label for="wed-evening">Evening</label></div>
+            </div>
+          </div>
+          <!-- Thursday -->
+          <div class="schedule-row">
+            <span class="day-label">Thursday</span>
+            <div class="time-slots">
+              <div class="time-slot"><input type="checkbox" id="thu-morning" data-day="Thursday" data-time="morning"><label for="thu-morning">Morning</label></div>
+              <div class="time-slot"><input type="checkbox" id="thu-afternoon" data-day="Thursday" data-time="afternoon"><label for="thu-afternoon">Afternoon</label></div>
+              <div class="time-slot"><input type="checkbox" id="thu-evening" data-day="Thursday" data-time="evening"><label for="thu-evening">Evening</label></div>
+            </div>
+          </div>
+          <!-- Friday -->
+          <div class="schedule-row">
+            <span class="day-label">Friday</span>
+            <div class="time-slots">
+              <div class="time-slot"><input type="checkbox" id="fri-morning" data-day="Friday" data-time="morning"><label for="fri-morning">Morning</label></div>
+              <div class="time-slot"><input type="checkbox" id="fri-afternoon" data-day="Friday" data-time="afternoon"><label for="fri-afternoon">Afternoon</label></div>
+              <div class="time-slot"><input type="checkbox" id="fri-evening" data-day="Friday" data-time="evening"><label for="fri-evening">Evening</label></div>
+            </div>
+          </div>
+          <!-- Saturday -->
+          <div class="schedule-row">
+            <span class="day-label">Saturday</span>
+            <div class="time-slots">
+              <div class="time-slot"><input type="checkbox" id="sat-morning" data-day="Saturday" data-time="morning"><label for="sat-morning">Morning</label></div>
+              <div class="time-slot"><input type="checkbox" id="sat-afternoon" data-day="Saturday" data-time="afternoon"><label for="sat-afternoon">Afternoon</label></div>
+              <div class="time-slot"><input type="checkbox" id="sat-evening" data-day="Saturday" data-time="evening"><label for="sat-evening">Evening</label></div>
+            </div>
+          </div>
+          <!-- Sunday -->
+          <div class="schedule-row">
+            <span class="day-label">Sunday</span>
+            <div class="time-slots">
+              <div class="time-slot"><input type="checkbox" id="sun-morning" data-day="Sunday" data-time="morning"><label for="sun-morning">Morning</label></div>
+              <div class="time-slot"><input type="checkbox" id="sun-afternoon" data-day="Sunday" data-time="afternoon"><label for="sun-afternoon">Afternoon</label></div>
+              <div class="time-slot"><input type="checkbox" id="sun-evening" data-day="Sunday" data-time="evening"><label for="sun-evening">Evening</label></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="navigation-buttons">
+        <button class="btn btn-ghost" onclick="prevStep()">← Back</button>
+        <div class="nav-right">
+          <button class="btn-skip" onclick="skipStep(4)" title="Skip this step">Skip for now ›</button>
+          <button class="btn btn-primary" id="submit-btn" onclick="submitOnboarding()">Find Study Buddies →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+         STEP 5 — STUDY BUDDY SUGGESTIONS
+    ═══════════════════════════════════════════ -->
+    <div id="step-5" class="section">
+      <div class="section-header">
+        <span class="section-emoji">🤝</span>
+        <h2 class="section-title">Your perfect study matches</h2>
+        <p class="section-subtitle">Connect instantly — all connections are accepted right away.</p>
+        <div class="gradient-rule"></div>
+      </div>
+
+      <div class="users-container" id="users-container">
+        <div class="spinner-wrap">
+          <div class="spinner"></div>
+          <span class="spinner-text">Finding your study matches…</span>
+        </div>
+      </div>
+
+      <div class="suggestions-actions">
+        <button class="btn btn-ghost" id="connect-all" onclick="requestAll()">
+          ✦ Connect with all
+        </button>
+        <button class="btn btn-primary" id="continue-btn" onclick="completeOnboarding()">
+          Continue to dashboard →
+        </button>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+         COMPLETION SCREEN
+    ═══════════════════════════════════════════ -->
+    <div id="step-complete" class="section">
+      <div class="completion-wrap">
+        <div class="completion-icon-ring">🎉</div>
+        <h2 class="completion-title">You're all set!</h2>
+        <p class="completion-subtitle">Your profile is ready. Redirecting you to your personalised dashboard…</p>
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill"></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /.onboarding-container -->
+
+  <script>
+    // =========================================================================
+    // GLOBAL STATE
+    // =========================================================================
+    let currentStep = 1;
+    const totalSteps = 5;
+
+    const onboardingData = {
+      department: "",
+      class_level: "",
+      subjects: [],
+      learning_style: "",
+      study_preferences: [],
+      help_subjects: [],
+      strong_subjects: [],
+      study_schedule: {},
+      session_length: ""
+    };
+
+    // ── Departments ──────────────────────────────────────────────────────────
+    const departments = [
+      "Accounting","African / Nigerian Languages","Adult Education & Extra-Mural Studies",
+      "Agricultural Economics","Agricultural Economics & Agribusiness",
+      "Agricultural Extension & Rural Development","Agronomy","Anatomy / Physiology",
+      "Animal Science","Architecture","Banking & Finance","Biochemistry",
+      "Biological Sciences / Biology","Botany","Building / Construction",
+      "Business Administration / Management","Chemical Engineering","Chemistry",
+      "Cooperative & Rural Development","Computer Engineering",  "Computer Science ",
+      "Curriculum & Instructional Technology","Economics","Electrical / Electronic Engineering",
+      "Education & Biology","Education & Chemistry","Education & English Language",
+      "Education & Geography","Education & History","Education & Mathematics",
+      "Environmental Science","Entrepreneurship","Estate Management",
+      "Fine & Applied Arts (Creative Arts)","Food Science & Technology",
+      "Forestry & Wildlife Management","Geography","Geology","Geomatics / Surveying",
+      "Guidance & Counselling","Health & Physical Education","Hospitality & Tourism",
+      "Hospitality & Tourism Management","Human Resources Management",
+      "Industrial Relations & Personnel Management","Insurance","Law (Common / Civil Law)",
+      "Library & Information Science","Logistics & Supply Chain Management",
+      "Mass Communication / Communication & Language Arts","Marketing",
+      "Marine / Environmental / Structural Engineering","Mathematics",
+      "Medical Biochemistry / Microbiology","Medicine & Surgery","Microbiology",
+      "Metallurgical & Materials Engineering","Nursing Science",
+      "Office & Information Management","Petroleum / Gas Engineering",
+      "Pharmacy / Pharmaceutical Sciences","Philosophy","Project Management",
+      "Public Health","Public Administration","Quantity Surveying",
+      "Religious Studies / Theology","Science Education",
+      "Soil & Land Resources Management","Soil Science","Special Education",
+      "Statistics","Theatre Arts","Transport Management","Urban & Regional Planning",
+      "Vocational / Technical Education","Web Development","Zoology"
+    ];
+
+    // ── Subjects by department ────────────────────────────────────────────────
+    const subjectsByDepartment = {
+      "Computer Engineering / Computer Science & Engineering": [
+        "Programming","Database Systems","AI & Machine Learning","Web Development",
+        "Data Structures","Algorithms","Operating Systems","Computer Networks"
+      ],
+      "Accounting": [
+        "Financial Accounting","Cost Accounting","Auditing","Taxation",
+        "Business Law","Economics","Statistics"
+      ],
+      "Medicine & Surgery": [
+        "Anatomy","Physiology","Biochemistry","Pharmacology","Pathology","Microbiology"
+      ],
+      "Engineering (Civil)": [
+        "Structural Analysis","Fluid Mechanics","Geotechnical Engineering",
+        "Construction Management","Surveying","Materials Science"
+      ],
+      "default": [
+        "Mathematics","English","Chemistry","Physics","Biology",
+        "Economics","Statistics","Research Methods"
+      ]
+    };
+
+    // =========================================================================
+    // INITIALIZATION
+    // =========================================================================
+    function init() {
+      populateDepartments();
+      populateSubjects();
+      setupEventListeners();
+      const email = window.location.pathname.split('/').pop();
+      if (email && email.includes('@')) {
+        localStorage.setItem('onboarding_email', email);
+      }
+    }
+
+    function populateDepartments() {
+      const select = document.getElementById('department');
+      departments.forEach(dept => {
+        const opt = document.createElement('option');
+        opt.value = opt.textContent = dept;
+        select.appendChild(opt);
+      });
+      const other = document.createElement('option');
+      other.value = 'other';
+      other.textContent = 'Other (Specify)';
+      select.appendChild(other);
+    }
+
+    function populateSubjects() {
+      const grid = document.getElementById('subjects-grid');
+      const dept = document.getElementById('department').value;
+      grid.innerHTML = '';
+      const subjects = subjectsByDepartment[dept] || subjectsByDepartment['default'];
+      subjects.forEach((subject, i) => {
+        const div = document.createElement('div');
+        div.className = 'subject-checkbox';
+        div.innerHTML = `<input type="checkbox" id="sub-${i}" value="${subject}"><label for="sub-${i}">${subject}</label>`;
+        grid.appendChild(div);
+      });
+    }
+
+    function setupEventListeners() {
+      document.getElementById('department').addEventListener('change', function () {
+        if (this.value === 'other') {
+          document.getElementById('other-dept-group').classList.add('active');
+        } else {
+          document.getElementById('other-dept-group').classList.remove('active');
+          populateSubjects();
+        }
+      });
+
+      document.querySelectorAll('.checkbox-option input[type="checkbox"]').forEach(cb => {
+        cb.addEventListener('change', function () {
+          this.parentElement.classList.toggle('checked', this.checked);
+        });
+      });
+    }
+
+    // =========================================================================
+    // CUSTOM INPUT HANDLERS
+    // =========================================================================
+    function setCustomDepartment() {
+      const val = document.getElementById('other-department').value.trim();
+      if (!val) { showToast('Please enter your department', 'error'); return; }
+      const select = document.getElementById('department');
+      const opt = document.createElement('option');
+      opt.value = opt.textContent = val;
+      opt.selected = true;
+      select.insertBefore(opt, select.lastElementChild);
+      document.getElementById('other-dept-group').classList.remove('active');
+      populateSubjects();
+      showToast('Department added!', 'success');
+    }
+
+    function showCustomSubjectInput() {
+      const g = document.getElementById('custom-subject-group');
+      g.classList.toggle('active');
+      if (g.classList.contains('active')) document.getElementById('custom-subject').focus();
+    }
+
+    function addCustomSubject() {
+      const input = document.getElementById('custom-subject');
+      const val = input.value.trim();
+      if (!val) { showToast('Please enter a subject name', 'error'); return; }
+      const grid = document.getElementById('subjects-grid');
+      const i = grid.children.length;
+      const div = document.createElement('div');
+      div.className = 'subject-checkbox';
+      div.innerHTML = `<input type="checkbox" id="sub-${i}" value="${val}" checked><label for="sub-${i}">${val}</label>`;
+      grid.appendChild(div);
+      input.value = '';
+      document.getElementById('custom-subject-group').classList.remove('active');
+      showToast('Subject added!', 'success');
+    }
+
+    // =========================================================================
+    // PROGRESS TRACK UPDATE
+    // =========================================================================
+    function updateProgressTrack(step) {
+      for (let i = 1; i <= 5; i++) {
+        const pt = document.getElementById(`pt-${i}`);
+        if (!pt) continue;
+        pt.classList.remove('active', 'done');
+        if (i < step)  pt.classList.add('done');
+        if (i === step) pt.classList.add('active');
+      }
+    }
+
+    // =========================================================================
+    // NAVIGATION
+    // =========================================================================
+    function nextStep() {
+      if (!validateStep(currentStep)) return;
+      collectStepData(currentStep);
+      if (currentStep < totalSteps) {
+        goToStep(currentStep + 1);
+      }
+    }
+
+    function prevStep() {
+      if (currentStep > 1) goToStep(currentStep - 1);
+    }
+
+    function goToStep(target) {
+      document.getElementById(`step-${currentStep}`).classList.remove('active');
+      currentStep = target;
+      document.getElementById(`step-${currentStep}`).classList.add('active');
+      updateProgressTrack(currentStep);
+      window.scrollTo(0, 0);
+    }
+
+    // ── Skip logic ─────────────────────────────────────────────────────────
+    function skipStep(step) {
+      // Show warning banner the first time, then allow skip on second click
+      const banner = document.getElementById(`skip-warn-${step}`);
+      if (!banner.classList.contains('visible')) {
+        banner.classList.add('visible');
+        showToast('Filling in this step improves your matches — but you can skip if you prefer.', 'warning');
+        return; // First click just shows the warning
+      }
+      // Second click — actually skip
+      banner.classList.remove('visible');
+      if (step === 4) {
+        // Skipping last form step → go straight to submission without schedule
+        submitOnboarding(true);
+      } else {
+        goToStep(step + 1);
+      }
+    }
+
+    // =========================================================================
+    // VALIDATION
+    // =========================================================================
+    function validateStep(step) {
+      switch (step) {
+        case 1: return true;
+
+        case 2:
+          const dept  = document.getElementById('department').value;
+          const level = document.querySelector('input[name="year"]:checked');
+          const subs  = document.querySelectorAll('.subject-checkbox input:checked');
+          if (!dept)        { showToast('Please select your department', 'error');    return false; }
+          if (!level)       { showToast('Please select your current year', 'error');  return false; }
+          if (!subs.length) { showToast('Please select at least one subject', 'error'); return false; }
+          return true;
+
+        case 3:
+          // Learning style is optional if skipping is not used (only required when "Continue" clicked)
+          const ls = document.querySelector('input[name="learning-style"]:checked');
+          if (!ls) { showToast('Please select your learning style', 'error'); return false; }
+          return true;
+
+        case 4:
+          const sl = document.querySelector('input[name="session-length"]:checked');
+          if (!sl) { showToast('Please select your typical session length', 'error'); return false; }
+          return true;
+
+        default: return true;
+      }
+    }
+
+    // =========================================================================
+    // DATA COLLECTION
+    // =========================================================================
+    function collectStepData(step) {
+      switch (step) {
+        case 2:
+          onboardingData.department  = document.getElementById('department').value;
+          onboardingData.class_level = document.querySelector('input[name="year"]:checked').value;
+          onboardingData.subjects    = Array.from(document.querySelectorAll('.subject-checkbox input:checked')).map(cb => cb.value);
+          break;
+
+        case 3:
+          const ls = document.querySelector('input[name="learning-style"]:checked');
+          onboardingData.learning_style   = ls ? ls.value : '';
+          onboardingData.study_preferences = Array.from(document.querySelectorAll('#study-preferences input:checked')).map(cb => cb.value);
+          onboardingData.help_subjects     = Array.from(document.querySelectorAll('.help-subject')).map(i => i.value.trim()).filter(Boolean);
+          onboardingData.strong_subjects   = Array.from(document.querySelectorAll('.strong-subject')).map(i => i.value.trim()).filter(Boolean);
+          break;
+
+        case 4:
+          const sl = document.querySelector('input[name="session-length"]:checked');
+          onboardingData.session_length  = sl ? sl.value : '';
+          const schedule = {};
+          document.querySelectorAll('.time-slot input:checked').forEach(cb => {
+            const day = cb.dataset.day, time = cb.dataset.time;
+            if (!schedule[day]) schedule[day] = [];
+            schedule[day].push(time);
+          });
+          onboardingData.study_schedule = schedule;
+          break;
+      }
+    }
+
+    // =========================================================================
+    // FORM SUBMISSION
+    // =========================================================================
+    async function submitOnboarding(skipped = false) {
+      if (!skipped) collectStepData(4);
+      const submitBtn = document.getElementById('submit-btn');
+      if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Searching…'; }
+
+      try {
+        const email = localStorage.getItem('onboarding_email') || window.location.pathname.split('/').pop();
+        if (!email) {
+          showToast('Session email not found. Please try again.', 'error');
+          if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Find Study Buddies →'; }
+          return;
+        }
+
+        const response = await fetch(`/student/onboard/${email}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(onboardingData)
+        });
+        const result = await response.json();
+
+        if (result.status === 'success') {
+          showToast('Profile saved!', 'success');
+          document.getElementById(`step-${currentStep}`).classList.remove('active');
+          currentStep = 5;
+          document.getElementById('step-5').classList.add('active');
+          updateProgressTrack(5);
+          window.scrollTo(0, 0);
+          await showSuggestions();
+        } else {
+          showToast(result.message || 'Submission failed', 'error');
+          if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Find Study Buddies →'; }
+        }
+      } catch (err) {
+        showToast('Network error. Please try again.', 'error');
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Find Study Buddies →'; }
+      }
+    }
+
+    // =========================================================================
+    // SUGGESTIONS  — uses connections endpoint
+    // =========================================================================
+    async function showSuggestions() {
+      const container = document.getElementById('users-container');
+      container.innerHTML = `
+        <div class="spinner-wrap">
+          <div class="spinner"></div>
+          <span class="spinner-text">Finding your best study matches…</span>
+        </div>`;
+
+      try {
+        const email = localStorage.getItem('onboarding_email') || window.location.pathname.split('/').pop();
+        if (!email) throw new Error('Email not found');
+
+        // ── Uses the suggestions endpoint in connections.py ──────────────────
+        const response = await fetch(`/student/connections/suggestions-by-email/${email}`);
+        const result   = await response.json();
+
+        if (result.status === 'success') {
+          const matches = result.data.matches;
+          if (!matches || matches.length === 0) {
+            container.innerHTML = `
+              <div class="empty-state">
+                <span class="empty-icon">🔍</span>
+                <p>No matches found yet — as more students join, your suggestions will appear here.</p>
+              </div>`;
+            return;
+          }
+          renderUserCards(matches);
+        } else {
+          throw new Error(result.message || 'Failed to load suggestions');
+        }
+      } catch (err) {
+        console.error('Suggestions error:', err);
+        container.innerHTML = `
+          <div class="empty-state">
+            <span class="empty-icon">⚠️</span>
+            <p>Couldn't load suggestions right now.</p>
+            <button class="btn btn-primary" style="margin-top:1rem" onclick="showSuggestions()">Try again</button>
+          </div>`;
+      }
+    }
+
+    function renderUserCards(matches) {
+      const container = document.getElementById('users-container');
+      container.innerHTML = '';
+
+      matches.forEach(match => {
+        const user  = match.user;
+        const score = match.match_score || 0;
+        const reasons = (match.reasons || []).slice(0, 3);
+
+        const card = document.createElement('div');
+        card.className = 'user-card';
+        card.setAttribute('data-user-id', user.id);
+
+        card.innerHTML = `
+          <div class="avatar-wrap">
+            <div class="avatar-ring"></div>
+            <img src="${user.avatar || '/static/default-avatar.png'}"
+                 alt="${user.name}"
+                 class="avatar-img"
+                 onerror="this.src='/static/default-avatar.png'">
+          </div>
+          <div class="user-info">
+            <div class="user-name-row">
+              <span class="user-name">${user.name}</span>
+              <span class="user-handle">@${user.username}</span>
+            </div>
+            <div class="user-meta">
+              ${user.department ? `<span class="badge badge-dept">📚 ${user.department}</span>` : ''}
+              <span class="badge badge-score">⚡ ${score}% match</span>
+              <span class="badge badge-rep">⭐ ${user.reputation_level || 'Member'}</span>
+            </div>
+            ${reasons.length ? `
+              <div class="match-reasons">
+                ${reasons.map(r => `<span class="reason-pill">${r}</span>`).join('')}
+              </div>` : ''}
+          </div>
+          <div class="user-action">
+            <button id="connect-${user.id}"
+                    class="connect-btn"
+                    onclick="connectUser(${user.id}, this)">
+              Connect
+            </button>
+          </div>`;
+
+        container.appendChild(card);
+      });
+    }
+
+    // =========================================================================
+    // CONNECT  — direct accepted connection
+    // =========================================================================
+    async function connectUser(userId, btn) {
+      if (!btn) btn = document.getElementById(`connect-${userId}`);
+      btn.disabled = true;
+      btn.textContent = '…';
+
+      try {
+        const email = localStorage.getItem('onboarding_email') || window.location.pathname.split('/').pop();
+
+        // ── Calls new endpoint in connections.py that always accepts ─────────
+        const response = await fetch(`/student/connections/onboard-connect/${email}/${userId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include'
+        });
+        const result = await response.json();
+
+        if (result.status === 'success') {
+          btn.textContent = '✓ Connected';
+          btn.classList.add('connected');
+          showToast('Connected!', 'success');
+        } else {
+          btn.disabled = false;
+          btn.textContent = 'Connect';
+          showToast(result.message || 'Could not connect', 'error');
+        }
+      } catch (err) {
+        btn.disabled = false;
+        btn.textContent = 'Connect';
+        showToast('Network error — please try again', 'error');
+      }
+    }
+
+    async function requestAll() {
+      const cards = document.querySelectorAll('.user-card');
+      if (!cards.length) { showToast('No users to connect with', 'info'); return; }
+
+      const ids = Array.from(cards).map(c => parseInt(c.getAttribute('data-user-id'))).filter(Boolean);
+      const allBtn = document.getElementById('connect-all');
+      allBtn.disabled = true;
+      allBtn.textContent = 'Connecting…';
+
+      try {
+        const email = localStorage.getItem('onboarding_email') || window.location.pathname.split('/').pop();
+
+        // ── Calls new bulk endpoint in connections.py ─────────────────────────
+        const response = await fetch(`/student/connections/onboard-connect-all/${email}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ ids })
+        });
+        const result = await response.json();
+
+        if (result.status === 'success') {
+          cards.forEach(card => {
+            const uid = card.getAttribute('data-user-id');
+            const btn = document.getElementById(`connect-${uid}`);
+            if (btn && !btn.classList.contains('connected')) {
+              btn.disabled = true;
+              btn.textContent = '✓ Connected';
+              btn.classList.add('connected');
+            }
+          });
+          allBtn.textContent = '✓ All Connected';
+          showToast('All connections accepted!', 'success');
+        } else {
+          allBtn.disabled = false;
+          allBtn.textContent = '✦ Connect with all';
+          showToast(result.message || 'Failed to connect', 'error');
+        }
+      } catch (err) {
+        allBtn.disabled = false;
+        allBtn.textContent = '✦ Connect with all';
+        showToast('Network error — please try again', 'error');
+      }
+    }
+
+    // =========================================================================
+    // COMPLETE ONBOARDING
+    // =========================================================================
+    function completeOnboarding() {
+      document.getElementById('step-5').classList.remove('active');
+      document.getElementById('step-complete').classList.add('active');
+      // Redirect after completion animation
+      setTimeout(() => { window.location.href = '/student/profile/homepage'; }, 3500);
+    }
+
+    // =========================================================================
+    // TOAST NOTIFICATIONS
+    // =========================================================================
+    let toastTimer;
+    function showToast(message, type = 'info') {
+      const toast = document.getElementById('toast');
+      toast.textContent  = message;
+      toast.className    = `show ${type}`;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { toast.className = ''; }, 4000);
+    }
+
+    // =========================================================================
+    // BOOT
+    // =========================================================================
+    window.addEventListener('DOMContentLoaded', async () => {
+      init();
+
+      // Pre-fill the name field from the URL path segment (set by google_callback
+      // via session — the backend embeds email in the URL, but we also stored name
+      // in session which the google_temp_info endpoint exposes).
+      try {
+        const res  = await fetch("/student/google_temp_info");
+        const data = await res.json();
+        if (data.name) {
+          const nameInput = document.getElementById('onboard-name');
+          if (nameInput && !nameInput.value) nameInput.value = data.name;
+        }
+      } catch (_) { /* non-fatal */ }
+    });
+
+    // Validates name then proceeds to step 2
+    function startOnboarding() {
+      const nameInput = document.getElementById('onboard-name');
+      const nameError = document.getElementById('name-error');
+      const name = nameInput ? nameInput.value.trim() : '';
+
+      if (!name || name.length < 2) {
+        if (nameError) nameError.style.display = 'block';
+        if (nameInput) nameInput.focus();
+        return;
+      }
+      if (nameError) nameError.style.display = 'none';
+
+      // Store name in onboardingData so it's sent with the final submit
+      onboardingData.name = name;
+
+      nextStep();
+    }
+  </script>
+
+</body>
+</html>
