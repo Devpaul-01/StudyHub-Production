@@ -9,14 +9,13 @@ from flask_migrate import Migrate
 from services.websocket_messages import init_message_websocket
 from extensions import db, mail
 import os
-import set_env
+
 from routes.student.helpers import (
     token_required, success_response, error_response
 )
 import os
 
 
-from waitlist import waitlist_bp
 import logging
 from routes.student import student_bp
 
@@ -228,7 +227,7 @@ def create_app(config_class=Config):
     # ========================================================================
     # Register Blueprints
     # ========================================================================
-    app.register_blueprint(waitlist_bp)
+    
     app.register_blueprint(google_bp, url_prefix='/google')
     app.register_blueprint(student_bp)
   
