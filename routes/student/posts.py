@@ -3141,34 +3141,33 @@ def get_posts_by_tag(current_user, tag):
 @token_required
 def popular_tags(current_user):
     try:
-        user = User.query.get(current_user.id)
-        if not user:
-            return error_response("User not found")
-        
-        all_tags = []
-        tags_details = {}  # Initialize properly
-        
-        user_posts = Post.query.filter_by(student_id=user.id).all()  # Fixed syntax
-        user_tags = [tag for post in user_posts for tag in post.tags]  # Flatten list
-        
-        posts = Post.query.all()
-        for post in posts:
-            for tag in post.tags:
-                if tag not in tags_details:
-                    tags_details[tag] = 0
-                tags_details[tag] += 1
-        
-        # Sort by count descending, prioritize user tags
-        sorted_tags = sorted(
-            tags_details.items(), 
-            key=lambda x: (x[0] not in user_tags, -x[1])
+        user_tag_rows = (
+            db.session.query(func.unnest(Post.tags).label("tag"))
+            .filter(Post.student_id == current_user.id)
+            .all()
         )
-        
-        return jsonify({"status": "success", "data": dict(sorted_tags)})
+        user_tags = {row.tag for row in user_tag_rows}
+
+        tag_count_rows = (
+            db.session.query(
+                func.unnest(Post.tags).label("tag"),
+                func.count("*").label("count"),
+            )
+            .group_by("tag")
+            .order_by(func.count("*").desc())
+            .all()
+        )
+
+        sorted_tags = sorted(
+            tag_count_rows,
+            key=lambda x: (x.tag not in user_tags, -x.count),
+        )
+
+        return jsonify({"status": "success", "data": {t.tag: t.count for t in sorted_tags}})
+
     except Exception as e:
         current_app.logger.error(f"Get tags error: {str(e)}")
         return error_response("Failed to load trending tags")
-            
 
 @posts_bp.route("/posts/my-posts", methods=["GET"])
 @token_required
