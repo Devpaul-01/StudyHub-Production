@@ -121,7 +121,7 @@ def connections_suggestions_by_email(email):
                 my_dept = getattr(onboarding, 'department', None)
                 c_dept  = profile.department if profile else None
                 if my_dept and c_dept and my_dept == c_dept:
-                    score += 40
+                    score += 50
                     reasons.append("Same department")
 
             if c_onboard and onboarding:
