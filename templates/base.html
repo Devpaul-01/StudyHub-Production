@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}StudyHub{% endblock %}</title>
+
+    <!-- Core CSS - Load base styles first -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    
+    <!-- Page-specific CSS -->
+    {% block extra_css %}{% endblock %}
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- ========================================
+         TOP NAVIGATION BAR (Fixed - All pages)
+    ======================================== -->
+    <nav class="navbar" id="navbar">
+        <div class="navbar-container">
+            <!-- Logo -->
+            <div class="navbar-logo">
+                <a href="/student/profile/homepage">
+                    <span class="logo-icon">🎓</span>
+                    <span class="logo-text">StudyHub</span>
+                </a>
+            </div>
+            
+            <!-- Global Search (Desktop only) -->
+            <div class="navbar-search desktop-only">
+                <input 
+                    type="text" 
+                    id="global-search" 
+                    placeholder="Search posts, users, threads..." 
+                    class="search-input"
+                >
+            </div>
+            
+            <!-- Right Actions -->
+            <div class="navbar-actions">
+                <!-- Notifications -->
+                <button class="navbar-icon-btn" onclick="window.location.href='/student/notifications'">
+                    <span class="icon">🔔</span>
+                    <span class="notification-badge" id="notif-count">0</span>
+                </button>
+                
+                <!-- AI Assistant -->
+                <a href="/student/ai-assistant" class="navbar-icon-btn">
+                    <span class="icon">⚡</span>
+                </a>
+                
+                <!-- Messages -->
+                <button class="navbar-icon-btn" onclick="openMessagesModal()">
+                    <span class="icon">💬</span>
+                    <span class="notification-badge" id="msg-count">0</span>
+                </button>
+                
+                <!-- Profile Dropdown -->
+                <div class="navbar-profile-dropdown">
+                    <button class="profile-btn" id="profile-dropdown-btn">
+                        <img 
+                            src="/static/assets/default-avatar.png" 
+                            alt="Profile" 
+                            class="profile-avatar"
+                            id="user-avatar"
+                        >
+                        <span class="profile-name desktop-only" id="user-name">Loading...</span>
+                    </button>
+                    
+                    <div class="dropdown-menu hidden" id="profile-dropdown-menu">
+                        <a href="/student/profile/me" class="dropdown-item">
+                            👤 My Profile
+                        </a>
+                        <a href="/student/posts/my-posts" class="dropdown-item">
+                            📄 My Posts
+                        </a>
+                       <a href="/student/connections" class="dropdown-item">
+                            Connections
+                        </a>
+                        <a href="/student/posts/bookmarked" class="dropdown-item">
+                            🔖 Bookmarks
+                        </a>
+                        <a href="/student/leaderboard" class="dropdown-item">
+                            🏆 Leaderboard
+                        </a>
+                                                <a href="/student/analytics" class="dropdown-item">
+                            Analytics
+                        </a>
+                        <hr class="dropdown-divider">
+                        <a href="#" onclick="logout(); return false;" class="dropdown-item text-danger">
+                            🚪 Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ========================================
+         MAIN CONTENT AREA
+         Pages will inject content here via {% block content %}
+    ======================================== -->
+    <div class="page-wrapper">
+        {% block content %}
+        <!-- Page-specific content goes here -->
+        {% endblock %}
+    </div>
+
+    <!-- ========================================
+         CORE SCRIPTS (Loaded on every page)
+    ======================================== -->
+    <script src="{{ url_for('static', filename='js/core/api.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/core/utils.js') }}"></script>
+    
+    <script>
+        // ============================================
+        // BASE INITIALIZATION (Runs on every page)
+        // ============================================
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('🚀 Initializing StudyHub...');
+            
+            try {
+                // Verify authentication
+                const user = await api.verifyAuth();
+                
+                if (user) {
+                    console.log('✅ User authenticated:', user.username);
+                    
+                    // Update navbar with user info
+                    updateNavbarUserInfo(user);
+                    
+                    // Load notification counts
+                    loadNotificationCounts();
+                    
+                } else {
+                    console.log('❌ User not authenticated');
+                    
+                    // Redirect if on protected page
+                    redirectIfProtected();
+                }
+            } catch (error) {
+                console.error('❌ Auth error:', error);
+                redirectIfProtected();
+            }
+            
+            // Setup UI listeners
+            setupBaseUIListeners();
+        });
+        
+        // ============================================
+        // UPDATE NAVBAR USER INFO
+        // ============================================
+        function updateNavbarUserInfo(user) {
+            const userNameEl = document.getElementById('user-name');
+            const userAvatarEl = document.getElementById('user-avatar');
+            
+            if (userNameEl) {
+                userNameEl.textContent = '@' + user.username;
+            }
+            
+            if (userAvatarEl && user.avatar) {
+                userAvatarEl.src = user.avatar;
+            }
+        }
+        
+        // ============================================
+        // REDIRECT IF PROTECTED PAGE
+        // ============================================
+        function redirectIfProtected() {
+            const protectedPaths = [
+                '/student/profile/',
+                '/student/posts/',
+                '/student/threads/',
+                '/student/connections/',
+                '/student/messages/',
+                '/student/study-buddy/',
+                '/student/leaderboard'
+            ];
+            
+            const currentPath = window.location.pathname;
+            const isProtected = protectedPaths.some(path => currentPath.startsWith(path));
+            
+            if (isProtected) {
+                console.log('🔒 Protected page - redirecting to login');
+                window.location.href = '/student/login';
+            }
+        }
+        
+        // ============================================
+        // SETUP BASE UI LISTENERS
+        // ============================================
+        function setupBaseUIListeners() {
+            // Profile dropdown toggle
+            const dropdownBtn = document.getElementById('profile-dropdown-btn');
+            const dropdownMenu = document.getElementById('profile-dropdown-menu');
+            
+            if (dropdownBtn && dropdownMenu) {
+                dropdownBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    dropdownMenu.classList.toggle('hidden');
+                });
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (!e.target.closest('.navbar-profile-dropdown')) {
+                        dropdownMenu.classList.add('hidden');
+                    }
+                });
+            }
+            
+            // Highlight active nav
+            highlightActiveNav();
+            
+            // Global search listener
+            setupGlobalSearch();
+        }
+        
+        // ============================================
+        // GLOBAL SEARCH SETUP
+        // ============================================
+        function setupGlobalSearch() {
+            const searchInput = document.getElementById('global-search');
+            
+            if (searchInput) {
+                searchInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        const query = searchInput.value.trim();
+                        if (query) {
+                            window.location.href = `/student/search?q=${encodeURIComponent(query)}`;
+                        }
+                    }
+                });
+            }
+        }
+        
+        // ============================================
+        // HIGHLIGHT ACTIVE NAV ITEM
+        // ============================================
+        function highlightActiveNav() {
+            const currentPath = window.location.pathname;
+            
+            // Bottom nav highlighting
+            document.querySelectorAll('.bottom-nav-item').forEach(item => {
+                item.classList.remove('active');
+                const href = item.getAttribute('href');
+                
+                if (href) {
+                    // Exact match or starts with (for sub-pages)
+                    if (currentPath === href || 
+                        (href !== '/' && currentPath.startsWith(href))) {
+                        item.classList.add('active');
+                    }
+                }
+            });
+        }
+        
+        // ============================================
+        // LOAD NOTIFICATION COUNTS
+        // ============================================
+        async function loadNotificationCounts() {
+            try {
+                // Unread notifications
+                const notifRes = await api.get('/notifications/unread-count');
+                if (notifRes.data?.count > 0) {
+                    document.getElementById('notif-count').textContent = notifRes.data.count;
+                    document.getElementById('notif-count').style.display = 'flex';
+                } else {
+                    document.getElementById('notif-count').style.display = 'none';
+                }
+                
+                // Message counts
+                const msgRes = await api.get('/messages/unread-count');
+                if (msgRes.data?.count > 0) {
+                    const count = msgRes.data.count;
+                    document.getElementById('msg-count').textContent = count;
+                    document.getElementById('messages-badge').textContent = count;
+                    document.getElementById('msg-count').style.display = 'flex';
+                    document.getElementById('messages-badge').style.display = 'flex';
+                } else {
+                    document.getElementById('msg-count').style.display = 'none';
+                    document.getElementById('messages-badge').style.display = 'none';
+                }
+                
+            } catch (error) {
+                console.error('Failed to load notification counts:', error);
+            }
+        }
+        
+        // ============================================
+        // GLOBAL FUNCTIONS (Available to all pages)
+        // ============================================
+        function openMessagesModal() {
+            window.location.href = '/student/messages';
+        }
+        
+        function openCreatePostModal() {
+            window.location.href = '/student/posts/create';
+        }
+        
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('studyhub_token');
+                window.location.href = '/student/login';
+            }
+        }
+        
+        // Helper function for navigation (used by child pages)
+        function navigateTo(url) {
+            window.location.href = url;
+        }
+    </script>
+    
+    <!-- Page-specific JavaScript -->
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,1 @@
+export bookmarkContainer = document.querySelector("section#bookmarks");

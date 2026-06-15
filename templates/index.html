@@ -1,0 +1,1823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StudyHub — Find Your People. Organize Your Work. Watch Yourself Grow.</title>
+  <meta name="description" content="StudyHub matches you with the right classmates, keeps your work organized and prioritized, and shows you exactly how far you've come — with smart help built in." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      /* ── surfaces ── */
+      --bg: #07090f;
+      --bg2: #0c1018;
+      --bg3: #11141d;
+      --surface: rgba(255,255,255,0.035);
+      --surface-hover: rgba(255,255,255,0.065);
+      --border: rgba(255,255,255,0.08);
+      --border-strong: rgba(255,255,255,0.14);
+
+      /* ── brand: indigo (primary, used broadly as solid color) ── */
+      --primary: #667eea;
+      --primary-light: #9aa8f3;
+      --primary-soft: rgba(102,126,234,0.12);
+      --primary-border: rgba(102,126,234,0.28);
+
+      /* ── violet: reserved for AI / Learnora touchpoints only ── */
+      --violet: #8b5cf6;
+      --violet-light: #c4b5fd;
+      --violet-soft: rgba(139,92,246,0.12);
+      --violet-border: rgba(139,92,246,0.28);
+
+      /* ── pink: reserved for Growth & Recognition ── */
+      --pink: #ec4899;
+      --pink-light: #f9a8d4;
+      --pink-soft: rgba(236,72,153,0.12);
+      --pink-border: rgba(236,72,153,0.28);
+
+      /* ── green: progress / online / positive ── */
+      --green: #4ade80;
+      --green-light: #86efac;
+      --green-soft: rgba(74,222,128,0.12);
+
+      /* ── amber: urgency / achievement ── */
+      --amber: #fbbf24;
+      --amber-light: #fde68a;
+      --amber-soft: rgba(251,191,36,0.12);
+
+      /* ── rare gradients (2–3 uses on the whole page) ── */
+      --grad-hero: linear-gradient(135deg, #818cf8, #a78bfa);
+      --grad-growth: linear-gradient(135deg, #667eea, #ec4899);
+      --grad-cta: linear-gradient(135deg, #6f86ef, #5a6fe0);
+
+      /* ── text ── */
+      --text: #f3f5fb;
+      --text-soft: rgba(243,245,251,0.80);
+      --text-muted: rgba(243,245,251,0.62);
+
+      /* ── shadows: quieter than before, glow reserved for spotlight cards ── */
+      --shadow-card: 0 8px 28px rgba(0,0,0,0.35);
+      --shadow-card-lg: 0 16px 50px rgba(0,0,0,0.45);
+      --shadow-btn: 0 2px 10px rgba(102,126,234,0.28);
+      --shadow-btn-hover: 0 6px 18px rgba(102,126,234,0.34);
+      --shadow-spotlight: 0 0 50px rgba(102,126,234,0.08);
+
+      /* ── radius scale ── */
+      --r-sm: 8px;
+      --r-md: 12px;
+      --r-lg: 18px;
+      --r-xl: 24px;
+      --r-pill: 99px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+    }
+
+    /* ─── AMBIENT BACKDROP ─── */
+    #stars { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.28; }
+    .ambient {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 55% 38% at 12% 15%, rgba(102,126,234,0.09) 0%, transparent 70%),
+        radial-gradient(ellipse 45% 32% at 88% 78%, rgba(139,92,246,0.07) 0%, transparent 70%);
+    }
+
+    /* ─── SCROLLBAR ─── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg2); }
+    ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 99px; }
+
+    /* ─── FOCUS ─── */
+    a:focus-visible, button:focus-visible, .accordion-trigger:focus-visible {
+      outline: 2px solid var(--primary-light); outline-offset: 2px; border-radius: var(--r-sm);
+    }
+
+    /* ─── UTILITY ─── */
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 5%; position: relative; z-index: 1; }
+
+    .grad-text {
+      background: var(--grad-hero);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .grad-text-growth {
+      background: var(--grad-growth);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      font-size: 0.78rem; font-weight: 600; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--primary-light);
+      background: var(--primary-soft); border: 1px solid var(--primary-border);
+      padding: 0.35rem 0.9rem; border-radius: var(--r-pill); margin-bottom: 1.25rem;
+    }
+    .eyebrow.eyebrow-growth { color: var(--pink-light); background: var(--pink-soft); border-color: var(--pink-border); }
+    .eyebrow.eyebrow-ai { color: var(--violet-light); background: var(--violet-soft); border-color: var(--violet-border); }
+
+    .section-heading {
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(2rem, 4vw, 2.8rem);
+      font-weight: 800; line-height: 1.18; letter-spacing: -0.01em;
+      margin-bottom: 1rem; color: var(--text);
+    }
+    .section-sub {
+      font-size: 1.02rem; color: var(--text-soft);
+      max-width: 600px; line-height: 1.8;
+    }
+
+    /* ─── BUTTONS ─── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.75rem 1.6rem; border-radius: var(--r-md);
+      font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.95rem;
+      cursor: pointer; text-decoration: none; border: none;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, filter 0.2s ease;
+      white-space: nowrap;
+    }
+    .btn-primary {
+      background: var(--grad-cta); color: #fff;
+      box-shadow: var(--shadow-btn);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: var(--shadow-btn-hover); filter: brightness(1.06); }
+    .btn-ghost {
+      background: rgba(255,255,255,0.05); color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { background: rgba(255,255,255,0.09); border-color: var(--border-strong); transform: translateY(-2px); }
+    .btn-text {
+      background: transparent; color: var(--text-soft); border: none;
+      padding: 0.75rem 0.25rem; font-weight: 600;
+    }
+    .btn-text:hover { color: var(--text); }
+    .btn-lg { padding: 1rem 2.2rem; font-size: 1.05rem; }
+    .btn-sm { padding: 0.45rem 0.95rem; font-size: 0.8rem; border-radius: var(--r-sm); }
+
+    /* ─── NAV ─── */
+    nav {
+      position: sticky; top: 0; z-index: 200;
+      padding: 1rem 5%;
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(7,9,15,0.82); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.55rem;
+      color: var(--text); text-decoration: none; letter-spacing: -0.02em;
+    }
+    .nav-links { display: flex; align-items: center; gap: 2rem; }
+    .nav-links a.nav-link {
+      color: var(--text-soft); text-decoration: none; font-size: 0.9rem; font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-links a.nav-link:hover { color: var(--text); }
+    .nav-actions { display: flex; gap: 0.75rem; align-items: center; }
+    .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; background: none; border: none; }
+    .hamburger span { width: 22px; height: 2px; background: var(--text); border-radius: 99px; transition: all 0.3s; display: block; }
+    .mobile-nav {
+      display: none; position: absolute; top: 100%; left: 0; right: 0;
+      background: rgba(7,9,15,0.97); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border); padding: 1.25rem 5% 1.5rem;
+      flex-direction: column; gap: 1rem;
+    }
+    .mobile-nav.open { display: flex; }
+    .mobile-nav a.nav-link { color: var(--text-soft); text-decoration: none; font-size: 0.95rem; font-weight: 500; }
+    .mobile-nav .btn-ghost { width: 100%; justify-content: center; }
+
+    @media (max-width: 860px) {
+      .nav-links { display: none; }
+      .hamburger { display: flex; }
+      .nav-actions .btn-ghost { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="stars"></canvas>
+<div class="ambient"></div>
+
+<!-- ═══════════════════ NAV ═══════════════════ -->
+<nav>
+  <a class="nav-logo" href="#">StudyHub</a>
+  <div class="nav-links">
+    <a href="#how-it-works" class="nav-link">How it works</a>
+    <a href="#people" class="nav-link">Community</a>
+    <a href="#work" class="nav-link">Study tools</a>
+    <a href="#growth" class="nav-link">Growth</a>
+  </div>
+  <div class="nav-actions">
+    <a data-type="login" href="{{ url_for('student.student_auth.login') }}" class="btn btn-ghost">Log In</a>
+    <a data-type="register" href="/google/start" class="btn btn-primary">Get Started Free</a>
+  </div>
+  <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="mobile-nav" id="mobileNav">
+    <a href="#how-it-works" class="nav-link">How it works</a>
+    <a href="#people" class="nav-link">Community</a>
+    <a href="#work" class="nav-link">Study tools</a>
+    <a href="#growth" class="nav-link">Growth</a>
+    <a data-type="login" href="{{ url_for('student.student_auth.login') }}" class="nav-link">Log In</a>
+    <a data-type="register" href="/google/start" class="btn btn-primary">Get Started Free</a>
+  </div>
+</nav>
+
+<style>
+  /* ─── SHARED: live indicator (used only for genuinely real-time signals) ─── */
+  .live-dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; display: inline-block; animation: live-pulse 2s infinite; }
+  @keyframes live-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+  /* ─── HERO ─── */
+  .hero {
+    min-height: 90vh; display: flex; align-items: center;
+    position: relative; overflow: hidden; padding: 3rem 0 4rem;
+  }
+  @media (min-width: 901px) {
+    .hero { min-height: 80vh; align-items: center; padding-top: 2rem; }
+  }
+  .hero-inner { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 4rem; align-items: center; }
+
+  h1 {
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(2.5rem, 5.5vw, 4rem);
+    font-weight: 900; line-height: 1.1; letter-spacing: -0.025em;
+    margin-bottom: 1.4rem; color: var(--text);
+  }
+  .hero-desc {
+    font-size: 1.1rem; color: var(--text-soft); line-height: 1.85;
+    margin-bottom: 2.25rem; max-width: 520px;
+  }
+  .hero-cta { display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; margin-bottom: 2.75rem; }
+
+  .hero-pillars {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem;
+    border-top: 1px solid var(--border); padding-top: 1.75rem; max-width: 560px;
+  }
+  .hero-pillar .hp-icon { font-size: 1.1rem; margin-bottom: 0.4rem; }
+  .hero-pillar .hp-title { font-family: 'Outfit', sans-serif; font-size: 0.92rem; font-weight: 700; margin-bottom: 0.25rem; }
+  .hero-pillar .hp-desc { font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; }
+
+  /* ─── HERO VISUAL: composite "life dashboard" ─── */
+  .hero-visual { position: relative; }
+  .hero-card-stack { position: relative; height: 580px; }
+  .hcard {
+    position: absolute; border-radius: var(--r-lg); padding: 1.35rem;
+    background: rgba(255,255,255,0.035); backdrop-filter: blur(16px);
+    border: 1px solid var(--border-strong);
+    box-shadow: var(--shadow-card);
+  }
+  .hcard-group { width: 100%; top: 0; left: 0; right: 0; box-shadow: var(--shadow-card-lg), var(--shadow-spotlight); }
+  .hcard-hw { width: 56%; top: 310px; left: 0; }
+  .hcard-rep { width: 40%; top: 310px; right: 0; }
+  .hcard-ai { width: 68%; top: 460px; left: 8%; border-color: var(--violet-border); background: rgba(139,92,246,0.05); }
+
+  @keyframes float-soft { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+  .hcard-hw { animation: float-soft 7s ease-in-out infinite; }
+  .hcard-rep { animation: float-soft 8s ease-in-out infinite 0.4s; }
+
+  /* Card A — study group thread */
+  .grp-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.85rem; }
+  .grp-name { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 0.95rem; }
+  .grp-meta { font-size: 0.7rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.4rem; margin-top: 0.15rem; }
+  .grp-avatars { display: flex; }
+  .grp-avatars span { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.78rem; border: 2px solid var(--bg2); margin-left: -8px; }
+  .grp-avatars span:first-child { margin-left: 0; }
+  .grp-pin {
+    display: flex; gap: 0.5rem; align-items: center; font-size: 0.74rem; color: var(--primary-light);
+    background: var(--primary-soft); border: 1px solid var(--primary-border);
+    border-radius: var(--r-sm); padding: 0.45rem 0.7rem; margin-bottom: 0.75rem;
+  }
+  .grp-chat { display: flex; flex-direction: column; gap: 0.6rem; }
+  .grp-bubble { padding: 0.6rem 0.85rem; border-radius: var(--r-md); font-size: 0.82rem; line-height: 1.5; background: rgba(255,255,255,0.045); border: 1px solid var(--border); max-width: 88%; }
+  .grp-bubble.me { margin-left: auto; background: var(--primary-soft); border-color: var(--primary-border); }
+  .grp-bubble .gb-name { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.2rem; }
+  .grp-typing { display: flex; gap: 4px; padding: 0.45rem 0.85rem; align-items: center; }
+  .grp-typing span { width: 5px; height: 5px; background: var(--text-muted); border-radius: 50%; animation: typing-bounce 1.2s infinite; }
+  .grp-typing span:nth-child(2) { animation-delay: 0.2s; }
+  .grp-typing span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes typing-bounce { 0%,100% { transform: translateY(0); opacity: 0.4; } 50% { transform: translateY(-3px); opacity: 1; } }
+
+  /* Card B — homework priority */
+  .pri-label { font-size: 0.66rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.6rem; }
+  .pri-row { display: flex; align-items: center; gap: 0.7rem; }
+  .pri-badge { font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.25rem 0.55rem; border-radius: var(--r-sm); background: var(--amber-soft); color: var(--amber-light); border: 1px solid rgba(251,191,36,0.3); flex-shrink: 0; }
+  .pri-name { font-size: 0.85rem; font-weight: 700; }
+  .pri-sub { font-size: 0.72rem; color: var(--text-muted); margin-top: 0.15rem; }
+
+  /* Card C — reputation / streak / heatmap sliver */
+  .rep-row { display: flex; align-items: center; gap: 0.7rem; margin-bottom: 0.75rem; }
+  .rep-level { font-family: 'Outfit', sans-serif; font-size: 0.95rem; font-weight: 800; }
+  .rep-sub { font-size: 0.7rem; color: var(--text-muted); }
+  .mini-heat { display: grid; grid-template-columns: repeat(14, 1fr); gap: 2px; }
+  .mini-heat span { aspect-ratio: 1; border-radius: 2px; background: var(--surface); }
+  .mini-heat span.l1 { background: rgba(102,126,234,0.28); }
+  .mini-heat span.l2 { background: rgba(102,126,234,0.55); }
+  .mini-heat span.l3 { background: var(--primary); }
+
+  /* Card D — AI bubble (violet, smallest, last) */
+  .ai-row { display: flex; align-items: center; gap: 0.6rem; }
+  .ai-dot { width: 30px; height: 30px; border-radius: var(--r-sm); background: var(--violet-soft); border: 1px solid var(--violet-border); display: flex; align-items: center; justify-content: center; font-size: 0.95rem; flex-shrink: 0; }
+  .ai-text { font-size: 0.78rem; color: var(--text-soft); line-height: 1.4; }
+  .ai-text strong { color: var(--violet-light); }
+
+  /* Mobile simplified hero card (shown only under 900px) */
+  .hero-mobile-card { display: none; margin-top: 2rem; }
+
+  @media (max-width: 900px) {
+    .hero-inner { grid-template-columns: 1fr; gap: 0; text-align: left; }
+    .hero-visual { display: none; }
+    .hero-mobile-card { display: block; }
+  }
+  @media (max-width: 600px) {
+    .hero-cta { flex-direction: column; align-items: stretch; }
+    .hero-cta .btn { width: 100%; justify-content: center; }
+    .hero-pillars { grid-template-columns: 1fr; gap: 1rem; }
+  }
+</style>
+
+<!-- ═══════════════════ HERO ═══════════════════ -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-inner">
+      <div class="hero-text">
+        <div class="eyebrow">Built for university students</div>
+        <h1>
+          Find Your People.<br>
+          Organize Your Work.<br>
+          Watch Yourself <span class="grad-text">Grow</span>.
+        </h1>
+        <p class="hero-desc">
+          StudyHub matches you with classmates who fit your courses and schedule, keeps your assignments organized and prioritized, and shows you exactly how far you've come — with smart help built in wherever you get stuck.
+        </p>
+        <div class="hero-cta">
+          <a data-type="register" href="/google/start" class="btn btn-primary btn-lg">
+            Get Started Free
+          </a>
+          <a href="#how-it-works" class="btn btn-ghost btn-lg">
+            See How It Works
+          </a>
+        </div>
+        <div class="hero-pillars">
+          <div class="hero-pillar">
+            <div class="hp-icon">🧑‍🤝‍🧑</div>
+            <div class="hp-title">Matched by what you study</div>
+            <div class="hp-desc">Not who you follow — real classmates, explained matches</div>
+          </div>
+          <div class="hero-pillar">
+            <div class="hp-icon">📋</div>
+            <div class="hp-title">Priorities that update themselves</div>
+            <div class="hp-desc">Your work stays sorted, automatically</div>
+          </div>
+          <div class="hero-pillar">
+            <div class="hp-icon">📈</div>
+            <div class="hp-title">Every contribution, tracked</div>
+            <div class="hp-desc">See your growth — and where you stand</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hero Visual: composite "life dashboard" -->
+      <div class="hero-visual">
+        <div class="hero-card-stack">
+          <!-- Card A: study group thread (largest) -->
+          <div class="hcard hcard-group">
+            <div class="grp-head">
+              <div>
+                <div class="grp-name">Calc Study Squad</div>
+                <div class="grp-meta"><span class="live-dot"></span> 3 online now</div>
+              </div>
+              <div class="grp-avatars">
+                <span style="background:rgba(102,126,234,0.2);">👩🏾‍🎓</span>
+                <span style="background:rgba(236,72,153,0.15);">🧑🏻‍💻</span>
+                <span style="background:rgba(74,222,128,0.12);">👩🏼‍🔬</span>
+              </div>
+            </div>
+            <div class="grp-pin">📌 Pinned: Problem set 4 is due Thursday — notes shared below</div>
+            <div class="grp-chat">
+              <div class="grp-bubble">
+                <div class="gb-name">Amara</div>
+                Anyone figured out question 6 yet? I keep getting a negative variance
+              </div>
+              <div class="grp-bubble me">
+                <div class="gb-name">You</div>
+                Yep — sent you my work, check the shared notes
+              </div>
+              <div class="grp-typing"><span></span><span></span><span></span></div>
+            </div>
+          </div>
+
+          <!-- Card B: homework priority -->
+          <div class="hcard hcard-hw">
+            <div class="pri-label">Up next</div>
+            <div class="pri-row">
+              <span class="pri-badge">Urgent</span>
+              <div>
+                <div class="pri-name">Database Normalization Report</div>
+                <div class="pri-sub">Computer Science · Due in 18h</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card C: reputation / streak -->
+          <div class="hcard hcard-rep">
+            <div class="rep-row">
+              <span style="font-size:1.4rem;">🌟</span>
+              <div>
+                <div class="rep-level">Level 4 · Expert</div>
+                <div class="rep-sub">🔥 12-day streak</div>
+              </div>
+            </div>
+            <div class="mini-heat" id="miniHeat"></div>
+          </div>
+
+          <!-- Card D: AI bubble (violet, smallest, last) -->
+          <div class="hcard hcard-ai">
+            <div class="ai-row">
+              <div class="ai-dot">✦</div>
+              <div class="ai-text">Stuck on question 6? <strong>Ask Learnora</strong> — it already knows your notes</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mobile simplified hero card -->
+      <div class="hero-mobile-card">
+        <div class="hcard" style="position: static; width: 100%;">
+          <div class="pri-label">Up next</div>
+          <div class="pri-row">
+            <span class="pri-badge">Urgent</span>
+            <div>
+              <div class="pri-name">Database Normalization Report</div>
+              <div class="pri-sub">Computer Science · Due in 18h</div>
+            </div>
+          </div>
+          <div style="margin-top:0.85rem; padding-top:0.85rem; border-top:1px solid var(--border); display:flex; align-items:center; gap:0.6rem;">
+            <span class="live-dot"></span>
+            <span style="font-size:0.78rem; color:var(--text-soft);">3 classmates online in Calc Study Squad</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* ─── SCROLL REVEAL ─── */
+  .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .reveal-delay-1 { transition-delay: 0.08s; }
+  .reveal-delay-2 { transition-delay: 0.16s; }
+  .reveal-delay-3 { transition-delay: 0.24s; }
+
+  /* ─── DIVIDER ─── */
+  .divider { height: 1px; background: linear-gradient(90deg, transparent, var(--border-strong), transparent); }
+
+  /* ─── SECTION BASE ─── */
+  section { position: relative; z-index: 1; }
+  .section-pad { padding: 6rem 0; }
+  .section-pad-sm { padding: 5rem 0; }
+  .section-center { text-align: center; max-width: 720px; margin: 0 auto 3rem; }
+  .section-center .section-sub { margin: 0.9rem auto 0; }
+  @media (max-width: 768px) { .section-pad { padding: 4rem 0; } .section-pad-sm { padding: 3.25rem 0; } }
+
+  /* ─── PROBLEM SECTION ─── */
+  .problem-bg { background: linear-gradient(180deg, transparent 0%, rgba(12,16,24,0.6) 50%, transparent 100%); }
+  .problem-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem; margin-top: 3rem;
+  }
+  .problem-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-lg); padding: 1.75rem;
+    transition: background 0.25s, border-color 0.25s, transform 0.25s;
+  }
+  .problem-card:hover { background: var(--surface-hover); border-color: var(--border-strong); transform: translateY(-4px); }
+  .problem-icon { font-size: 2rem; margin-bottom: 1rem; display: block; }
+  .problem-card h3 { font-family: 'Outfit', sans-serif; font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .problem-card p { font-size: 0.9rem; color: var(--text-soft); line-height: 1.7; }
+
+  /* ─── HOW IT WORKS ─── */
+  .works-track {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem;
+    margin-top: 3rem; position: relative;
+  }
+  .works-line {
+    position: absolute; top: 26px; left: 6%; right: 6%; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border-strong) 8%, var(--border-strong) 92%, transparent);
+    z-index: 0;
+  }
+  .works-step { position: relative; z-index: 1; }
+  .works-num {
+    width: 52px; height: 52px; border-radius: 50%;
+    background: var(--bg2); border: 1px solid var(--border-strong);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.05rem; color: var(--primary-light);
+    margin-bottom: 1.25rem;
+  }
+  .works-step h3 { font-family: 'Outfit', sans-serif; font-size: 1.08rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .works-step p { font-size: 0.88rem; color: var(--text-soft); line-height: 1.7; }
+  .works-step .works-tag {
+    display: inline-block; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--text-muted); margin-bottom: 0.6rem;
+  }
+
+  @media (max-width: 900px) {
+    .works-track { grid-template-columns: 1fr; gap: 2.25rem; }
+    .works-line { left: 26px; right: auto; top: 0; bottom: 0; width: 1px; height: auto;
+      background: linear-gradient(180deg, transparent, var(--border-strong) 8%, var(--border-strong) 92%, transparent); }
+  }
+</style>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════ PROBLEM ═══════════════════ -->
+<section class="section-pad problem-bg" id="problem">
+  <div class="container">
+    <div class="section-center reveal">
+      <div class="eyebrow">The student struggle is real</div>
+      <h2 class="section-heading">Sound familiar?</h2>
+      <p class="section-sub">Every university student hits these walls. StudyHub was built specifically to break through them.</p>
+    </div>
+    <div class="problem-grid">
+      <div class="problem-card reveal reveal-delay-1">
+        <span class="problem-icon">😩</span>
+        <h3>Stuck at 2am with no one to ask</h3>
+        <p>Your professor is offline, your friends are asleep, and search gives you a 50-page PDF. You need an actual explanation — right now.</p>
+      </div>
+      <div class="problem-card reveal reveal-delay-2">
+        <span class="problem-icon">🤷</span>
+        <h3>Homework piling up, priorities unclear</h3>
+        <p>Five assignments due this week. Which one first? How urgent? How hard? You need a system — not just a to-do list.</p>
+      </div>
+      <div class="problem-card reveal reveal-delay-3">
+        <span class="problem-icon">🏝️</span>
+        <h3>Studying alone, no accountability</h3>
+        <p>The library is full of strangers. Group chats are noisy. You want real study partners who actually share your courses.</p>
+      </div>
+      <div class="problem-card reveal reveal-delay-1">
+        <span class="problem-icon">📊</span>
+        <h3>No idea how you're really doing</h3>
+        <p>You're doing the work but have zero visibility into your progress, your standing, or where your effort is going.</p>
+      </div>
+      <div class="problem-card reveal reveal-delay-2">
+        <span class="problem-icon">📩</span>
+        <h3>Spam and random messages from strangers</h3>
+        <p>Generic platforms are noisy and unsafe. You need a trusted academic community — not another social free-for-all.</p>
+      </div>
+      <div class="problem-card reveal reveal-delay-3">
+        <span class="problem-icon">😤</span>
+        <h3>No reward for helping others</h3>
+        <p>You help people, they get what they need, and then... nothing. There's no reason to keep giving back.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════ HOW STUDYHUB WORKS ═══════════════════ -->
+<section class="section-pad" id="how-it-works">
+  <div class="container">
+    <div class="section-center reveal">
+      <div class="eyebrow">How StudyHub works</div>
+      <h2 class="section-heading">One loop. Everything connects.</h2>
+      <p class="section-sub">You get matched with people who fit, join a real study group, get unstuck when you need to — and every bit of it builds your record.</p>
+    </div>
+    <div class="works-track">
+      <div class="works-line"></div>
+      <div class="works-step reveal reveal-delay-1">
+        <div class="works-num">1</div>
+        <div class="works-tag">People</div>
+        <h3>Get matched</h3>
+        <p>Tell us what you're studying. We introduce you to classmates who fit — same courses, complementary strengths, overlapping schedules — with the reasons shown upfront.</p>
+      </div>
+      <div class="works-step reveal reveal-delay-2">
+        <div class="works-num">2</div>
+        <div class="works-tag">People → Work</div>
+        <h3>Join a study group</h3>
+        <p>Connect into a real, persistent group — full chat, shared files, pinned messages. Not a one-off DM that disappears.</p>
+      </div>
+      <div class="works-step reveal reveal-delay-3">
+        <div class="works-num">3</div>
+        <div class="works-tag">Work + Help</div>
+        <h3>Get unstuck</h3>
+        <p>Your assignments stay sorted by what matters most. Share one with your group for real help, or ask Learnora without leaving what you're doing.</p>
+      </div>
+      <div class="works-step reveal reveal-delay-1">
+        <div class="works-num">4</div>
+        <div class="works-tag">Growth</div>
+        <h3>See your growth</h3>
+        <p>Every session, answer, and streak is tracked — your effort, your rank, and how you compare to people you actually know.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* ─── FEATURE GROUP SHARED ─── */
+  .feature-group { padding: 5.5rem 0; }
+  .feature-group.secondary { padding: 4.5rem 0; }
+  .feature-split { display: grid; grid-template-columns: 1fr 1fr; gap: 4.5rem; align-items: center; }
+  .feature-split.reverse { direction: rtl; }
+  .feature-split.reverse > * { direction: ltr; }
+  @media (max-width: 900px) {
+    .feature-split, .feature-split.reverse { grid-template-columns: 1fr; direction: ltr; gap: 2.5rem; }
+  }
+
+  .feature-tag {
+    display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; padding: 0.32rem 0.8rem; border-radius: var(--r-sm); margin-bottom: 1rem;
+    background: var(--primary-soft); color: var(--primary-light); border: 1px solid var(--primary-border);
+  }
+  .feature-tag.tag-growth { background: var(--pink-soft); color: var(--pink-light); border-color: var(--pink-border); }
+  .feature-tag.tag-ai { background: var(--violet-soft); color: var(--violet-light); border-color: var(--violet-border); }
+
+  .feature-title {
+    font-family: 'Outfit', sans-serif; font-size: clamp(1.7rem, 3vw, 2.25rem);
+    font-weight: 800; line-height: 1.22; margin-bottom: 1rem; color: var(--text);
+  }
+  .feature-desc { font-size: 0.98rem; color: var(--text-soft); line-height: 1.85; margin-bottom: 1.5rem; }
+  .feature-bullets { display: flex; flex-direction: column; gap: 0.7rem; margin-bottom: 1.5rem; }
+  .feature-bullet { display: flex; gap: 0.75rem; align-items: flex-start; font-size: 0.9rem; color: var(--text-soft); line-height: 1.6; }
+  .feature-bullet .bicon {
+    width: 18px; height: 18px; background: var(--primary-soft); border: 1px solid var(--primary-border);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 0.6rem; color: var(--primary-light); flex-shrink: 0; margin-top: 2px;
+  }
+  .feature-bullet.mobile-hide { display: flex; }
+  @media (max-width: 600px) {
+    .feature-bullet.mobile-hide { display: none; }
+  }
+
+  /* ─── MOCKUP CARD ─── */
+  .mockup-wrap {
+    position: relative; border-radius: var(--r-xl); overflow: hidden;
+    background: var(--bg2); border: 1px solid var(--border);
+    box-shadow: var(--shadow-card);
+  }
+  .mockup-wrap.spotlight { box-shadow: var(--shadow-card-lg), var(--shadow-spotlight); border-color: var(--border-strong); }
+  .mockup-header {
+    background: rgba(255,255,255,0.025); border-bottom: 1px solid var(--border);
+    padding: 0.7rem 1rem; display: flex; align-items: center; gap: 0.5rem;
+  }
+  .dot-red { width: 9px; height: 9px; border-radius: 50%; background: #ff5f57; }
+  .dot-yellow { width: 9px; height: 9px; border-radius: 50%; background: #febc2e; }
+  .dot-green { width: 9px; height: 9px; border-radius: 50%; background: #28c840; }
+  .mockup-label { font-size: 0.76rem; color: var(--text-muted); margin-left: 0.5rem; font-weight: 600; }
+  .mockup-body { padding: 1.5rem; }
+
+  /* ─── REASON CHIP ─── */
+  .reason-chips { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+  .reason-chip {
+    font-size: 0.7rem; font-weight: 600; padding: 0.3rem 0.7rem; border-radius: var(--r-pill);
+    background: var(--primary-soft); border: 1px solid var(--primary-border); color: var(--primary-light);
+  }
+
+  /* ─── SUPPORTING ROW (cards under a spotlight feature-split) ─── */
+  .support-row {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin-top: 3rem;
+  }
+  .support-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg);
+    padding: 1.4rem; transition: border-color 0.25s, transform 0.25s;
+  }
+  .support-card:hover { border-color: var(--border-strong); transform: translateY(-3px); }
+  .support-card h4 { font-family: 'Outfit', sans-serif; font-size: 0.95rem; font-weight: 700; margin-bottom: 0.6rem; display: flex; align-items: center; gap: 0.5rem; }
+  .support-card .sc-icon { font-size: 1.05rem; }
+  .support-card p { font-size: 0.84rem; color: var(--text-soft); line-height: 1.6; }
+  @media (max-width: 900px) { .support-row { grid-template-columns: 1fr; } }
+
+  .group-cta { margin-top: 2.5rem; display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap; }
+  .group-cta-note { font-size: 0.82rem; color: var(--text-muted); }
+
+  /* ─── MATCH CARD (Group A) ─── */
+  .match-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+  .match-pct { font-family: 'Outfit', sans-serif; font-size: 1.6rem; font-weight: 800; color: var(--green); }
+  .match-pct-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; }
+  .match-profile { display: flex; gap: 1rem; align-items: flex-start; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: var(--r-md); padding: 1rem; margin-bottom: 1rem; }
+  .match-profile .mp-avatar { font-size: 2rem; flex-shrink: 0; }
+  .match-profile .mp-name { font-weight: 700; font-size: 0.95rem; display: flex; align-items: center; gap: 0.4rem; }
+  .match-profile .mp-meta { font-size: 0.78rem; color: var(--text-muted); margin: 0.15rem 0 0.5rem; }
+  .match-profile .mp-strong { font-size: 0.78rem; color: var(--green-light); }
+  .match-profile .mp-need { font-size: 0.78rem; color: var(--pink-light); margin-top: 0.1rem; }
+  .match-celebrate {
+    display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 600; color: var(--green-light);
+    background: var(--green-soft); border: 1px solid rgba(74,222,128,0.25); border-radius: var(--r-md);
+    padding: 0.6rem 0.9rem; margin-top: 1rem;
+  }
+
+  /* ─── MINI MOCKUPS (group/connections/find-help) ─── */
+  .mini-mock { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: var(--r-md); padding: 0.9rem; }
+  .mini-mock-head { display: flex; align-items: center; justify-content: space-between; font-size: 0.78rem; font-weight: 700; margin-bottom: 0.6rem; }
+  .health-row { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.8rem; }
+  .health-row:last-child { border-bottom: none; }
+  .health-tag { font-size: 0.68rem; font-weight: 700; padding: 0.2rem 0.5rem; border-radius: var(--r-sm); }
+  .health-tag.good { background: var(--green-soft); color: var(--green-light); }
+  .health-tag.fading { background: var(--amber-soft); color: var(--amber-light); }
+  .find-help-input { display: flex; align-items: center; gap: 0.5rem; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: var(--r-pill); padding: 0.55rem 0.9rem; font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.75rem; }
+  .find-help-result { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--text-soft); }
+</style>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════ GROUP A — FIND YOUR PEOPLE (spotlight) ═══════════════════ -->
+<section class="feature-group" id="people">
+  <div class="container">
+    <div class="feature-split">
+      <div class="reveal">
+        <span class="feature-tag">Your People</span>
+        <h2 class="feature-title">Find exactly the right people to study with</h2>
+        <p class="feature-desc">Not random matchmaking — explainable compatibility. StudyHub matches you with classmates whose strong subjects are your weak ones, whose schedule overlaps yours, and who learn the way you do — and tells you exactly why.</p>
+        <div class="feature-bullets">
+          <div class="feature-bullet"><div class="bicon">✓</div><span>Every match comes with reasons — same department, overlapping free time, complementary strengths, similar learning style</span></div>
+          <div class="feature-bullet"><div class="bicon">✓</div><span>Strong matches connect instantly, with a compatibility percentage shown up front</span></div>
+          <div class="feature-bullet mobile-hide"><div class="bicon">✓</div><span>Join real study groups — full chat with presence, pinned messages, and reactions, not a one-off DM</span></div>
+          <div class="feature-bullet mobile-hide"><div class="bicon">✓</div><span>See who's online and able to help with a specific subject, right now</span></div>
+        </div>
+      </div>
+      <div class="reveal reveal-delay-1">
+        <div class="mockup-wrap spotlight">
+          <div class="mockup-header">
+            <div class="dot-red"></div><div class="dot-yellow"></div><div class="dot-green"></div>
+            <span class="mockup-label">Suggested Study Partner</span>
+          </div>
+          <div class="mockup-body">
+            <div class="match-head">
+              <div class="match-pct-label">Compatibility</div>
+              <div class="match-pct">94%</div>
+            </div>
+            <div class="match-profile">
+              <span class="mp-avatar">👩🏾‍🎓</span>
+              <div>
+                <div class="mp-name">Amara O. <span class="live-dot"></span></div>
+                <div class="mp-meta">Computer Science, Year 2</div>
+                <div class="mp-strong">Strong: Algorithms, Data Structures</div>
+                <div class="mp-need">Needs help: Calculus, Stats</div>
+              </div>
+            </div>
+            <div class="reason-chips">
+              <span class="reason-chip">Same department</span>
+              <span class="reason-chip">Strong where you're weak</span>
+              <span class="reason-chip">Visual learner — like you</span>
+              <span class="reason-chip">Free Tue &amp; Thu evenings</span>
+            </div>
+            <div class="match-celebrate">🎉 Instantly connected — strong matches skip the request queue</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="support-row">
+      <div class="support-card reveal">
+        <h4><span class="sc-icon">🧵</span> Study groups, fully featured</h4>
+        <div class="mini-mock" style="margin-top:0.75rem;">
+          <div class="mini-mock-head"><span>CS 301 Study Group</span><span style="color:var(--text-muted); font-weight:500;">12 members</span></div>
+          <div style="font-size:0.74rem; color:var(--primary-light); background:var(--primary-soft); border:1px solid var(--primary-border); border-radius:var(--r-sm); padding:0.4rem 0.6rem; margin-bottom:0.5rem;">📌 Problem set 4 due Thursday — notes attached</div>
+          <div style="font-size:0.78rem; color:var(--text-soft); display:flex; justify-content:space-between;"><span>Kofi: sent the worked example 📎</span><span style="color:var(--text-muted);">✓✓</span></div>
+        </div>
+      </div>
+      <div class="support-card reveal reveal-delay-1">
+        <h4><span class="sc-icon">💚</span> Your network, with context</h4>
+        <div class="mini-mock" style="margin-top:0.75rem;">
+          <div class="health-row"><span>Amara O.</span><span class="health-tag good">Active</span></div>
+          <div class="health-row"><span>Priya K.</span><span class="health-tag good">Active</span></div>
+          <div class="health-row"><span>Kofi B.</span><span class="health-tag fading">💤 Reconnect</span></div>
+        </div>
+      </div>
+      <div class="support-card reveal reveal-delay-2">
+        <h4><span class="sc-icon">🔍</span> Stuck right now? Find help</h4>
+        <div class="mini-mock" style="margin-top:0.75rem;">
+          <div class="find-help-input">🔎 Organic Chemistry — titration</div>
+          <div class="find-help-result"><span class="live-dot"></span> 3 people online now, ready to help</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="group-cta reveal">
+      <a data-type="register" href="/google/start" class="btn btn-primary">Get Started Free</a>
+      <span class="group-cta-note">Most new accounts get their first matches before onboarding is even done.</span>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* ─── HOMEWORK MOCKUP (Group B) ─── */
+  .hw-list { display: flex; flex-direction: column; gap: 0.75rem; }
+  .hw-item { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: var(--r-md); padding: 0.95rem; display: flex; align-items: center; gap: 1rem; }
+  .hw-priority { font-size: 0.64rem; font-weight: 700; padding: 0.25rem 0.5rem; border-radius: var(--r-sm); flex-shrink: 0; text-transform: uppercase; letter-spacing: 0.06em; }
+  .hw-priority.urgent { background: rgba(239,68,68,0.15); color: #fca5a5; border: 1px solid rgba(239,68,68,0.28); }
+  .hw-priority.high { background: var(--amber-soft); color: var(--amber-light); border: 1px solid rgba(251,191,36,0.25); }
+  .hw-priority.med { background: var(--green-soft); color: var(--green-light); border: 1px solid rgba(74,222,128,0.2); }
+  .hw-info { flex: 1; }
+  .hw-info .hw-name { font-size: 0.87rem; font-weight: 600; }
+  .hw-info .hw-sub { font-size: 0.74rem; color: var(--text-muted); margin-top: 0.15rem; }
+  .hw-due { font-size: 0.72rem; color: var(--text-muted); flex-shrink: 0; }
+  @media (max-width: 480px) {
+    .hw-item { flex-wrap: wrap; align-items: flex-start; }
+    .hw-item .hw-priority { order: 1; }
+    .hw-item .hw-due { order: 2; margin-left: auto; }
+    .hw-item .hw-info { order: 3; flex-basis: 100%; }
+  }
+  .smart-tip {
+    margin-top: 1rem; background: var(--primary-soft); border: 1px solid var(--primary-border);
+    border-radius: var(--r-md); padding: 0.8rem; font-size: 0.8rem; color: var(--primary-light); line-height: 1.6;
+  }
+  .smart-tip strong { color: var(--text); }
+
+  /* ─── LIVE SESSION MOCKUP ─── */
+  .session-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg);
+    padding: 1.5rem;
+  }
+  .session-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+  .session-title { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 0.98rem; }
+  .session-goal { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.2rem; }
+  .pomodoro-row { display: flex; gap: 2rem; justify-content: center; margin-bottom: 1.25rem; }
+  .pomodoro { text-align: center; }
+  .pomodoro svg { width: 84px; height: 84px; transform: rotate(-90deg); }
+  .pomodoro circle.track { fill: none; stroke: var(--border); stroke-width: 6; }
+  .pomodoro circle.prog {
+    fill: none; stroke: var(--primary); stroke-width: 6; stroke-linecap: round;
+    stroke-dasharray: 251.2; stroke-dashoffset: 0;
+    animation: pomodoro-tick 18s linear infinite;
+  }
+  @keyframes pomodoro-tick { from { stroke-dashoffset: 0; } to { stroke-dashoffset: 251.2; } }
+  .pomodoro .pname { font-size: 0.74rem; font-weight: 700; margin-top: 0.4rem; }
+  .pomodoro .ptime { font-size: 0.7rem; color: var(--text-muted); }
+  .session-notes {
+    background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: var(--r-md);
+    padding: 0.85rem; font-size: 0.8rem; color: var(--text-soft); line-height: 1.6; margin-bottom: 1rem;
+  }
+  .session-notes .sn-label { font-size: 0.68rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.4rem; }
+  .session-progress { display: flex; align-items: center; gap: 0.6rem; font-size: 0.78rem; color: var(--text-soft); margin-bottom: 1rem; }
+  .session-progress .sp-bar { flex: 1; height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
+  .session-progress .sp-fill { height: 100%; width: 60%; background: var(--primary); border-radius: 99px; }
+  .session-ai {
+    display: flex; align-items: center; gap: 0.5rem; font-size: 0.78rem; color: var(--violet-light);
+    background: var(--violet-soft); border: 1px solid var(--violet-border); border-radius: var(--r-pill);
+    padding: 0.45rem 0.85rem; width: fit-content;
+  }
+
+  /* ─── TEMPLATE PICKER ─── */
+  .template-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.85rem; }
+  .template-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md);
+    padding: 1rem 0.85rem; text-align: center; transition: border-color 0.2s, transform 0.2s;
+  }
+  .template-card:hover { border-color: var(--border-strong); transform: translateY(-3px); }
+  .template-card .tc-icon { font-size: 1.4rem; margin-bottom: 0.5rem; }
+  .template-card .tc-name { font-size: 0.82rem; font-weight: 700; }
+  .template-card .tc-time { font-size: 0.7rem; color: var(--text-muted); margin-top: 0.2rem; }
+  @media (max-width: 700px) { .template-grid { grid-template-columns: repeat(2, 1fr); } }
+
+  /* ─── HOURS-TOGETHER STAT ─── */
+  .hours-stat {
+    display: flex; align-items: center; gap: 1rem; background: var(--surface);
+    border: 1px solid var(--border); border-radius: var(--r-lg); padding: 1.25rem 1.5rem;
+  }
+  .hours-stat .hs-avatars { display: flex; flex-shrink: 0; }
+  .hours-stat .hs-avatars span { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; border: 2px solid var(--bg2); margin-left: -10px; }
+  .hours-stat .hs-avatars span:first-child { margin-left: 0; }
+  .hours-stat .hs-num { font-family: 'Outfit', sans-serif; font-size: 1.9rem; font-weight: 800; color: var(--text); }
+  .hours-stat .hs-text { font-size: 0.85rem; color: var(--text-soft); }
+</style>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════ GROUP B — GET ORGANIZED, TOGETHER (spotlight) ═══════════════════ -->
+<section class="feature-group" id="work">
+  <div class="container">
+    <div class="feature-split reverse">
+      <div class="reveal reveal-delay-1">
+        <div class="mockup-wrap spotlight">
+          <div class="mockup-header">
+            <div class="dot-red"></div><div class="dot-yellow"></div><div class="dot-green"></div>
+            <span class="mockup-label">My Assignments — sorted automatically</span>
+          </div>
+          <div class="mockup-body">
+            <div class="hw-list">
+              <div class="hw-item">
+                <div class="hw-priority urgent">Urgent</div>
+                <div class="hw-info">
+                  <div class="hw-name">Database Normalization Report</div>
+                  <div class="hw-sub">Computer Science · Hard · ~4 hrs</div>
+                </div>
+                <div class="hw-due">Due in 18h</div>
+              </div>
+              <div class="hw-item">
+                <div class="hw-priority high">High</div>
+                <div class="hw-info">
+                  <div class="hw-name">Titration Lab Analysis</div>
+                  <div class="hw-sub">Chemistry · Medium · ~2 hrs</div>
+                </div>
+                <div class="hw-due">Due in 2d</div>
+              </div>
+              <div class="hw-item">
+                <div class="hw-priority med">Soon</div>
+                <div class="hw-info">
+                  <div class="hw-name">Essay: Colonial History</div>
+                  <div class="hw-sub">History · Medium · ~3 hrs</div>
+                </div>
+                <div class="hw-due">Due in 4d</div>
+              </div>
+            </div>
+            <div class="smart-tip">💡 <strong>Smart Suggestion:</strong> Start with the Database report — it's hard and due soonest. The essay is a quick win if you need momentum first.</div>
+          </div>
+        </div>
+      </div>
+      <div class="reveal">
+        <span class="feature-tag">Your Work</span>
+        <h2 class="feature-title">Get organized, together</h2>
+        <p class="feature-desc">A personal assignment tracker with a priority list that re-sorts itself, a peer-help marketplace for when you're stuck, and live study sessions where "studying together" actually means together.</p>
+        <div class="feature-bullets">
+          <div class="feature-bullet"><div class="bicon">✓</div><span>Your to-do list recalculates priority automatically — due date, difficulty, and effort, with a reason for what's first</span></div>
+          <div class="feature-bullet"><div class="bicon">✓</div><span>Share any assignment with your network and get a real, written solution — not a DM that disappears</span></div>
+          <div class="feature-bullet mobile-hide"><div class="bicon">✓</div><span>Help is acknowledged: 🙏 Thanks · 🔥 Lifesaver · 🧠 Mind Blown · ⭐ Perfect — with response times tracked</span></div>
+          <div class="feature-bullet mobile-hide"><div class="bicon">✓</div><span>Pick a session template, propose times, your partner confirms — no more "let me know when you're free"</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="reveal" style="margin-top:3.5rem;">
+      <div class="feature-split">
+        <div>
+          <h3 class="feature-title" style="font-size: clamp(1.4rem, 2.4vw, 1.8rem);">Live sessions, genuinely shared</h3>
+          <p class="feature-desc">One goal, one timer, one notepad — visible to both people in real time. Set a target, start a synchronized focus timer, and watch progress move together.</p>
+          <div class="session-card">
+            <div class="session-head">
+              <div>
+                <div class="session-title">Live Session · Organic Chemistry</div>
+                <div class="session-goal">Goal: 20 practice problems · 12 solved</div>
+              </div>
+              <span class="live-dot"></span>
+            </div>
+            <div class="pomodoro-row">
+              <div class="pomodoro">
+                <svg viewBox="0 0 90 90"><circle class="track" cx="45" cy="45" r="40"/><circle class="prog" cx="45" cy="45" r="40"/></svg>
+                <div class="pname">You</div>
+                <div class="ptime">Focus · 18:42 left</div>
+              </div>
+              <div class="pomodoro">
+                <svg viewBox="0 0 90 90"><circle class="track" cx="45" cy="45" r="40"/><circle class="prog" cx="45" cy="45" r="40"/></svg>
+                <div class="pname">Priya</div>
+                <div class="ptime">Focus · 18:42 left</div>
+              </div>
+            </div>
+            <div class="session-progress">
+              <span>12 / 20 problems</span>
+              <div class="sp-bar"><div class="sp-fill"></div></div>
+              <span>60%</span>
+            </div>
+            <div class="session-notes">
+              <div class="sn-label">Shared notepad</div>
+              "Priya added a PDF: Reaction Mechanisms — set 3." Both of you can edit and see updates live.
+            </div>
+            <div class="session-ai">✦ Stuck on a step? Ask — without losing your place</div>
+          </div>
+        </div>
+        <div>
+          <h3 class="feature-title" style="font-size: clamp(1.4rem, 2.4vw, 1.8rem);">Start with a template</h3>
+          <p class="feature-desc">Four ready-made formats — pick one, propose times, and your partner confirms. Structure, without setup effort.</p>
+          <div class="template-grid">
+            <div class="template-card">
+              <div class="tc-icon">📚</div>
+              <div class="tc-name">Exam Prep</div>
+              <div class="tc-time">120 min</div>
+            </div>
+            <div class="template-card">
+              <div class="tc-icon">✍️</div>
+              <div class="tc-name">Homework Help</div>
+              <div class="tc-time">60 min</div>
+            </div>
+            <div class="template-card">
+              <div class="tc-icon">🎯</div>
+              <div class="tc-name">Concept Review</div>
+              <div class="tc-time">90 min</div>
+            </div>
+            <div class="template-card">
+              <div class="tc-icon">⚡</div>
+              <div class="tc-name">Quick Sprint</div>
+              <div class="tc-time">30 min</div>
+            </div>
+          </div>
+          <div class="hours-stat" style="margin-top:1.5rem;">
+            <div class="hs-avatars">
+              <span style="background:rgba(102,126,234,0.2);">🧑🏻‍💻</span>
+              <span style="background:rgba(236,72,153,0.15);">👩🏼‍🔬</span>
+            </div>
+            <div>
+              <div class="hs-num">47 hrs</div>
+              <div class="hs-text">You and Priya have studied together — and counting.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="group-cta reveal">
+      <a data-type="register" href="/google/start" class="btn btn-primary">Get Started Free</a>
+      <span class="group-cta-note">Every session is logged — so the work you put in together is never lost.</span>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* ─── COMMUNITY FEED MOCKUP (Group C) ─── */
+  .feed-tabs { display: flex; gap: 1.25rem; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 1rem; }
+  .feed-tabs span.active { color: var(--text); font-weight: 700; }
+  .feed-card { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: var(--r-md); padding: 0.9rem; margin-bottom: 0.75rem; }
+  .post-badge { font-size: 0.64rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.2rem 0.5rem; border-radius: var(--r-sm); display: inline-block; margin-bottom: 0.5rem; }
+  .post-badge.q { background: var(--primary-soft); color: var(--primary-light); border: 1px solid var(--primary-border); }
+  .post-badge.r { background: var(--green-soft); color: var(--green-light); border: 1px solid rgba(74,222,128,0.25); }
+  .post-badge.p { background: var(--amber-soft); color: var(--amber-light); border: 1px solid rgba(251,191,36,0.25); }
+  .feed-title { font-size: 0.88rem; font-weight: 700; margin-bottom: 0.3rem; }
+  .feed-meta { font-size: 0.74rem; color: var(--text-muted); }
+  .solved-comment {
+    margin-top: 0.7rem; padding-top: 0.7rem; border-top: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;
+  }
+  .solved-tag {
+    font-size: 0.72rem; font-weight: 700; color: var(--green-light); background: var(--green-soft);
+    border: 1px solid rgba(74,222,128,0.25); border-radius: var(--r-sm); padding: 0.2rem 0.55rem;
+  }
+  .rep-toast { font-size: 0.72rem; font-weight: 700; color: var(--pink-light); background: var(--pink-soft); border: 1px solid var(--pink-border); border-radius: var(--r-pill); padding: 0.2rem 0.6rem; }
+  .bookmark-folder {
+    display: flex; align-items: center; justify-content: space-between; font-size: 0.8rem;
+    background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: var(--r-md); padding: 0.7rem 0.9rem;
+  }
+</style>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════ GROUP C — ASK, ANSWER, BUILD (secondary) ═══════════════════ -->
+<section class="feature-group secondary" id="voice">
+  <div class="container">
+    <div class="feature-split">
+      <div class="reveal">
+        <span class="feature-tag">Your Voice</span>
+        <h2 class="feature-title">Ask, answer, and build a record</h2>
+        <p class="feature-desc">Five purpose-built post types — questions, problems, discussions, resources, and announcements — so what you post actually means something. Mark an answer as the solution and it's rewarded; bookmark anything into folders for exam week.</p>
+        <div class="feature-bullets">
+          <div class="feature-bullet"><div class="bicon">✓</div><span>An "unsolved" feed surfaces questions you can help with — and earn recognition for</span></div>
+          <div class="feature-bullet"><div class="bicon">✓</div><span>Bookmark folders keep resources organized for finals week</span></div>
+          <div class="feature-bullet mobile-hide"><div class="bicon">✓</div><span>One toggle turns any post into a study group — a question becomes a place to keep working on it</span></div>
+        </div>
+      </div>
+      <div class="reveal reveal-delay-1">
+        <div class="mockup-wrap">
+          <div class="mockup-header">
+            <div class="dot-red"></div><div class="dot-yellow"></div><div class="dot-green"></div>
+            <span class="mockup-label">Community Feed</span>
+          </div>
+          <div class="mockup-body">
+            <div class="feed-tabs">
+              <span class="active">All</span><span>Unsolved</span><span>Trending</span><span>Resources</span>
+            </div>
+            <div class="feed-card">
+              <span class="post-badge q">Question</span>
+              <div class="feed-title">Can anyone explain Fourier transforms with an example?</div>
+              <div class="feed-meta">Ahmed S. · Engineering · 14 comments</div>
+              <div class="solved-comment">
+                <span class="solved-tag">✅ Marked as solution — Priya K.</span>
+                <span class="rep-toast">+15 reputation</span>
+              </div>
+            </div>
+            <div class="feed-card" style="margin-bottom:1rem;">
+              <span class="post-badge r">Resource</span>
+              <div class="feed-title">MIT OCW — Linear Algebra Lecture Notes</div>
+              <div class="feed-meta">Kofi B. · Saved by 5 connections</div>
+            </div>
+            <div class="bookmark-folder">
+              <span>📁 Exam Prep — Finals Week</span>
+              <span style="color:var(--text-muted);">4 saved</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* ─── MESSAGING MOCKUP (Group D) ─── */
+  .msg-list { display: flex; flex-direction: column; gap: 0.4rem; }
+  .msg-row { display: flex; gap: 0.75rem; align-items: center; padding: 0.65rem 0.75rem; border-radius: var(--r-md); }
+  .msg-row.active { background: var(--primary-soft); }
+  .msg-ava { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+  .msg-info .mname { font-size: 0.85rem; font-weight: 600; }
+  .msg-info .mpreview { font-size: 0.75rem; color: var(--text-muted); }
+  .msg-meta { margin-left: auto; text-align: right; }
+  .msg-meta .mtime { font-size: 0.7rem; color: var(--text-muted); }
+  .msg-meta .mbadge { background: var(--primary); color: #fff; font-size: 0.65rem; font-weight: 700; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-left: auto; margin-top: 3px; }
+
+  /* ─── CONDENSED LIVE ACTIVITY ─── */
+  .activity-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 3rem; }
+  .activity-entry {
+    display: flex; gap: 0.75rem; align-items: flex-start;
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); padding: 0.9rem;
+  }
+  .activity-avatar { width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; }
+  .activity-entry .aname { font-size: 0.82rem; font-weight: 600; display: flex; align-items: center; gap: 0.35rem; }
+  .activity-entry .adesc { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.15rem; line-height: 1.5; }
+  @media (max-width: 900px) { .activity-strip { grid-template-columns: 1fr; } }
+</style>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════ GROUP D — REAL CONVERSATIONS, REAL PEOPLE (secondary) ═══════════════════ -->
+<section class="feature-group secondary">
+  <div class="container">
+    <div class="feature-split reverse">
+      <div class="reveal reveal-delay-1">
+        <div class="mockup-wrap">
+          <div class="mockup-header">
+            <div class="dot-red"></div><div class="dot-yellow"></div><div class="dot-green"></div>
+            <span class="mockup-label">Messages</span>
+          </div>
+          <div class="mockup-body" style="padding:0.75rem;">
+            <div class="msg-list">
+              <div class="msg-row active">
+                <div class="msg-ava" style="background:rgba(102,126,234,0.2);">👩🏾‍🎓</div>
+                <div class="msg-info">
+                  <div class="mname">Amara O.</div>
+                  <div class="mpreview">did you see the lecture notes? 👀</div>
+                </div>
+                <div class="msg-meta">
+                  <div class="mtime">2m ago</div>
+                  <div class="mbadge">3</div>
+                </div>
+              </div>
+              <div class="msg-row">
+                <div class="msg-ava" style="background:rgba(236,72,153,0.12);">🧑🏻‍💻</div>
+                <div class="msg-info">
+                  <div class="mname">Kofi B.</div>
+                  <div class="mpreview">I submitted the solution ✅</div>
+                </div>
+                <div class="msg-meta"><div class="mtime">1h ago</div></div>
+              </div>
+              <div class="msg-row">
+                <div class="msg-ava" style="background:rgba(74,222,128,0.12);">👩🏼‍🔬</div>
+                <div class="msg-info">
+                  <div class="mname">Priya K.</div>
+                  <div class="mpreview">Study session tomorrow? 📚</div>
+                </div>
+                <div class="msg-meta"><div class="mtime">3h ago</div></div>
+              </div>
+              <div class="msg-row">
+                <div class="msg-ava" style="background:var(--amber-soft);">🧑🏿‍📐</div>
+                <div class="msg-info">
+                  <div class="mname">Ahmed S.</div>
+                  <div class="mpreview">🔥 that explanation was perfect!</div>
+                </div>
+                <div class="msg-meta"><div class="mtime">Yesterday</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="reveal">
+        <span class="feature-tag">Stay Connected</span>
+        <h2 class="feature-title">Real conversations, real people</h2>
+        <p class="feature-desc">Messaging only exists between people who've actually connected — so a message here means something, and there's no such thing as a stranger DM. Read receipts, typing indicators, reactions, and shared media all work the way you'd expect.</p>
+        <div class="feature-bullets">
+          <div class="feature-bullet"><div class="bicon">✓</div><span>You can only message people you're connected with — block and unblock anytime</span></div>
+          <div class="feature-bullet"><div class="bicon">✓</div><span>Shared media gallery — every photo, doc, and link from a conversation, always findable</span></div>
+          <div class="feature-bullet mobile-hide"><div class="bicon">✓</div><span>Notifications are grouped by type, with full control over what notifies you and how</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="activity-strip reveal">
+      <div class="activity-entry">
+        <div class="activity-avatar" style="background:rgba(102,126,234,0.15);">👩🏾‍🎓</div>
+        <div>
+          <div class="aname">Amara O. <span class="live-dot"></span></div>
+          <div class="adesc">Started a session on Graphs &amp; Trees — needs help with Dijkstra's.</div>
+        </div>
+      </div>
+      <div class="activity-entry">
+        <div class="activity-avatar" style="background:var(--green-soft);">👩🏼‍🔬</div>
+        <div>
+          <div class="aname">Priya K. <span class="live-dot"></span></div>
+          <div class="adesc">Finished a 25-min focus session on Organic Chemistry. Streak: 🔥 8 days.</div>
+        </div>
+      </div>
+      <div class="activity-entry">
+        <div class="activity-avatar" style="background:var(--amber-soft);">🧑🏿‍📐</div>
+        <div>
+          <div class="aname">Ahmed S.</div>
+          <div class="adesc">Posted a question on Fourier transforms — 3 responses so far.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* ─── GROUP E — GROWTH GRID ─── */
+  .growth-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 3rem; align-items: start; }
+  .growth-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg);
+    padding: 1.5rem;
+  }
+  .growth-card.full { grid-column: 1 / -1; }
+  .growth-card.signature { border-color: var(--pink-border); box-shadow: 0 0 50px rgba(236,72,153,0.06); }
+  .growth-card h4 { font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap; }
+  .growth-card h4 .gh-icon { font-size: 1.05rem; }
+  @media (max-width: 900px) { .growth-grid { grid-template-columns: 1fr; } }
+
+  /* Nearby rival card */
+  .rank-change { font-size: 0.78rem; font-weight: 700; color: var(--green-light); background: var(--green-soft); border-radius: var(--r-pill); padding: 0.2rem 0.65rem; white-space: nowrap; }
+  .rival-list { display: flex; flex-direction: column; }
+  .rival-row {
+    display: flex; align-items: center; gap: 0.85rem; padding: 0.6rem 0.75rem; border-radius: var(--r-sm);
+    font-size: 0.85rem; color: var(--text-soft);
+  }
+  .rival-row .rr-rank { width: 32px; font-weight: 700; color: var(--text-muted); font-family: 'Outfit', sans-serif; }
+  .rival-row .rr-name { flex: 1; }
+  .rival-row .rr-pts { color: var(--text-muted); font-size: 0.8rem; }
+  .rival-row.you { background: var(--pink-soft); border: 1px solid var(--pink-border); font-weight: 700; color: var(--text); }
+  .rival-row.you .rr-rank { color: var(--pink-light); }
+  .rival-row.extra { display: none; }
+  @media (min-width: 701px) { .rival-row.extra { display: flex; } }
+  .rival-foot { margin-top: 0.85rem; font-size: 0.78rem; color: var(--text-muted); }
+
+  /* Heatmap */
+  .heatmap-grid { display: grid; grid-template-columns: repeat(13, 1fr); gap: 3px; margin-bottom: 1rem; }
+  .hm-cell { aspect-ratio: 1; border-radius: 2px; }
+  .hm-0 { background: var(--surface); }
+  .hm-1 { background: rgba(102,126,234,0.25); }
+  .hm-2 { background: rgba(102,126,234,0.5); }
+  .hm-3 { background: rgba(102,126,234,0.75); }
+  .hm-4 { background: var(--primary); }
+  .heat-summary { display: flex; justify-content: space-between; font-size: 0.76rem; color: var(--text-muted); }
+  .impact-row { display: flex; gap: 1.5rem; margin-top: 1.1rem; padding-top: 1.1rem; border-top: 1px solid var(--border); }
+  .impact-item .ii-num { font-family: 'Outfit', sans-serif; font-size: 1.3rem; font-weight: 800; }
+  .impact-item .ii-lbl { font-size: 0.7rem; color: var(--text-muted); margin-top: 0.1rem; }
+
+  /* Badge gallery */
+  .badge-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.6rem; }
+  .badge-mini {
+    text-align: center; border-radius: var(--r-md); padding: 0.7rem 0.4rem;
+    background: rgba(255,255,255,0.02); border: 1px solid var(--border);
+  }
+  .badge-mini.rare { border-color: var(--primary-border); }
+  .badge-mini.epic { border-color: var(--pink-border); }
+  .badge-mini.legendary { border-color: rgba(251,191,36,0.4); background: var(--amber-soft); }
+  .badge-mini .bm-icon { font-size: 1.3rem; }
+  .badge-mini .bm-name { font-size: 0.66rem; font-weight: 700; margin-top: 0.3rem; }
+  .badge-progress { margin-top: 1rem; }
+  .badge-progress .bp-label { display: flex; justify-content: space-between; font-size: 0.76rem; color: var(--text-muted); margin-bottom: 0.4rem; }
+  .badge-progress .bp-bar { height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
+  .badge-progress .bp-fill { height: 100%; width: 76%; background: var(--grad-growth); border-radius: 99px; }
+  @media (max-width: 500px) { .badge-strip { grid-template-columns: repeat(4, 1fr); } .badge-mini .bm-name { display: none; } }
+
+  /* Insight card */
+  .insight-text { font-size: 0.92rem; color: var(--text-soft); line-height: 1.7; }
+  .insight-pct { font-family: 'Outfit', sans-serif; font-weight: 800; color: var(--pink-light); }
+
+  /* Rising stars + levels */
+  .rs-list { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; }
+  .rs-row { display: flex; align-items: center; gap: 0.6rem; font-size: 0.84rem; }
+  .rs-row .rs-emoji { width: 22px; text-align: center; }
+  .rs-row .rs-gain { margin-left: auto; color: var(--green-light); font-size: 0.78rem; font-weight: 700; }
+  .levels-row { display: flex; justify-content: space-between; gap: 0.4rem; margin-top: 0.5rem; }
+  .level-pip { flex: 1; text-align: center; padding: 0.5rem 0.2rem; border-radius: var(--r-sm); font-size: 0.68rem; font-weight: 700; color: var(--text-muted); background: var(--surface); border: 1px solid var(--border); }
+  .level-pip.current { color: var(--text); background: var(--primary-soft); border-color: var(--primary-border); }
+</style>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════ GROUP E — WATCH YOURSELF GROW (spotlight) ═══════════════════ -->
+<section class="feature-group" id="growth">
+  <div class="container">
+    <div class="section-center reveal">
+      <div class="eyebrow eyebrow-growth">Your Growth</div>
+      <h2 class="section-heading">Watch yourself <span class="grad-text-growth">grow</span></h2>
+      <p class="section-sub">Every contribution counts, is visible, and is compared against something that matters — your own past, your friends, your department, or the people closest to you in rank.</p>
+    </div>
+
+    <div class="growth-grid">
+      <!-- Signature: nearby rival -->
+      <div class="growth-card full signature reveal">
+        <h4><span><span class="gh-icon">🏆</span> Your Rank — Computer Science</span><span class="rank-change">↑5 this week</span></h4>
+        <div class="rival-list">
+          <div class="rival-row extra"><span class="rr-rank">#44</span><span class="rr-name">Daniel O.</span><span class="rr-pts">912 pts</span></div>
+          <div class="rival-row extra"><span class="rr-rank">#45</span><span class="rr-name">Wei L.</span><span class="rr-pts">901 pts</span></div>
+          <div class="rival-row"><span class="rr-rank">#46</span><span class="rr-name">Sarah K.</span><span class="rr-pts">892 pts</span></div>
+          <div class="rival-row you"><span class="rr-rank">#47</span><span class="rr-name">You — top 12% of your department</span><span class="rr-pts">887 pts</span></div>
+          <div class="rival-row"><span class="rr-rank">#48</span><span class="rr-name">Marcus T.</span><span class="rr-pts">879 pts</span></div>
+          <div class="rival-row extra"><span class="rr-rank">#49</span><span class="rr-name">Lena F.</span><span class="rr-pts">865 pts</span></div>
+          <div class="rival-row extra"><span class="rr-rank">#50</span><span class="rr-name">Owen R.</span><span class="rr-pts">851 pts</span></div>
+        </div>
+        <div class="rival-foot">Sarah K. is 2 spots ahead — 5 points away. Every point is explained: tap any score to see exactly how it was earned.</div>
+      </div>
+
+      <!-- Heatmap + impact -->
+      <div class="growth-card reveal">
+        <h4><span><span class="gh-icon">📅</span> 90-Day Activity</span></h4>
+        <div class="heatmap-grid" id="heatmap90"></div>
+        <div class="heat-summary"><span>147 contributions</span><span>🔥 12-day streak</span></div>
+        <div class="impact-row">
+          <div class="impact-item"><div class="ii-num">847</div><div class="ii-lbl">Students reached</div></div>
+          <div class="impact-item"><div class="ii-num">12</div><div class="ii-lbl">Questions solved</div></div>
+          <div class="impact-item"><div class="ii-num grad-text-growth">1,007</div><div class="ii-lbl">Impact Score</div></div>
+        </div>
+      </div>
+
+      <!-- Badge gallery -->
+      <div class="growth-card reveal reveal-delay-1">
+        <h4><span><span class="gh-icon">🎖️</span> Badges</span><span style="font-size:0.7rem; color:var(--text-muted); font-weight:500;">14 / 18 earned</span></h4>
+        <div class="badge-strip">
+          <div class="badge-mini"><div class="bm-icon">🧠</div><div class="bm-name">Problem Solver</div></div>
+          <div class="badge-mini rare"><div class="bm-icon">⚡</div><div class="bm-name">Quick Responder</div></div>
+          <div class="badge-mini epic"><div class="bm-icon">🔥</div><div class="bm-name">Streak Master</div></div>
+          <div class="badge-mini legendary"><div class="bm-icon">🌟</div><div class="bm-name">Genius</div></div>
+        </div>
+        <div class="badge-progress">
+          <div class="bp-label"><span>🙏 Helpful Hero</span><span>38 / 50</span></div>
+          <div class="bp-bar"><div class="bp-fill"></div></div>
+        </div>
+      </div>
+
+      <!-- Insight card -->
+      <div class="growth-card reveal">
+        <h4><span><span class="gh-icon">💡</span> This Week's Insight</span></h4>
+        <p class="insight-text">Your posts get <span class="insight-pct" data-countup="38">38%</span> more replies on Thursdays than your weekly average. You're also 3 helpful marks from "Helpful Hero."</p>
+      </div>
+
+      <!-- Rising stars + levels -->
+      <div class="growth-card reveal reveal-delay-1">
+        <h4><span><span class="gh-icon">🚀</span> Rising Stars — This Week</span></h4>
+        <div class="rs-list">
+          <div class="rs-row"><span class="rs-emoji">🔥</span><span>Lena F.</span><span class="rs-gain">+210 pts</span></div>
+          <div class="rs-row"><span class="rs-emoji">🔥</span><span>You</span><span class="rs-gain">+184 pts</span></div>
+          <div class="rs-row"><span class="rs-emoji">⚡</span><span>Owen R.</span><span class="rs-gain">+162 pts</span></div>
+        </div>
+        <div class="rival-foot" style="margin-bottom:1rem;">Resets every Monday — anyone can be #1 this week, even on day one.</div>
+        <div class="levels-row">
+          <div class="level-pip">🌱 Newbie</div>
+          <div class="level-pip">📚 Learner</div>
+          <div class="level-pip current">🎓 Contributor</div>
+          <div class="level-pip">🌟 Expert</div>
+          <div class="level-pip">👑 Master</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="group-cta reveal">
+      <a data-type="register" href="/google/start" class="btn btn-primary">Get Started Free</a>
+      <span class="group-cta-note">A friends-only board and a department board mean there's always a competition you can actually win.</span>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* ─── GROUP F — SMART HELP, BUILT IN (recap) ─── */
+  .recap-mosaic { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin: 2.5rem 0; }
+  .recap-card {
+    background: var(--surface); border: 1px solid var(--violet-border); border-radius: var(--r-lg);
+    padding: 1.25rem; text-align: center;
+  }
+  .recap-card .rc-icon {
+    width: 34px; height: 34px; border-radius: var(--r-sm); background: var(--violet-soft); border: 1px solid var(--violet-border);
+    display: flex; align-items: center; justify-content: center; font-size: 0.95rem; margin: 0 auto 0.75rem;
+  }
+  .recap-card .rc-text { font-size: 0.84rem; color: var(--text-soft); line-height: 1.6; }
+  .recap-card .rc-tag { font-size: 0.68rem; color: var(--violet-light); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 0.5rem; display: block; }
+  @media (max-width: 800px) { .recap-mosaic { grid-template-columns: 1fr; } }
+
+  .learnora-mock { max-width: 560px; margin: 0 auto; }
+  .lm-bubble { background: var(--violet-soft); border: 1px solid var(--violet-border); border-radius: var(--r-md); padding: 1rem; font-size: 0.85rem; color: var(--text-soft); line-height: 1.7; }
+  .lm-bubble .lm-label { font-size: 0.7rem; font-weight: 700; color: var(--violet-light); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.5rem; }
+  .lm-bubble ul { margin: 0.4rem 0 0.7rem 1.1rem; }
+  .lm-quiz { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.76rem; font-weight: 700; color: var(--violet-light); background: rgba(139,92,246,0.08); border: 1px solid var(--violet-border); border-radius: var(--r-pill); padding: 0.35rem 0.8rem; margin-top: 0.4rem; }
+  .reliability-line { text-align: center; font-size: 0.84rem; color: var(--text-muted); margin-top: 1.5rem; }
+</style>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════ GROUP F — SMART HELP, BUILT IN (Learnora recap) ═══════════════════ -->
+<section class="feature-group secondary">
+  <div class="container">
+    <div class="section-center reveal">
+      <div class="eyebrow eyebrow-ai">Smart Help, Built In</div>
+      <h2 class="section-heading">You've already seen it</h2>
+      <p class="section-sub">Learnora isn't a separate app you have to open — it's already where you're working: in your homework list, in your study session, in your group chat.</p>
+    </div>
+
+    <div class="recap-mosaic reveal">
+      <div class="recap-card">
+        <div class="rc-icon">✦</div>
+        <div class="rc-text">That "Smart Suggestion" on your homework list? Ask Learnora to explain the reasoning further.</div>
+        <span class="rc-tag">Your Work</span>
+      </div>
+      <div class="recap-card">
+        <div class="rc-icon">✦</div>
+        <div class="rc-text">Stuck mid-session? Ask a question without losing your place — Learnora already knows the subject and your notes.</div>
+        <span class="rc-tag">Live Sessions</span>
+      </div>
+      <div class="recap-card">
+        <div class="rc-icon">✦</div>
+        <div class="rc-text">Type <code>@learnora summarize</code> in any study group chat before an exam — or "quiz me" for practice questions.</div>
+        <span class="rc-tag">Study Groups</span>
+      </div>
+    </div>
+
+    <div class="learnora-mock reveal reveal-delay-1">
+      <div class="lm-bubble">
+        <div class="lm-label">✦ @learnora summarize — Calc Study Squad</div>
+        Here's what the group covered today:
+        <ul>
+          <li>Resolved question 6 — the variance sign error was from a flipped bound</li>
+          <li>Shared worked examples for problem set 4, questions 4–8</li>
+          <li>Open: Amara's edge case on improper integrals — still unresolved</li>
+        </ul>
+        <span class="lm-quiz">📝 Quiz me — 3 questions from this chat</span>
+      </div>
+    </div>
+
+    <p class="reliability-line">Always available — built to keep working even if one AI provider doesn't.</p>
+  </div>
+</section>
+
+<style>
+  /* ─── CAMPUS STATS ─── */
+  .stats-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-top: 3rem; }
+  .stat-cell { text-align: center; border-left: 1px solid var(--border); padding-left: 1.5rem; }
+  .stat-cell:first-child { border-left: none; padding-left: 0; }
+  .stat-cell .sc-num { font-family: 'Outfit', sans-serif; font-size: clamp(1.8rem, 3.5vw, 2.4rem); font-weight: 800; color: var(--text); }
+  .stat-cell .sc-lbl { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.4rem; }
+  @media (max-width: 800px) {
+    .stats-strip { grid-template-columns: repeat(2, 1fr); gap: 2rem 1.5rem; }
+    .stat-cell { border-left: none; padding-left: 0; border-top: 1px solid var(--border); padding-top: 1.25rem; }
+    .stat-cell:nth-child(-n+2) { border-top: none; padding-top: 0; }
+  }
+</style>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════ CAMPUS STATS ═══════════════════ -->
+<!-- NOTE: figures below are placeholders — replace with real platform totals before launch -->
+<section class="section-pad-sm">
+  <div class="container">
+    <div class="section-center reveal" style="margin-bottom: 1rem;">
+      <div class="eyebrow">Your Campus, By The Numbers</div>
+      <h2 class="section-heading">A real, active community</h2>
+    </div>
+    <div class="stats-strip reveal">
+      <div class="stat-cell"><div class="sc-num" data-countup="1240">0</div><div class="sc-lbl">Study groups formed</div></div>
+      <div class="stat-cell"><div class="sc-num" data-countup="8900">0</div><div class="sc-lbl">Questions solved</div></div>
+      <div class="stat-cell"><div class="sc-num" data-countup="15600">0</div><div class="sc-lbl">Connections made</div></div>
+      <div class="stat-cell"><div class="sc-num" data-countup="6200">0</div><div class="sc-lbl">Hours studied together</div></div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* ─── SOCIAL PROOF ─── */
+  .proof-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; margin-top: 3rem; }
+  .proof-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 1.6rem; }
+  .proof-stars { color: var(--amber); font-size: 0.85rem; margin-bottom: 0.9rem; letter-spacing: 0.1em; }
+  .proof-text { font-size: 0.88rem; color: var(--text-soft); line-height: 1.75; margin-bottom: 1.2rem; }
+  .proof-author { display: flex; align-items: center; gap: 0.7rem; }
+  .proof-ava { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; }
+  .proof-name { font-size: 0.84rem; font-weight: 700; }
+  .proof-role { font-size: 0.74rem; color: var(--text-muted); }
+
+  /* ─── FAQ ─── */
+  .faq-list { max-width: 720px; margin: 3rem auto 0; display: flex; flex-direction: column; gap: 0.75rem; }
+  .faq-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); overflow: hidden; }
+  .faq-item summary {
+    list-style: none; cursor: pointer; padding: 1.05rem 1.25rem;
+    font-size: 0.95rem; font-weight: 600; display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  }
+  .faq-item summary::-webkit-details-marker { display: none; }
+  .faq-item summary::after { content: '+'; font-size: 1.2rem; color: var(--text-muted); font-weight: 400; flex-shrink: 0; transition: transform 0.2s; }
+  .faq-item[open] summary::after { transform: rotate(45deg); }
+  .faq-answer { padding: 0 1.25rem 1.1rem; font-size: 0.88rem; color: var(--text-soft); line-height: 1.75; }
+
+  /* ─── FINAL CTA ─── */
+  .final-cta { padding: 6.5rem 0; text-align: center; }
+  .final-cta h2 { font-family: 'Outfit', sans-serif; font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 900; line-height: 1.15; margin-bottom: 1.1rem; letter-spacing: -0.02em; }
+  .final-cta p { font-size: 1.05rem; color: var(--text-soft); max-width: 560px; margin: 0 auto 2.25rem; line-height: 1.8; }
+  .final-cta-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+  .final-cta-foot { margin-top: 2rem; font-size: 0.82rem; color: var(--text-muted); display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; }
+  @media (max-width: 600px) { .final-cta-btns { flex-direction: column; align-items: stretch; } .final-cta-btns .btn { justify-content: center; } }
+
+  /* ─── FOOTER ─── */
+  footer { background: rgba(0,0,0,0.35); border-top: 1px solid var(--border); padding: 3.5rem 5% 2.25rem; position: relative; z-index: 1; }
+  .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3rem; margin-bottom: 2.75rem; }
+  @media (max-width: 768px) { .footer-grid { grid-template-columns: 1fr 1fr; gap: 2rem; } }
+  @media (max-width: 480px) { .footer-grid { grid-template-columns: 1fr; } }
+  .footer-brand .logo { font-family: 'Outfit', sans-serif; font-size: 1.4rem; font-weight: 800; color: var(--text); margin-bottom: 0.75rem; display: block; text-decoration: none; }
+  .footer-brand p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.7; max-width: 260px; }
+  .footer-col h4 { font-family: 'Outfit', sans-serif; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 1rem; }
+  .footer-col a { display: block; font-size: 0.87rem; color: var(--text-soft); text-decoration: none; margin-bottom: 0.6rem; transition: color 0.2s; }
+  .footer-col a:hover { color: var(--text); }
+  .footer-bottom { display: flex; justify-content: space-between; align-items: center; padding-top: 1.75rem; border-top: 1px solid var(--border); font-size: 0.8rem; color: var(--text-muted); flex-wrap: wrap; gap: 1rem; }
+  .social-links { display: flex; gap: 0.75rem; }
+  .social-link { width: 34px; height: 34px; border-radius: var(--r-sm); background: var(--surface); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 0.85rem; text-decoration: none; color: var(--text-soft); transition: all 0.2s; }
+  .social-link:hover { background: var(--surface-hover); border-color: var(--border-strong); }
+
+  /* ─── STICKY MOBILE CTA ─── */
+  .sticky-cta {
+    display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 150;
+    padding: 0.75rem 5%; background: rgba(7,9,15,0.92); backdrop-filter: blur(16px);
+    border-top: 1px solid var(--border); transform: translateY(100%); transition: transform 0.3s ease;
+  }
+  .sticky-cta.visible { transform: translateY(0); }
+  .sticky-cta .btn { width: 100%; justify-content: center; }
+  @media (max-width: 860px) { .sticky-cta { display: block; } body { padding-bottom: 0; } }
+
+  /* ─── ANCHOR OFFSET ─── */
+  section[id] { scroll-margin-top: 64px; }
+</style>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════ SOCIAL PROOF ═══════════════════ -->
+<!-- NOTE: testimonials below are placeholders pending real student quotes -->
+<section class="section-pad">
+  <div class="container">
+    <div class="section-center reveal">
+      <div class="eyebrow">Student Stories</div>
+      <h2 class="section-heading">Real students. Real results.</h2>
+    </div>
+    <div class="proof-grid">
+      <div class="proof-card reveal">
+        <div class="proof-stars">★★★★★</div>
+        <p class="proof-text">"The matching actually surprised me — it paired me with someone in my department who was strong exactly where I was weak. We've traded help in Stats and Algorithms ever since, and we've logged over 30 hours studying together."</p>
+        <div class="proof-author">
+          <div class="proof-ava" style="background:var(--primary-soft);">🧑🏽‍🎓</div>
+          <div>
+            <div class="proof-name">Marcus T.</div>
+            <div class="proof-role">Economics, Year 1</div>
+          </div>
+        </div>
+      </div>
+      <div class="proof-card reveal reveal-delay-1">
+        <div class="proof-stars">★★★★★</div>
+        <p class="proof-text">"I posted my Organic Chemistry assignment at midnight, and three people from my department had submitted solutions by 7am. The daily help streak is honestly why I keep coming back."</p>
+        <div class="proof-author">
+          <div class="proof-ava" style="background:var(--green-soft);">👩🏼‍🔬</div>
+          <div>
+            <div class="proof-name">Priya K.</div>
+            <div class="proof-role">Chemistry, Year 3</div>
+          </div>
+        </div>
+      </div>
+      <div class="proof-card reveal reveal-delay-2">
+        <div class="proof-stars">★★★★★</div>
+        <p class="proof-text">"Seeing my activity heatmap was a wake-up call — I was barely active outside exam week. Now I check my rank every few days. I'm two spots behind a classmate, and I can actually see myself closing the gap."</p>
+        <div class="proof-author">
+          <div class="proof-ava" style="background:var(--amber-soft);">🧑🏿‍📐</div>
+          <div>
+            <div class="proof-name">Ahmed S.</div>
+            <div class="proof-role">Engineering, Year 4</div>
+          </div>
+        </div>
+      </div>
+      <div class="proof-card reveal reveal-delay-3">
+        <div class="proof-stars">★★★★★</div>
+        <p class="proof-text">"Learnora's Deep Think mode is the first study tool that explains things the way I actually think — it broke down recursion better than my professor did, right when I needed it at 1am."</p>
+        <div class="proof-author">
+          <div class="proof-ava" style="background:var(--violet-soft);">👩🏾‍🎓</div>
+          <div>
+            <div class="proof-name">Amara O.</div>
+            <div class="proof-role">Computer Science, Year 2</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════ FAQ ═══════════════════ -->
+<section class="section-pad">
+  <div class="container">
+    <div class="section-center reveal" style="margin-bottom: 0;">
+      <div class="eyebrow">Questions</div>
+      <h2 class="section-heading">Before you join</h2>
+    </div>
+    <div class="faq-list reveal">
+      <details class="faq-item">
+        <summary>Can strangers message me?</summary>
+        <div class="faq-answer">No. Messaging only works between accepted connections — there's no way for someone you haven't connected with to send you a message. You can block or unblock anyone at any time.</div>
+      </details>
+      <details class="faq-item">
+        <summary>Is this just another social network?</summary>
+        <div class="faq-answer">No. Every part of StudyHub is built around academic collaboration — study groups, homework help, peer tutoring, and a growth record tied to your real coursework, not a general social feed.</div>
+      </details>
+      <details class="faq-item">
+        <summary>What does Learnora (the AI assistant) cost?</summary>
+        <div class="faq-answer">Learnora is free to use. Each account gets a daily message allowance designed for regular study use — explanations, file uploads, and quick questions.</div>
+      </details>
+      <details class="faq-item">
+        <summary>Do I need my friends to already be here?</summary>
+        <div class="faq-answer">No. Onboarding matches you with relevant classmates immediately — even with zero existing connections, you'll see real suggestions with reasons attached before you've finished setting up.</div>
+      </details>
+      <details class="faq-item">
+        <summary>Can I export my data?</summary>
+        <div class="faq-answer">Yes. Your activity, reputation history, posts, and overview stats can all be exported at any time.</div>
+      </details>
+      <details class="faq-item">
+        <summary>Is my activity visible to everyone?</summary>
+        <div class="faq-answer">You control your profile's visibility, and private connection notes are only ever visible to you. Department rankings show your position, not your private activity details.</div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ FINAL CTA ═══════════════════ -->
+<section class="final-cta">
+  <div class="container">
+    <div class="reveal">
+      <div class="eyebrow" style="display:inline-flex; margin-bottom:1.5rem;">Ready When You Are</div>
+      <h2>Your people, your work, <br>your <strong style="color: var(--primary-light);">progress</strong> — all in one place.</h2>
+      <p>Sign up, tell us what you're studying, and meet your first study partners before your coffee's done. Free, with no credit card.</p>
+      <div class="final-cta-btns">
+        <a data-type="register" href="/google/start" class="btn btn-primary btn-lg">Create Your Free Account</a>
+        <a href="#how-it-works" class="btn btn-ghost btn-lg">See How It Works</a>
+      </div>
+      <div class="final-cta-foot">
+        <span>Free to join</span>
+        <span>No credit card</span>
+        <span>Built for university students</span>
+        <span>Smart help built in</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ FOOTER ═══════════════════ -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <a href="#" class="logo">StudyHub</a>
+      <p>The student community platform for finding study partners, staying organized, and watching your effort turn into real progress — with smart help built in.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Platform</h4>
+      <a href="#people">Find Your People</a>
+      <a href="#work">Get Organized</a>
+      <a href="#voice">Community Feed</a>
+      <a href="#growth">Your Growth</a>
+    </div>
+    <div class="footer-col">
+      <h4>Account</h4>
+      <a data-type="register" href="/google/start">Sign Up Free</a>
+      <a data-type="login" href="{{ url_for('student.student_auth.login') }}">Log In</a>
+    </div>
+    <div class="footer-col">
+      <h4>Company</h4>
+      <a href="/cdn-cgi/l/email-protection#7a121f1616151c150f141e1f08091b161f093a1d171b131654191517">Contact Us</>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <span>© 2026 StudyHub. Built for students, by students.</span>
+
+  
+  </div>
+</footer>
+
+<div class="sticky-cta" id="stickyCta">
+  <a data-type="register" href="/google/start" class="btn btn-primary">Get Started Free</a>
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
+<a href= "mailto:studyhubnoreply@gmail.com">Contact Us</a>
+<script>
+  /* ─── STARFIELD (subtle, paused off-screen) ─── */
+  (function(){
+    const c = document.getElementById('stars');
+    const ctx = c.getContext('2d');
+    let stars = [];
+    let running = true;
+    function resize(){ c.width = window.innerWidth; c.height = window.innerHeight; }
+    function init(){
+      stars = Array.from({length:90}, () => ({
+        x: Math.random()*c.width, y: Math.random()*c.height,
+        r: Math.random()*1.1+0.3, o: Math.random()*0.5+0.15,
+        speed: Math.random()*0.12+0.04
+      }));
+    }
+    function draw(){
+      if(!running){ requestAnimationFrame(draw); return; }
+      ctx.clearRect(0,0,c.width,c.height);
+      stars.forEach(s => {
+        ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+        ctx.fillStyle = `rgba(180,190,255,${s.o})`;
+        ctx.fill();
+        s.y += s.speed;
+        if(s.y > c.height){ s.y = 0; s.x = Math.random()*c.width; }
+      });
+      requestAnimationFrame(draw);
+    }
+    resize(); init(); draw();
+    window.addEventListener('resize', ()=>{ resize(); init(); });
+    document.addEventListener('visibilitychange', () => { running = !document.hidden; });
+  })();
+
+  /* ─── SCROLL REVEAL ─── */
+  const revealObserver = new IntersectionObserver(entries => {
+    entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+  /* ─── MOBILE NAV ─── */
+  (function(){
+    const btn = document.getElementById('hamburger');
+    const menu = document.getElementById('mobileNav');
+    if(!btn || !menu) return;
+    btn.addEventListener('click', () => {
+      const open = menu.classList.toggle('open');
+      btn.classList.toggle('open', open);
+      btn.setAttribute('aria-expanded', String(open));
+    });
+    menu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+      menu.classList.remove('open');
+      btn.classList.remove('open');
+      btn.setAttribute('aria-expanded', 'false');
+    }));
+  })();
+
+  /* ─── HEATMAPS ─── */
+  function buildHeatmap(id, count){
+    const grid = document.getElementById(id);
+    if(!grid) return;
+    for(let i=0;i<count;i++){
+      const r = Math.random();
+      const l = r < 0.12 ? 0 : r < 0.32 ? 1 : r < 0.58 ? 2 : r < 0.84 ? 3 : 4;
+      const d = document.createElement('div');
+      d.className = `hm-cell hm-${l}`;
+      grid.appendChild(d);
+    }
+  }
+  buildHeatmap('heatmap90', 91);
+
+  (function(){
+    const grid = document.getElementById('miniHeat');
+    if(!grid) return;
+    for(let i=0;i<28;i++){
+      const r = Math.random();
+      const cls = r < 0.25 ? '' : r < 0.55 ? 'l1' : r < 0.85 ? 'l2' : 'l3';
+      const d = document.createElement('span');
+      if(cls) d.className = cls;
+      grid.appendChild(d);
+    }
+  })();
+
+  /* ─── COUNT-UP (Campus Stats + Insight card) ─── */
+  const countObserver = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if(!e.isIntersecting) return;
+      const el = e.target;
+      const target = parseFloat(el.dataset.countup);
+      const isPercent = el.classList.contains('insight-pct');
+      const duration = 1200;
+      const start = performance.now();
+      function tick(now){
+        const p = Math.min((now - start) / duration, 1);
+        const value = Math.floor(p * target);
+        el.textContent = isPercent ? value + '%' : value.toLocaleString() + '+';
+        if(p < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+      countObserver.unobserve(el);
+    });
+  }, { threshold: 0.4 });
+  document.querySelectorAll('[data-countup]').forEach(el => countObserver.observe(el));
+
+  /* ─── STICKY MOBILE CTA ─── */
+  (function(){
+    const bar = document.getElementById('stickyCta');
+    const hero = document.querySelector('.hero');
+    if(!bar || !hero) return;
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => bar.classList.toggle('visible', !e.isIntersecting));
+    }, { threshold: 0 });
+    obs.observe(hero);
+  })();
+</script>
+</body>
+</html>

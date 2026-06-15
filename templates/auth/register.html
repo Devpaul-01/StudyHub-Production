@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - StudyHub</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth/forms.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth/auth.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="auth-page">
+        <div class="auth-container">
+            <div class="auth-header">
+                <div class="auth-logo">🎓</div>
+                <h1 class="auth-title">Join StudyHub</h1>
+                <p class="auth-subtitle">Start your collaborative learning journey</p>
+            </div>
+            
+            <form id="register-form" class="auth-form">
+                <div class="form-group">
+                    <label for="full_name" class="form-label required">Full Name</label>
+                    <input type="text" 
+                           id="full_name" 
+                           name="full_name" 
+                           class="form-input" 
+                           placeholder="John Doe"
+                           required>
+                    <span class="form-error hidden" id="full_name_error"></span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email" class="form-label required">Email Address</label>
+                    <input type="email" 
+                           id="email" 
+                           name="email" 
+                           class="form-input" 
+                           placeholder="john@university.edu"
+                           required>
+                    <span class="form-error hidden" id="email_error"></span>
+                    <span class="form-help" id="email_help">We'll send a verification link to this email</span>
+                </div>
+
+                <!-- Hidden flag: set to "true" by JS when email comes from Google OAuth -->
+                <input type="hidden" id="google_verified" name="google_verified" value="false">
+              
+                <div class="checkbox-group">
+                    <input type="checkbox" id="agree_terms" name="agree_terms" required>
+                    <label for="agree_terms">
+                        I agree to the <a href="/terms" target="_blank">Terms</a> and <a href="/privacy" target="_blank">Privacy Policy</a>
+                    </label>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-lg" id="submit-btn">
+                    Create Account
+                </button>
+            </form>
+            
+            <div class="auth-divider">
+                <span>OR</span>
+            </div>
+            
+            <button class="google-btn" id="google-register-btn">
+                <img src="https://www.svgrepo.com/show/355037/google.svg" alt="Google logo">
+                Continue with Google
+            </button>
+            
+            <div class="auth-footer">
+                Already have an account? <a href="{{ url_for('student.student_auth.login') }}">Login here</a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Load scripts in correct order -->
+    <script src="{{ url_for('static', filename='js/core/api.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/core/utils.js') }}"></script>
+    <script>
+// ✅ COMPLETELY FIXED Registration JavaScript
+document.addEventListener("DOMContentLoaded", async () => {
+    console.log("✅ Registration page loaded");
+    
+    // Check for Google OAuth data
+    try {
+        const res = await fetch("/student/google_temp_info");
+        const data = await res.json();
+        
+        if (data.email) {
+            const emailInput = document.getElementById("email");
+            emailInput.value = data.email;
+            emailInput.readOnly = true;
+            emailInput.classList.add("input-verified");
+
+            // Mark as Google-verified so the backend skips email verification
+            document.getElementById("google_verified").value = "true";
+
+            // Update help text to reflect no verification email will be sent
+            const helpEl = document.getElementById("email_help");
+            if (helpEl) {
+                helpEl.innerHTML = '✅ Verified via Google &mdash; no confirmation email needed';
+                helpEl.style.color = "var(--color-success, #22c55e)";
+            }
+
+            if (typeof showToast === 'function') {
+                showToast("Email verified via Google — you're good to go!", "success");
+            }
+        }
+        
+        if (data.name) {
+            document.getElementById("full_name").value = data.name;
+        }
+    } catch (error) {
+        console.error("Error fetching Google info:", error);
+    }
+    
+    // ✅ FIXED: Google OAuth button with correct path
+    const googleBtn = document.getElementById("google-register-btn");
+    if (googleBtn) {
+        googleBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            console.log("🔵 Redirecting to Google OAuth...");
+            // ✅ CORRECT PATH: /google/start (as registered in app.py)
+            window.location.href = "/google/start";
+        });
+    }
+    
+    // ✅ FIXED: Handle form submission
+    const form = document.getElementById("register-form");
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        await handleRegistration(e);
+    });
+    
+    console.log("✅ Registration page initialized");
+});
+
+/**
+ * Handle registration form submission - COMPLETELY FIXED
+ */
+async function handleRegistration(e) {
+    console.log("📤 Submitting registration form...");
+    
+    clearAllErrors();
+    
+    const formData = new FormData(e.target);
+    const data = {
+        full_name: formData.get("full_name"),
+        email: formData.get("email"),
+        agree_terms: formData.get("agree_terms") === "on",
+        // Pass the boolean — "true" string → true, anything else → false
+        google_verified: formData.get("google_verified") === "true"
+    };
+    
+    console.log("Form data:", data);
+    
+    // Validation
+    if (!validateRegistrationForm(data)) {
+        return;
+    }
+    
+    const btn = document.getElementById("submit-btn");
+    
+    try {
+        setButtonLoading(btn, true, 'Creating account...');
+        
+        // ✅ Use your api.post (which already has /student base URL)
+        const result = await api.post('/register', data);
+        
+        console.log("Registration result:", result);
+        
+        if (result.status === "success") {
+            if (result.data && result.data.redirect_url) {
+                // Google-verified path: skip email check, go straight to onboarding
+                if (typeof showToast === 'function') {
+                    showToast(result.message, "success", 3000);
+                }
+                setTimeout(() => {
+                    window.location.href = result.data.redirect_url;
+                }, 1000);
+            } else {
+                // Standard path: verification email sent
+                if (typeof showToast === 'function') {
+                    showToast(result.message, "success", 5000);
+                } else {
+                    alert(result.message);
+                }
+                e.target.reset();
+                await clearGoogleSession();
+            }
+        } else {
+            throw new Error(result.message || "Registration failed");
+        }
+    } catch (error) {
+        console.error('❌ Registration error:', error);
+        
+        const errorMsg = error.message || "Registration failed. Please try again.";
+        
+        if (errorMsg.includes("Email already registered")) {
+            showFieldError("email", "This email is already registered");
+            if (typeof showToast === 'function') {
+                showToast("Email already registered. Try logging in instead.", "error");
+            } else {
+                alert("Email already registered. Try logging in instead.");
+            }
+        } else if (errorMsg.includes("Invalid email")) {
+            showFieldError("email", "Please enter a valid email address");
+        } else {
+            if (typeof showToast === 'function') {
+                showToast(errorMsg, "error");
+            } else {
+                alert(errorMsg);
+            }
+        }
+    } finally {
+        setButtonLoading(btn, false);
+    }
+}
+
+/**
+ * Validate registration form
+ */
+function validateRegistrationForm(data) {
+    let hasError = false;
+    
+    console.log("🔍 Validating form data...");
+    
+    // Full name
+    if (!data.full_name || data.full_name.trim().length < 3) {
+        showFieldError("full_name", "Please enter your full name (at least 3 characters)");
+        hasError = true;
+    }
+    
+    // Email
+    if (!data.email) {
+        showFieldError("email", "Email is required");
+        hasError = true;
+    } else {
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailPattern.test(data.email)) {
+            showFieldError("email", "Please enter a valid email address");
+            hasError = true;
+        }
+    }
+    
+    // Terms agreement
+    if (!data.agree_terms) {
+        if (typeof showToast === 'function') {
+            showToast("You must agree to the Terms and Privacy Policy", "warning");
+        } else {
+            alert("You must agree to the Terms and Privacy Policy");
+        }
+        hasError = true;
+    }
+    
+    if (hasError) {
+        console.log("❌ Form validation failed");
+    } else {
+        console.log("✅ Form validation passed");
+    }
+    
+    return !hasError;
+}
+
+/**
+ * Show field-specific error
+ */
+function showFieldError(fieldId, message) {
+    const field = document.getElementById(fieldId);
+    const errorSpan = document.getElementById(`${fieldId}_error`);
+    
+    if (field) {
+        field.classList.add("error");
+        console.log(`⚠️ Error on field ${fieldId}: ${message}`);
+    }
+    
+    if (errorSpan) {
+        errorSpan.textContent = message;
+        errorSpan.classList.remove("hidden");
+    }
+}
+
+/**
+ * Clear all form errors
+ */
+function clearAllErrors() {
+    document.querySelectorAll('.form-error').forEach(el => {
+        el.classList.add('hidden');
+        el.textContent = '';
+    });
+    
+    document.querySelectorAll('.form-input, .form-select').forEach(el => {
+        el.classList.remove('error');
+    });
+}
+
+/**
+ * Set button loading state
+ */
+
+
+/**
+ * Clear Google OAuth session
+ */
+async function clearGoogleSession() {
+    try {
+        await api.post("/clear-session", {});
+        console.log("🧹 Google session cleared");
+    } catch (error) {
+        console.error("Error clearing session:", error);
+    }
+}
+    </script>
+</body>
+</html>

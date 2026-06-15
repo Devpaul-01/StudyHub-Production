@@ -1,0 +1,90 @@
+export function handleDeleteNotification(id){
+  const section = document.querySelector("section#notifications");
+  const response = await api.delete(`/profile/notifications/${id}`);
+  if(response.status == 'success'){
+    const element = section.querySelector('[data-notification-id=${id}]');
+    element.style.opacity = 10;
+    element.remove();
+  }
+  else{
+    showToast(response.message, 'error');
+  }
+}
+export function loadNotifications(){
+  const cursor = notificationState.getLastCursor();
+  try{
+  const data = await notificationAPI.getNotifications(cursor);
+  const container = document.getElementById("notifications-list-container");
+  document.getElementById('toggle-notification').checked = data.enable_notification;
+  document.getElementById("toggle-notification-sound").checked = data.enable_notification_sound;
+  const notifications = data.notifications_data;
+  updateBadgeCount(data.unread_count);
+  notificationState.updateCursor(data.next_cursor);
+  notificationState.updateHadMore(data.has_more);
+  container.innerHTML = getLoadingSkeletonState();
+  const notifications = data.notifications;
+  if(!notifications || notifications.length == 0){
+    if (container.innerHTML = ""){
+      container.innerHTML = showEmptyNotifications();
+      return;
+    }
+  }
+  const html = notifications.map(notification => {
+    createNotificationCard(notification)
+  });
+  container.appendChild(html);
+  }
+  catch(error){
+    showToast(response.message, 'error');
+  }
+}
+
+export function toggleNotificationSettings(){
+  const modal = setion.querySelector(".notification-settings");
+  modal.classList.toggle('hidden');
+}
+export function handleToggleNotification(value){
+  const element = document.getElementById("toggle-notification");
+  const data = {
+    enable_notification: value
+  };
+  try{
+    const response = await notificationAPI.toggleEnableNotification(data);
+    if(!response.status == 'success'){
+      showToast(response.message, 'error');
+      element.checked = element.checked? false:true;
+      return;
+    }
+  }
+  catch(error){
+    showToast(error.message,'error');
+  }
+}
+export function handleToggleNotificationSound(value){
+  const element = document.getElementById("toggle-notification-sound");
+  const data = {
+    enable_notification_sound: value
+  };
+  try{
+    const response = await notificationAPI.toggleEnableNotificationSound(data);
+    if(!response.status == 'success'){
+      showToast(response.message, 'error');
+      element.checked = element.checked? false:true;
+      return;
+    }
+  }
+  catch(error){
+    showToast(error.message,'error');
+  }
+}
+export function setupViewTracking(){
+  const container = document.getElementById("notifications-sentinel");
+  const observer = new IntersectionObserver(entries => {
+    const entry = entries[0];
+    if(entry.isIntersecting){
+      await loadNotifications();
+    }
+  });
+  observer.observe(container);
+}
+

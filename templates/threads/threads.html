@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Threads - StudyHub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- highlight.js: syntax highlighting for code blocks in thread messages -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <!-- Common language packs (add more as needed) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/typescript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/sql.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/java.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/cpp.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/json.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/xml.min.js"></script>
+
+    <style>
+        /* ===================================================================
+           MESSAGE HIGHLIGHTING ANIMATION
+        =================================================================== */
+        @keyframes msgHighlight {
+          0%,100% { background-color: transparent; }
+          30%     { background-color: #eef2ff; }
+        }
+        .message-highlight {
+          animation: msgHighlight 2s ease-in-out;
+          border-radius: 0.75rem;
+        }
+
+        /* ===================================================================
+           FAILED MESSAGE: red left border
+        =================================================================== */
+        .message-failed > .msg-bubble-col > .msg-bubble {
+          border-left: 2px solid #fca5a5;
+        }
+
+        /* ===================================================================
+           TYPING DOTS
+        =================================================================== */
+        .thread-typing-indicator .animate-bounce:nth-child(1) { animation-delay: 0ms; }
+        .thread-typing-indicator .animate-bounce:nth-child(2) { animation-delay: 150ms; }
+        .thread-typing-indicator .animate-bounce:nth-child(3) { animation-delay: 300ms; }
+
+        /* ===================================================================
+           PINNED MESSAGE: amber left bar
+        =================================================================== */
+        .message-pinned > .msg-bubble-col > .msg-bubble {
+          position: relative;
+        }
+        .message-pinned > .msg-bubble-col > .msg-bubble::before {
+          content: '';
+          position: absolute;
+          left: -4px;
+          top: 0;
+          bottom: 0;
+          width: 3px;
+          background: #f59e0b;
+          border-radius: 2px;
+        }
+
+        /* ===================================================================
+           CUSTOM SCROLLBAR
+        =================================================================== */
+        .scrollbar-thin::-webkit-scrollbar { width: 4px; }
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+          background-color: #d1d5db;
+          border-radius: 9999px;
+        }
+
+        textarea { overflow-y: auto; }
+
+        /* ===================================================================
+           MESSAGE OPTIONS BOTTOM SHEET TRANSITION
+        =================================================================== */
+        #thread-options-panel {
+          transition: transform 0.25s cubic-bezier(0.32, 0.72, 0, 1);
+        }
+
+        /* ===================================================================
+           ISSUE-3 FIX: MSG OPTIONS BUTTON — CSS-only visibility
+           Hidden entirely on mobile (long-press handles it).
+           Hover-visible on desktop.
+        =================================================================== */
+        @media (max-width: 767px) {
+          .msg-options-btn {
+            display: none !important;
+          }
+          /* Quick-reply button also hidden on mobile (swipe handles it) */
+          .msg-quick-reply-btn {
+            display: none !important;
+          }
+        }
+        @media (min-width: 768px) {
+          .msg-options-btn {
+            opacity: 0;
+            transition: opacity 0.15s;
+          }
+          .group:hover .msg-options-btn {
+            opacity: 1;
+          }
+          /* Quick-reply button: visible on hover for others' messages */
+          .msg-quick-reply-btn {
+            opacity: 0;
+            transition: opacity 0.15s;
+          }
+          .group:hover .msg-quick-reply-btn {
+            opacity: 1;
+          }
+        }
+
+        /* ===================================================================
+           MENTION SPAN STYLES
+        =================================================================== */
+        .mention {
+          display: inline;
+          font-weight: 600;
+          border-radius: 3px;
+          padding: 0 2px;
+          cursor: default;
+          transition: background-color 0.1s;
+        }
+
+        /* ===================================================================
+           INLINE CODE IN MESSAGES
+        =================================================================== */
+        .msg-text .msg-inline-code {
+          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+          font-size: 0.85em;
+          border-radius: 3px;
+          padding: 0 4px 1px;
+        }
+
+        /* ===================================================================
+           CODE BLOCK OVERRIDES
+           Ensure hljs blocks respect our max-height and scroll
+        =================================================================== */
+        .msg-code-block pre.hljs {
+          margin: 0;
+          border-radius: 0;
+          font-size: 12px;
+          line-height: 1.5;
+          max-height: 280px;
+          overflow-x: auto;
+          overflow-y: auto;
+        }
+        /* Copy button flash feedback */
+        .msg-copy-code-btn:active {
+          transform: scale(0.95);
+        }
+
+        /* ===================================================================
+           SWIPE-TO-REPLY FEEDBACK
+        =================================================================== */
+        .swipe-flash {
+          animation: swipeFlash 0.35s ease-out;
+        }
+        @keyframes swipeFlash {
+          0%   { background-color: transparent; }
+          30%  { background-color: #e0e7ff; }
+          100% { background-color: transparent; }
+        }
+        .swipe-reply-hint {
+          pointer-events: none;
+          animation: hintFadeIn 0.15s ease-out;
+        }
+        @keyframes hintFadeIn {
+          from { opacity: 0; transform: translateY(-50%) scale(0.8); }
+          to   { opacity: 1; transform: translateY(-50%) scale(1); }
+        }
+
+        /* ===================================================================
+           ATTACHMENT THUMBNAIL STRIP
+        =================================================================== */
+        #thread-attachment-strip {
+          display: flex;
+          flex-wrap: nowrap;
+          gap: 8px;
+          padding: 10px 12px 0;
+          overflow-x: auto;
+          scrollbar-width: none;
+        }
+        #thread-attachment-strip::-webkit-scrollbar { display: none; }
+
+        /* ===================================================================
+           THREAD-MODAL: dynamic modals
+        =================================================================== */
+        .thread-modal.open {
+          display: flex;
+        }
+
+        /* ===================================================================
+           AI BADGE — personality-coloured
+        =================================================================== */
+        .msg-ai-badge {
+          user-select: none;
+        }
+
+        /* ===================================================================
+           DEPT BADGE in thread list
+        =================================================================== */
+        .thread-list-item .text-\[9px\] {
+          line-height: 1.2;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+<section id="threads" class="active flex flex-col h-[100dvh] w-full overflow-hidden bg-gray-50">
+
+    <!-- ════════════════════════════════════════════════════════
+         THREAD LIST PANEL
+    ════════════════════════════════════════════════════════════ -->
+    <div id="thread-list-panel" class="flex flex-col h-full">
+
+        <!-- Header -->
+        <div class="flex items-center justify-between px-4 pt-5 pb-3 bg-white border-b border-gray-100 sticky top-0 z-10">
+            <h1 class="text-xl font-bold text-gray-900">Threads</h1>
+            <button data-action="open-create-thread-modal"
+                    aria-label="Create thread"
+                    class="w-9 h-9 rounded-full bg-indigo-600 hover:bg-indigo-700 active:scale-95
+                           flex items-center justify-center text-white transition-all shadow-sm">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Tab bar: Messages / Invites -->
+        <div class="flex border-b border-gray-200 bg-white flex-shrink-0">
+            <button id="tab-messages"
+                    data-action="thread-tab"
+                    data-tab="messages"
+                    class="flex-1 text-sm font-semibold py-2.5 border-b-2 border-indigo-600
+                           text-indigo-600 transition-colors">
+                Messages
+            </button>
+            <button id="tab-invites"
+                    data-action="thread-tab"
+                    data-tab="invites"
+                    class="flex-1 relative text-sm font-semibold py-2.5 border-b-2
+                           border-transparent text-gray-500 hover:text-gray-700 transition-colors">
+                Invites
+                <span id="thread-invites-badge"
+                      class="absolute top-1.5 right-4 min-w-[18px] h-[18px] rounded-full
+                             bg-red-500 text-white text-[10px] font-bold hidden
+                             items-center justify-center px-1 leading-none">
+                </span>
+            </button>
+        </div>
+
+        <!-- Thread list search (Messages tab only) -->
+        <div id="thread-search-bar" class="px-3 py-2 bg-white border-b border-gray-100">
+            <div class="relative">
+                <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                     width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                </svg>
+                <input id="thread-list-search"
+                       data-role="thread-list-search"
+                       type="search"
+                       placeholder="Filter threads…"
+                       autocomplete="off"
+                       class="w-full pl-8 pr-8 py-2 text-sm rounded-xl border border-gray-200
+                              bg-gray-50 focus:bg-white focus:border-indigo-400
+                              focus:ring-2 focus:ring-indigo-100 outline-none transition-all
+                              placeholder-gray-400 text-gray-900">
+                <button data-action="clear-thread-list-search"
+                        class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400
+                               hover:text-gray-600 transition-colors text-sm leading-none hidden"
+                        aria-label="Clear search">✕</button>
+            </div>
+        </div>
+
+        <!-- Messages tab content -->
+        <div id="thread-tab-messages" class="flex-1 overflow-y-auto">
+            <div id="thread-list-container" class="divide-y divide-gray-50"></div>
+        </div>
+
+        <!-- Invites tab content (hidden by default) -->
+        <div id="thread-tab-invites" class="hidden flex-1 overflow-y-auto">
+            <div id="thread-invites-list" class="divide-y divide-gray-100"></div>
+            <div id="thread-invites-empty"
+                 class="hidden flex flex-col items-center gap-3 py-16 px-4 text-center">
+                <span class="text-4xl">📬</span>
+                <p class="text-sm text-gray-500">No pending invitations or requests.</p>
+            </div>
+        </div>
+
+    </div><!-- /thread-list-panel -->
+
+
+    <!-- ════════════════════════════════════════════════════════
+         THREAD CHAT PANEL
+    ════════════════════════════════════════════════════════════ -->
+    <div id="thread-chat-panel" class="hidden flex flex-col h-full bg-white">
+
+        <!-- Chat header -->
+        <div class="flex-shrink-0 bg-white border-b border-gray-100 shadow-sm">
+            <div class="flex items-center gap-2 px-3 py-3">
+                <button data-action="thread-back" aria-label="Back"
+                        class="p-2 rounded-full text-gray-500 hover:bg-gray-100 active:bg-gray-200
+                               transition-colors flex-shrink-0">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <polyline points="15 18 9 12 15 6"/>
+                    </svg>
+                </button>
+                <div id="thread-chat-header" class="flex items-center justify-between flex-1 min-w-0"></div>
+            </div>
+            <!-- Pinned message banner -->
+            <div id="thread-pinned-banner"></div>
+        </div>
+
+        <!-- Messages -->
+        <div id="thread-messages-list"
+             class="flex-1 overflow-y-auto overscroll-contain space-y-0 pb-2"
+             role="log"
+             aria-live="polite"
+             aria-label="Thread messages">
+            <div id="thread-top-sentinel" class="h-1"></div>
+        </div>
+
+        <!-- Compose area -->
+        <div class="flex-shrink-0 bg-white border-t border-gray-100">
+
+            <!-- Reply preview strip -->
+            <div id="thread-reply-preview" class="hidden"></div>
+
+            <!-- Attachment preview strip (multiple files, thumbnail cards) -->
+            <div id="thread-attachment-strip" class="hidden"></div>
+
+            <!-- Input row -->
+            <div class="flex items-end gap-2 px-3 py-3">
+
+                <!-- Attach file -->
+                <button data-action="thread-attach-file"
+                        aria-label="Attach file"
+                        class="flex-shrink-0 self-end mb-0.5 w-9 h-9 rounded-full
+                               text-gray-400 hover:text-indigo-600 hover:bg-indigo-50
+                               active:bg-indigo-100 transition-colors flex items-center justify-center">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+                    </svg>
+                </button>
+
+                <!-- Text input -->
+                <div class="flex-1 relative">
+                    <textarea id="thread-message-input"
+                              rows="1"
+                              maxlength="5000"
+                              placeholder="Message… (try @learnora for AI help)"
+                              aria-label="Thread message input"
+                              class="w-full resize-none rounded-2xl border border-gray-200
+                                     bg-gray-50 focus:bg-white focus:border-indigo-400 focus:ring-2
+                                     focus:ring-indigo-100 outline-none transition-all
+                                     px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400
+                                     leading-relaxed max-h-32 overflow-y-auto scrollbar-thin"></textarea>
+                </div>
+
+                <button id="thread-send-btn"
+                        data-action="thread-send-message"
+                        aria-label="Send message"
+                        disabled
+                        class="flex-shrink-0 self-end mb-0.5 w-9 h-9 rounded-full bg-indigo-600
+                               hover:bg-indigo-700 active:scale-95 disabled:opacity-40
+                               disabled:cursor-not-allowed flex items-center justify-center
+                               text-white transition-all duration-150 shadow-sm">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <line x1="22" y1="2" x2="11" y2="13"/>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                    </svg>
+                </button>
+
+            </div>
+        </div><!-- /compose area -->
+
+    </div><!-- /thread-chat-panel -->
+
+</section>
+
+<!-- ════════════════════════════════════════════════════════
+     MESSAGE OPTIONS BOTTOM SHEET
+════════════════════════════════════════════════════════════ -->
+<div id="thread-message-options-sheet"
+     class="hidden fixed inset-0 z-50"
+     role="dialog" aria-modal="true" aria-label="Message options">
+    <div id="thread-options-backdrop"
+         class="absolute inset-0 bg-black/30 backdrop-blur-sm"></div>
+    <div id="thread-options-panel"
+         class="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl
+                shadow-2xl translate-y-full max-h-[80vh] overflow-y-auto">
+        <div class="flex justify-center pt-3 pb-1">
+            <div class="w-10 h-1 bg-gray-200 rounded-full"></div>
+        </div>
+        <div id="thread-msg-options-body"></div>
+        <div class="h-safe-area-inset-bottom pb-2"></div>
+    </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     EMOJI REACTION PICKER
+════════════════════════════════════════════════════════════ -->
+<div id="thread-reaction-picker" class="hidden"></div>
+
+<!-- ════════════════════════════════════════════════════════
+     IMAGE VIEWER MODAL
+════════════════════════════════════════════════════════════ -->
+<div id="thread-image-viewer-modal"
+     class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/90"
+     role="dialog" aria-modal="true" aria-label="Image viewer">
+    <button data-action="thread-close-image-viewer"
+            aria-label="Close"
+            class="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-black/50
+                   text-white flex items-center justify-center hover:bg-black/70 transition-colors">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+    </button>
+    <div class="flex flex-col items-center gap-3 px-4 max-w-full">
+        <img id="thread-viewer-img" src="" alt="Attachment"
+             class="max-w-full max-h-[80vh] rounded-xl object-contain">
+        <span id="thread-viewer-filename" class="text-white/70 text-sm truncate max-w-xs"></span>
+    </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     MESSAGE SEARCH PANEL
+════════════════════════════════════════════════════════════ -->
+<div id="thread-search-panel"
+     class="hidden fixed inset-0 z-40 flex-col bg-white"
+     role="search" aria-label="Search messages">
+    <div class="flex items-center gap-2 px-4 py-3 border-b border-gray-100">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"
+             class="text-gray-400 flex-shrink-0" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        <input id="thread-search-input"
+               data-role="thread-search-input"
+               type="search"
+               placeholder="Search messages…"
+               autocomplete="off"
+               class="flex-1 bg-transparent text-sm text-gray-900 outline-none placeholder-gray-400">
+        <button data-action="thread-close-search"
+                class="text-sm text-indigo-600 font-semibold px-1 py-0.5">
+            Cancel
+        </button>
+    </div>
+    <div id="thread-search-results"
+         data-role="thread-search-results"
+         class="flex-1 overflow-y-auto divide-y divide-gray-50">
+        <div class="py-12 text-center text-sm text-gray-400">Start typing to search messages…</div>
+    </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     CREATE THREAD MODAL
+════════════════════════════════════════════════════════════ -->
+<div id="thread-create-modal"
+     class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4"
+     role="dialog" aria-modal="true" aria-labelledby="thread-create-title">
+    <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl">
+        <div class="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100">
+            <h2 id="thread-create-title" class="text-lg font-bold text-gray-900">Create Thread</h2>
+            <button data-action="thread-close-create-modal" aria-label="Close"
+                    class="w-8 h-8 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100
+                           flex items-center justify-center transition-colors">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+        <div class="px-5 py-4 space-y-4">
+            <div>
+                <label for="thread-title" class="block text-xs font-semibold text-gray-600 mb-1.5">
+                    Thread name <span class="text-red-500">*</span>
+                </label>
+                <input id="thread-title" type="text" maxlength="100" placeholder="e.g. Math Study Group"
+                       class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50
+                              focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100
+                              outline-none text-sm text-gray-900 placeholder-gray-400 transition-all">
+            </div>
+            <div>
+                <label for="thread-description" class="block text-xs font-semibold text-gray-600 mb-1.5">
+                    Description
+                </label>
+                <textarea id="thread-description" rows="2" maxlength="500"
+                          placeholder="What is this thread about?"
+                          class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50
+                                 focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100
+                                 outline-none text-sm text-gray-900 placeholder-gray-400 transition-all resize-none"></textarea>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label for="thread-max-members" class="block text-xs font-semibold text-gray-600 mb-1.5">
+                        Max members
+                    </label>
+                    <input id="thread-max-members" type="number" min="2" max="50" value="10"
+                           class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50
+                                  focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100
+                                  outline-none text-sm text-gray-900 transition-all">
+                </div>
+                <div class="flex flex-col justify-center pt-4">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input id="thread-requires-approval" type="checkbox" checked
+                               class="w-4 h-4 rounded text-indigo-600 accent-indigo-600 cursor-pointer">
+                        <span class="text-xs font-medium text-gray-600">Require approval</span>
+                    </label>
+                </div>
+            </div>
+            <div>
+                <label for="thread-tags" class="block text-xs font-semibold text-gray-600 mb-1.5">
+                    Tags <span class="text-gray-400 font-normal">(comma-separated)</span>
+                </label>
+                <input id="thread-tags" type="text" maxlength="200"
+                       placeholder="e.g. math, calculus, exam-prep"
+                       class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50
+                              focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100
+                              outline-none text-sm text-gray-900 placeholder-gray-400 transition-all">
+            </div>
+        </div>
+        <div class="flex gap-3 px-5 pb-5">
+            <button data-action="thread-close-create-modal"
+                    class="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold
+                           text-gray-600 hover:bg-gray-50 active:bg-gray-100 transition-colors">
+                Cancel
+            </button>
+            <button data-action="thread-submit-create"
+                    class="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:scale-95
+                           text-sm font-semibold text-white transition-all duration-150 shadow-sm">
+                Create Thread
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     THREAD INFO MODAL (content populated by openInfoModal)
+════════════════════════════════════════════════════════════ -->
+<div id="thread-info-modal"
+     class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4"
+     role="dialog" aria-modal="true" aria-label="Thread information">
+    <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl max-h-[85vh] flex flex-col overflow-hidden">
+    </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     ASK LEARNORA MODAL
+════════════════════════════════════════════════════════════ -->
+<div id="thread-ask-ai-modal"
+     class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4"
+     role="dialog" aria-modal="true" aria-labelledby="thread-ai-title">
+    <div class="bg-white rounded-2xl w-full max-w-sm shadow-2xl">
+        <div class="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600
+                             flex items-center justify-center">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+                        <path d="M12 2L9 9H2l5.5 4-2 7L12 16l6.5 4-2-7L22 9h-7z"/>
+                    </svg>
+                </div>
+                <h2 id="thread-ai-title" class="text-base font-bold text-gray-900">Ask Learnora</h2>
+            </div>
+            <button data-action="thread-close-ai-modal" aria-label="Close"
+                    class="w-8 h-8 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100
+                           flex items-center justify-center transition-colors">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+        <div class="px-5 py-4 space-y-4">
+            <div>
+                <label for="thread-ai-question" class="block text-xs font-semibold text-gray-600 mb-1.5">
+                    Your question
+                </label>
+                <textarea id="thread-ai-question" rows="3" maxlength="1000"
+                          placeholder="e.g. Explain the chain rule with an example"
+                          class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50
+                                 focus:bg-white focus:border-violet-400 focus:ring-2 focus:ring-violet-100
+                                 outline-none text-sm text-gray-900 placeholder-gray-400 transition-all resize-none"></textarea>
+            </div>
+            <div>
+                <span class="block text-xs font-semibold text-gray-600 mb-2">Mode</span>
+                <div class="flex gap-3 flex-wrap">
+                    <label class="flex items-center gap-1.5 cursor-pointer">
+                        <input type="radio" name="thread-ai-mode" value="" checked class="accent-violet-600">
+                        <span class="text-sm text-gray-700">Answer</span>
+                    </label>
+                    <label class="flex items-center gap-1.5 cursor-pointer">
+                        <input type="radio" name="thread-ai-mode" value="summarize" class="accent-violet-600">
+                        <span class="text-sm text-gray-700">Summarize chat</span>
+                    </label>
+                    <label class="flex items-center gap-1.5 cursor-pointer">
+                        <input type="radio" name="thread-ai-mode" value="quiz" class="accent-violet-600">
+                        <span class="text-sm text-gray-700">Quiz me</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="flex gap-3 px-5 pb-5">
+            <button data-action="thread-close-ai-modal"
+                    class="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold
+                           text-gray-600 hover:bg-gray-50 transition-colors">
+                Cancel
+            </button>
+            <button data-action="thread-submit-ai"
+                    class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600
+                           hover:from-violet-700 hover:to-indigo-700 active:scale-95
+                           text-sm font-semibold text-white transition-all duration-150 shadow-sm">
+                Ask Learnora
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     CONFIRM MODAL
+════════════════════════════════════════════════════════════ -->
+<div id="thread-confirm-modal"
+     class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm px-4"
+     role="alertdialog" aria-modal="true" aria-labelledby="thread-confirm-title">
+    <div class="bg-white rounded-2xl w-full max-w-xs shadow-2xl">
+        <div class="px-5 pt-5 pb-4">
+            <h2 id="thread-confirm-title" class="text-base font-bold text-gray-900 mb-2"></h2>
+            <p id="thread-confirm-message" class="text-sm text-gray-500 leading-relaxed"></p>
+        </div>
+        <div class="flex gap-3 px-5 pb-5">
+            <button data-action="thread-confirm-cancel"
+                    class="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold
+                           text-gray-600 hover:bg-gray-50 transition-colors">
+                Cancel
+            </button>
+            <button id="thread-confirm-ok"
+                    class="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white
+                           transition-colors bg-indigo-600 hover:bg-indigo-700 active:scale-95">
+                Confirm
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="{{url_for('static', filename='/js/core/api.js')}}"></script>
+<script type="module" src="/static/js/thread/thread.init.js"></script>
+
+</body>
+</html>

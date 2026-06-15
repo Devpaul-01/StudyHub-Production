@@ -1,0 +1,17 @@
+import {formatHudTime} from './notification.utils.js'
+function createNotificationCard(notifications, container) {
+    return `
+      <div data-action= 'view-notification' data-link=${notif.link} class="hud-notification ${notif.is_read ? "read" : ""}"
+           data-notification-id="${notif.id}">
+      <button class='cancel-btn' data-action='delete-notification' data-notification-id=${notif.id}>X</button>
+        
+        <div class="hud-title">${notif.title}</div>
+        <div class="hud-body">${notif.body}</div>
+        
+        <div class="hud-time">
+          ${formatHudTime(notif.created_at)}
+        </div>
+      </div>
+    `;
+  }).join("");
+}

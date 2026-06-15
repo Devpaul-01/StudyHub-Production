@@ -1,0 +1,30 @@
+const section = document.querySelector("section#notifications");
+section.addEventListener("click", (event) => {
+  const target = event.target.closest("[data-action]");
+  const action = target.dataset.action;
+  const handler = NOTIFICATIONS_HANDLERS[handler];
+  handler(target, event);
+}):
+document.getElementById("toggle-notification").addEventListener('change', (e) => {
+  const value = e.target.checked;
+  handleToggleNotification(value);
+});
+document.getElementById("toggle-notification-sound").addEventListener('change', (e) => {
+  const value = e.target.checked;
+  handleToggleNotificationSound(value);
+});
+
+const NOTIFICATIONS_HANDLERS = {
+  'view-notification': (target, event) => {
+    const link = target.dataset.link;
+    if(!link) return
+    window.location.href = link;
+  },
+  'toggle-notification-options': (target, event) => {
+    toggleNotificationSettings()
+  },
+  'delete-notification': (target, event) => {
+    const id = target.notificationId;
+    handleDeleteNotification(id, event);
+  }
+}

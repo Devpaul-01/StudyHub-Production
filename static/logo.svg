@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+  <defs>
+    <!-- Main gradient: matches onboarding #6366f1 → #8b5cf6 → #ec4899 -->
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#6366f1"/>
+      <stop offset="50%"  stop-color="#8b5cf6"/>
+      <stop offset="100%" stop-color="#ec4899"/>
+    </linearGradient>
+
+    <!-- Outer glow filter -->
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Soft shadow for the card -->
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#8b5cf6" flood-opacity="0.30"/>
+    </filter>
+
+    <!-- Clip to rounded square -->
+    <clipPath id="roundedSquare">
+      <rect x="20" y="20" width="160" height="160" rx="42" ry="42"/>
+    </clipPath>
+  </defs>
+
+  <!-- Glow halo behind card -->
+  <ellipse cx="100" cy="106" rx="72" ry="68"
+    fill="url(#grad)" opacity="0.18" filter="url(#glow)"/>
+
+  <!-- Rounded square background -->
+  <rect x="20" y="20" width="160" height="160" rx="42" ry="42"
+    fill="url(#grad)" filter="url(#shadow)"/>
+
+  <!-- Subtle inner highlight (top-left sheen) -->
+  <rect x="20" y="20" width="160" height="80" rx="42" ry="42"
+    fill="white" opacity="0.08" clip-path="url(#roundedSquare)"/>
+
+  <!-- Book icon — simple open book shape -->
+  <g clip-path="url(#roundedSquare)">
+    <!-- Left page -->
+    <path d="M60 78 C60 76 62 74 64 74 L94 74 L94 126 L64 126 C62 126 60 124 60 122 Z"
+      fill="white" opacity="0.20"/>
+    <!-- Right page -->
+    <path d="M140 78 C140 76 138 74 136 74 L106 74 L106 126 L136 126 C138 126 140 124 140 122 Z"
+      fill="white" opacity="0.20"/>
+    <!-- Spine -->
+    <rect x="95" y="74" width="10" height="52" rx="2" fill="white" opacity="0.35"/>
+  </g>
+
+  <!-- "SH" text centred -->
+  <text x="100" y="115"
+    font-family="'Plus Jakarta Sans', 'DM Sans', system-ui, sans-serif"
+    font-weight="800"
+    font-size="52"
+    letter-spacing="-3"
+    fill="white"
+    text-anchor="middle"
+    dominant-baseline="middle">SH</text>
+
+  <!-- Tiny dot accent bottom-right of card -->
+  <circle cx="148" cy="148" r="7" fill="white" opacity="0.30"/>
+  <circle cx="148" cy="148" r="3.5" fill="white" opacity="0.60"/>
+</svg>

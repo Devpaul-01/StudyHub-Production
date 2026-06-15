@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Password Reset</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/auth/reset_request.css') }}">
+</head>
+<body>
+  <div class="reset-container">
+    <h2>Password Reset</h2>
+    <p>Enter your email or username to receive a password reset link.</p>
+    <form id="reset-request-form">
+      <input type="text" id="emailOrUsername" name="emailOrUsername" placeholder="Email or Username" required>
+      <span class="input-error"></span>
+      <button type="submit">Send Reset Link</button>
+    </form>
+    <p class="back-login">
+      <a href="/student/login">Back to login</a>
+    </p>
+  </div>
+  <script src="{{ url_for('static', filename='js/core/api.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/core/utils.js') }}"></script>
+  <script>
+    
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.getElementById("reset-request-form");
+      const span = document.querySelector(".input-error");
+      const input = document.getElementById("emailOrUsername");
+      input.addEventListener("input", async(e) => {
+        const value = e.target.value;
+        callApi(value);
+        
+      })
+      form.addEventListener("submit", async(e) => {
+        e.preventDefault();
+        if(input.value.trim().length === 0){
+          span.classList.remove("found");
+          span.classList.remove("not-found");
+          span.textContent = "Kindly enter an email or username";
+          return;
+        }
+        await resetPassword(e);
+      })
+      
+      async function resetPassword(e){
+        try{
+          const emailOrUsername = document.getElementById("emailOrUsername").value.trim();
+          const response = await api.post("/validate-user", { data: emailOrUsername }); // ✅ Match backend
+          if (response.status == "success"){
+            showToast(response.message, "success");
+          }
+          else{
+            showToast(response.message, "error");
+          }
+        }
+        catch(error){
+          showToast(error, "error");
+        }
+        }
+    async function callApi(value){
+      try{
+        const formData = new FormData();
+        formData.append("data", value);
+        const response = await api.post("/check-user", formData);
+        let type;
+        if(response.status == "success"){
+          type = response.data.type;
+          span.classList.remove("not-found");
+          span.classList.add("found");
+          span.textContent = "Searching";
+          span.textContent = `User found with this ${type}`;
+        }
+        else{
+          type = response.type;
+          span.classList.remove("found");
+          span.classList.add("not-found");
+          span.textContent = "Searching";
+          span.textContent = "No user found";
+        }
+      }
+      catch(error){
+        
+      }
+    }
+  });
+  </script>
+</body>
+</html>
+    

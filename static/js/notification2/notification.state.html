@@ -1,0 +1,16 @@
+class NotificationState(){
+  constructor(){
+    this.hasMore = true;
+    this.loading = false;
+    this.lastCursor = null;
+  }
+  updateHasMore(value){
+    this.hasMore = value;
+  }
+  updateCursor(cursor){
+    this.lastCursor = cursor;
+  }
+  setLoading(value){
+    this.loading = value;
+  }
+}
