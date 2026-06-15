@@ -9,6 +9,49 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/auth/auth.css') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        .password-field-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .password-field-wrapper .form-input {
+            width: 100%;
+            padding-right: 44px;
+        }
+        .password-toggle-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            color: #6b7280;
+            border-radius: 6px;
+            transition: color 0.15s ease, background-color 0.15s ease;
+        }
+        .password-toggle-btn:hover {
+            color: #374151;
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+        .password-toggle-btn:focus-visible {
+            outline: 2px solid #6366f1;
+            outline-offset: 2px;
+        }
+        .password-toggle-btn svg {
+            display: block;
+        }
+        .password-toggle-btn .hidden {
+            display: none;
+        }
+    </style>
 </head>
 <body>
     <div class="auth-page">
@@ -34,13 +77,27 @@
                 
                 <div class="form-group">
                     <label for="password" class="form-label required">Password</label>
-                    <input type="password" 
-                           id="password" 
-                           name="password" 
-                           class="form-input" 
-                           placeholder="Enter your password"
-                           required
-                           autocomplete="current-password">
+                    <div class="password-field-wrapper">
+                        <input type="password" 
+                               id="password" 
+                               name="password" 
+                               class="form-input" 
+                               placeholder="Enter your password"
+                               required
+                               autocomplete="current-password">
+                        <button type="button" class="password-toggle-btn" id="password-toggle-btn" aria-label="Show password" aria-pressed="false">
+                            <!-- eye icon (shown when password is hidden) -->
+                            <svg class="icon-eye" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                            <!-- eye-off icon (shown when password is visible) -->
+                            <svg class="icon-eye-off hidden" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                <line x1="1" y1="1" x2="23" y2="23"></line>
+                            </svg>
+                        </button>
+                    </div>
                     <span class="form-error hidden" id="password_error"></span>
                 </div>
                 
@@ -116,6 +173,22 @@ document.addEventListener("DOMContentLoaded", async () => {
     
     // Auto-focus first input
     document.getElementById('username_or_email').focus();
+    
+    // ✅ Password show/hide toggle
+    const passwordInput = document.getElementById('password');
+    const passwordToggleBtn = document.getElementById('password-toggle-btn');
+    if (passwordToggleBtn && passwordInput) {
+        passwordToggleBtn.addEventListener('click', () => {
+            const isHidden = passwordInput.type === 'password';
+            passwordInput.type = isHidden ? 'text' : 'password';
+            
+            passwordToggleBtn.querySelector('.icon-eye').classList.toggle('hidden', isHidden);
+            passwordToggleBtn.querySelector('.icon-eye-off').classList.toggle('hidden', !isHidden);
+            
+            passwordToggleBtn.setAttribute('aria-pressed', isHidden ? 'true' : 'false');
+            passwordToggleBtn.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+        });
+    }
     
     console.log("✅ Login page initialized");
 });
