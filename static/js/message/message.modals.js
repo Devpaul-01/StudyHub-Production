@@ -148,7 +148,7 @@ export function openConversationOptionsModal() {
     blockBtn.querySelector('span')?.textContent !== undefined
       ? (blockBtn.querySelector('span').textContent = isBlocked ? `Unblock ${partner.name}` : `Block ${partner.name}`)
       : null;
-    blockBtn.dataset.action = isBlocked ? 'unblock-user' : 'block-user';
+    blockBtn.dataset.action = isBlocked ? 'unblock-message-user' : 'block-message-user';
   }
 
   modal.classList.remove('hidden');

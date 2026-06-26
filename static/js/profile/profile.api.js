@@ -99,7 +99,6 @@ export async function saveProfileEdit(payload) {
     return res;
   } catch (e) {
     console.error('[profile.api] saveProfileEdit:', e);
-    showToast('Failed to save profile', 'error');
     return null;
   }
 }
@@ -132,7 +131,6 @@ export async function uploadAvatar(file) {
     return await api.post('/profile/avatar/upload', formData, true);
   } catch (e) {
     console.error('[profile.api] uploadAvatar:', e);
-    showToast('Failed to upload avatar', 'error');
     return null;
   }
 }
@@ -163,7 +161,6 @@ export async function saveAcademicInfo(payload) {
     return await api.put('/profile/academic-info', payload);
   } catch (e) {
     console.error('[profile.api] saveAcademicInfo:', e);
-    showToast('Failed to save', 'error');
     return null;
   }
 }
@@ -175,7 +172,6 @@ export async function pinPost(postId) {
     return await api.post(`/profile/pin-post/${postId}`);
   } catch (e) {
     console.error('[profile.api] pinPost:', e);
-    showToast('Failed to pin post', 'error');
     return null;
   }
 }
@@ -185,7 +181,6 @@ export async function unpinPost(postId) {
     return await api.post(`/profile/unpin-post/${postId}`);
   } catch (e) {
     console.error('[profile.api] unpinPost:', e);
-    showToast('Failed to unpin post', 'error');
     return null;
   }
 }
@@ -195,7 +190,6 @@ export async function deletePost(postId) {
     return await api.delete(`/posts/${postId}`);
   } catch (e) {
     console.error('[profile.api] deletePost:', e);
-    showToast('Failed to delete post', 'error');
     return null;
   }
 }

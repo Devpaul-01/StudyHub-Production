@@ -251,7 +251,6 @@ export async function handleStartHomework(assignmentId) {
     if (response.status === 'success') {
       refreshCurrentTab();
     } else {
-      showToast(response.message, "error");
       throw new Error(response.message || 'Failed to start assignment');
     }
   } catch (error) {

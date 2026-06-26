@@ -120,7 +120,7 @@ export const FeedHandlers = {
   const events = await getEvents();
   const postId = target.dataset.postId;
   if (!postId){
-    showToast("An error occured try  again later");
+    showToast("An error occurred, please try again later", "error");
     return;
   }
   events.askLearnora(postId);
@@ -138,7 +138,6 @@ export const FeedHandlers = {
   },
   
   'toggle-reactions': async (target, event, containerType) => {
-    showToast("Reaction called");
     // Skip if from reaction menu (handled by select-reaction)
     if (target.closest('#reactionMenu')) return;
     
@@ -270,16 +269,17 @@ export const FeedHandlers = {
   
   'form-thread-with-author': async (target, event, containerType) => {
     const postId = target.dataset.postId || target.closest('[data-post-id]')?.dataset.postId;
-    if (!postId) return;
-    
+    const userId = target.dataset.userId;
+
+    if (!postId && !userId) return;
+
+    // Close any open context modal before opening the thread modal
+    const advancedModal = target.closest('#advanced-post-options-modal');
+    if (advancedModal) closeModal('advanced-post-options-modal');
+
     const events = await getEvents();
-    events.handleCreateThreadFromPost(postId, event);
-    
-    if (target.closest('#advanced-post-options-modal')) {
-      closeModal('advanced-post-options-modal');
-    }
+    events.handleCreateThreadFromPost(postId, userId, event);
   },
-  
   'share-post': async (target, event, containerType) => {
     const postId = target.dataset.postId || target.closest('[data-post-id]')?.dataset.postId;
     if (!postId) return;
@@ -605,7 +605,6 @@ export const FeedHandlers = {
   
   // ==================== CREATE THREAD ====================
   'submit-create-thread': async (target, event, containerType) => {
-    showToast("Create thread called here");
     event.preventDefault();
     const events = await getEvents();
     events.handleCreateThread(event, target);

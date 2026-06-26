@@ -79,7 +79,6 @@ export const HomeworkHandlers = {
     }
   },
   'edit-homework': (target, event) => {
-    showToast("Called in delegation", 'info');
     event.preventDefault();
     const assignmentId = target.dataset.assignmentId;
     if (assignmentId) {

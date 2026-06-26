@@ -66,13 +66,7 @@ export function createConnectedConnectionCard(connection) {
             </svg>
           </button>
           <div class="advanced-options hidden">
-  <button data-user-id="${user.id}">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
-      <circle cx="12" cy="12" r="3"/>
-    </svg>
-    User Overview
-  </button>
+  
 
   <button data-action="create-study-session" data-user-id="${user.id}">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -105,7 +99,7 @@ export function createConnectedConnectionCard(connection) {
     Connection Notes
   </button>
 
-  <button data-action="form-thread" data-user-id="${user.id}">
+  <button data-action="form-thread-with-author" data-user-id="${user.id}">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>
       <path d="M8 12h8"/>
@@ -265,13 +259,6 @@ export function createReceivedConnectionCard(connection) {
         <div class="advanced-options-wrapper">
           <button class="advanced-options-toggle" data-action="toggle-advanced-options">⋯</button>
           <div class="advanced-options hidden">
-  <button data-action="view-overview" data-user-id="${user.id}">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-      <circle cx="12" cy="12" r="3"></circle>
-    </svg>
-    View Overview
-  </button>
   
   <button data-action="view-mutual-connections" data-user-id="${user.id}">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -394,13 +381,7 @@ export function createSentConnectionCard(connection) {
         <div class="advanced-options-wrapper">
           <button class="advanced-options-toggle" data-action="toggle-advanced-options">⋯</button>
           <div class="advanced-options hidden">
-  <button data-action="view-overview" data-user-id="${user.id}">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-      <circle cx="12" cy="12" r="3"></circle>
-    </svg>
-    View Overview
-  </button>
+  
   
   <button data-action="block-user" data-user-id="${user.id}" class="danger">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -496,13 +477,7 @@ export function createDiscoveryConnectionCard(connection) {
             </svg>
           </button>
           <div class="advanced-options hidden">
-            <button data-action="view-overview" data-user-id="${user.id}">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                <circle cx="12" cy="12" r="3"></circle>
-              </svg>
-              View Overview
-            </button>
+            
             
             <button data-action="view-mutual-connections" data-user-id="${user.id}">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -615,13 +590,7 @@ export function createSugguestionConnectionCard(connection) {
             </svg>
           </button>
           <div class="advanced-options hidden">
-            <button data-action="view-overview" data-user-id="${user.id}">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                <circle cx="12" cy="12" r="3"></circle>
-              </svg>
-              View Overview
-            </button>
+            
           </div>
         </div>
       </div>
@@ -876,7 +845,7 @@ export function createMutualConnectionCard(connection) {
       </div>
 
       <div class="card-actions-primary">
-        <button class="btn btn-primary" data-action="message-user" data-user-id="${user.id}">
+        <button class="btn btn-primary" data-action="message-author" data-user-id="${user.id}">
           Message
         </button>
       </div>

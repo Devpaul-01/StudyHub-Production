@@ -25,24 +25,23 @@ let lazyEvents = null;
 let lazyUtils  = null;
 
 async function getModals() {
-  if (!lazyModals) lazyModals = await import('./move/feed.modals.js');
+  if (!lazyModals) lazyModals = await import('./feed/feed.modals.js');
   return lazyModals;
 }
 
 async function getEvents() {
-  if (!lazyEvents) lazyEvents = await import('./move/feed.events.js');
+  if (!lazyEvents) lazyEvents = await import('./feed/feed.events.js');
   return lazyEvents;
 }
 
 export async function getUtils() {
-  if (!lazyUtils) lazyUtils = await import('./move/feed.utils.js');
+  if (!lazyUtils) lazyUtils = await import('./feed/feed.utils.js');
   return lazyUtils;
 }
 
 const UNIFIED_ACTIONS = {
   ...FeedHandlers,
   ...AnalyticsHandlers,
-  ...ConnectionHandlers,
   ...HomeworkHandlers,
   ...NotificationHandlers,
   ...MessageHandlers,
@@ -50,6 +49,8 @@ const UNIFIED_ACTIONS = {
 
   // ── NEW ──────────────────────────────────────────────────────────────────
   ...LeaderboardHandlers,
+  ...ConnectionHandlers
+  
   // ─────────────────────────────────────────────────────────────────────────
 };
 

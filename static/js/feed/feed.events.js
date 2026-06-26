@@ -99,7 +99,7 @@ export function openResourceViewer(resources, index){
     // Position fixed relative to the toggle button
     const btnRect = target.getBoundingClientRect();
     options.style.position = 'fixed';
-    options.style.top = `${btnRect.bottom + 6}px`;
+    options.style.top = `${btnRect.bottom + 3}px`;
     options.style.right = `${window.innerWidth - btnRect.right}px`;
     options.style.left = 'auto';
     options.style.zIndex = '10000';
@@ -1418,58 +1418,62 @@ export async function handleCreateThread(event, target) {
 /**
  * ✅ NEW: Handle create thread from post
  */
-export async function handleCreateThreadFromPost(postId, event) {
+export async function handleCreateThreadFromPost(postId, userId, event) {
   if (event) event.stopPropagation();
-  
+
   try {
-    // Get post data
-    const response = await feedApi.getPostQuickView(postId);
-    if (!response) {
-      showToast("Failed to load post data", "error");
-      return;
+    let memberId;
+
+    if (userId) {
+      // userId provided directly — skip post lookup
+      memberId = userId;
+    } else {
+      // Fall back to resolving the author from the post
+      if (!postId) {
+        showToast("No post or user provided", "error");
+        return;
+      }
+
+      const response = await feedApi.getPostQuickView(postId);
+      if (!response) {
+        showToast("Failed to load post data", "error");
+        return;
+      }
+
+      const post = response;
+      const authorId = post.author?.id;
+
+      if (!authorId) {
+        showToast("Couldn't find the post author", "error");
+        return;
+      }
+
+      // Pre-fill form with post data
+      const titleInput = document.getElementById("thread-title-input");
+      const descInput = document.getElementById("thread-description-input");
+
+      if (titleInput) titleInput.value = post.title || "Study thread";
+      if (descInput) descInput.value = post.text_content?.substring(0, 200) || "";
+
+      if (post.tags && post.tags.length > 0) {
+        feedState.clearThreadTags();
+        post.tags.slice(0, MAX_TAGS).forEach(tag => feedState.addThreadTag(tag));
+        renderThreadTags();
+      }
+
+      memberId = authorId;
     }
-    
-    const post = response;
-    const authorId = post.author?.id;
-    
-    if (!authorId) {
-      showToast("Couldn't find the post author", "error");
-      return;
-    }
-    
+
     // Open create-thread modal
     const modal = document.getElementById("create-thread-modal");
-    if (!modal) {
-      return;
-    }
-    
-    modal.classList.remove('hidden');
-    modal.classList.add('active');
-    
-    // Store post context
-    modal.dataset.fromPostId = postId;
-    modal.dataset.postAuthorId = authorId;
-    // ✅ handleCreateThread() reads modal.dataset.memberIds to build the
-    // thread's member list, so the author needs to land here too. The
-    // current user is added by the backend as the creator automatically.
-    modal.dataset.memberIds = String(authorId);
-    
-    // Pre-fill form with post data
-    const titleInput = document.getElementById("thread-title-input");
-    const descInput = document.getElementById("thread-description-input");
-    
-    if (titleInput) titleInput.value = post.title || "Study thread";
-    if (descInput) descInput.value = post.text_content?.substring(0, 200) || "";
-    
-    // Add post tags to thread tags
-    if (post.tags && post.tags.length > 0) {
-      feedState.clearThreadTags();
-      post.tags.slice(0, MAX_TAGS).forEach(tag => {
-        feedState.addThreadTag(tag);
-      });
-      renderThreadTags();
-    }
-    
+    if (!modal) return;
+
+    modal.classList.remove("hidden");
+    modal.classList.add("active");
+
+    if (postId) modal.dataset.fromPostId = postId;
+    modal.dataset.memberIds = String(memberId);
+
   } catch (error) {
     console.error("Create thread from post error:", error);
     showToast("Failed to create thread: " + error.message, "error");
@@ -2146,6 +2150,10 @@ export async function toggleReactions(postId, newType = 'like', event, container
   let container;
   if (containerType === 'tag-modal') {
     container = document.getElementById('tag-posts-container');
+  }
+  else if(containerType === "profile"){
+    container = document.getElementById("profile");
+  
   } else {
     container = document.getElementById('posts-container') || document.body;
   }

@@ -589,7 +589,7 @@ export function blockedByMeNoticeTemplate(partnerName) {
       <p class="text-xs text-gray-400">
         You can't send or receive messages from this person.
       </p>
-      <button data-action="unblock-user"
+      <button data-action="unblock-message-user"
               class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700
                      active:scale-95 text-white text-sm font-semibold
                      transition-all duration-150">

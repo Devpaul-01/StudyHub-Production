@@ -11,6 +11,8 @@ import * as events from './message.events.js';
 import * as modals from './message.modals.js';
 import * as render from './message.render.js';
 
+const toast = (msg, type) => { const fn = window.showToast || globalThis.showToast; fn?.(msg, type); };
+
 export const MessageHandlers = {
 
   // ── Navigation ─────────────────────────────────────────────────────────────
@@ -20,11 +22,11 @@ export const MessageHandlers = {
     const _header      = document.querySelector('header');
     _header.classList.add('hidden');
   },
-  'audio-call': (target) => {
-    showToast("Audio call feature coming soon");
+  'audio-call': () => {
+    toast('Audio call feature coming soon', 'info');
   },
-  'video-call': (target) => {
-    showToast("Video call feature coming soon");
+  'video-call': () => {
+    toast('Video call feature coming soon', 'info');
   },
 
   'back-to-conversations': () => {
@@ -38,8 +40,6 @@ export const MessageHandlers = {
   // ── Messaging ─────────────────────────────────────────────────────────────
 
   'send-message': (target, event) => {
-    showToast('Send message called');
-
     events.handleSendMessage();
   },
 
@@ -114,12 +114,13 @@ export const MessageHandlers = {
     events.handleClearChat();
   },
 
-  'block-user': () => {
-    events.handleBlockUser();
-  },
+  
 
-  'unblock-user': () => {
+  'unblock-message-user': () => {
     events.handleUnblockUser();
+  },
+  'block-message-user': () => {
+    events.handleBlockUser();
   },
 
   // ── Partner info ───────────────────────────────────────────────────────────

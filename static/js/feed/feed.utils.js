@@ -279,7 +279,7 @@ export function viewProfile(username) {
 export async function sharePost(postId) {
   const shareData = {
     title: 'Check out this post on LearnHub',
-    url: `${window.location.origin}/#posts-${postId}`
+    url: `${window.location.origin}/posts/${postId}`
   };
   
   if (navigator.share) {
@@ -325,35 +325,73 @@ export function searchTag(tag) {
 /**
  * Navigate to section helper
  */
-export function navigateTo(section) {
-  if (typeof window.navigateTo === 'function') {
-    window.navigateTo(section);
-  }
+export function navigateTo(sectionId, event) {
+    if (event) event.preventDefault();
+
+    // ── Messages: full-screen fixed overlay (NOT a .section) ───────────────
+    if (sectionId === 'messages') {
+        _openMessagesOverlay();
+        return;
+    }
+
+    const implementedSections = [
+        'feed', 'profile','threads', 'learnora', 'leaderboard', 'analytics', 'study-session', 'advanced-search', 'homework',
+        'notifications', 'activity-feed', 'connections'
+    ];
+
+    if (!implementedSections.includes(sectionId)) {
+        if (typeof showToast === 'function') {
+            showToast(`${sectionId} feature coming soon!`, 'info');
+        }
+        return;
+    }
+
+    // Close messages overlay if it was open
+    _closeMessagesOverlay();
+
+    // Deactivate all sections then activate the target
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    const targetSection = document.getElementById(sectionId);
+    if (targetSection) {
+        targetSection.classList.remove('hidden');
+        targetSection.classList.add('active');
+        currentSection = sectionId;
+    }
+
+    // ── Header + bottom-nav visibility ─────────────────────────────────────
+    if (sectionId === 'feed') {
+  
+        el.classList.remove('hidden');
+      
+        _bottomNav?.classList.remove('hidden');
+        _helpBtn?.classList.remove('hidden');
+    } else {
+      
+        _bottomNav?.classList.add('hidden');
+        _helpBtn?.classList.add('hidden');
+        
+    }
+
+    // Highlight correct nav item
+    document.querySelectorAll('.nav-item, .bottom-nav-item').forEach(item => {
+        item.classList.remove('active');
+        if (item.dataset.target === sectionId) {
+            item.classList.add('active');
+        }
+    });
+    closeMobileSidebar();
+    
+
+    
 }
 
-/**
- * Modals that are long/full enough to warrant hiding the page header
- * for extra space while they're open. Add/remove IDs here to control
- * which modals get this treatment.
- */
-const HEADER_HIDING_MODALS = new Set([
-  'create-post-modal',
-  'create-thread-modal',
-  'thread-create-modal',
-  'post-comments-modal',
-  'thread-view-modal',
-  'hw-create-modal',
-  'hw-edit-modal',
-  'hw-resource-preview-modal',
-  'hw-submission-modal',
-  'hw-details-modal',
-]);
+
 
 /**
  * Open modal - ADDED EXPORT
  */
- 
- export function openModal(modalId) {
+
+export function openModal(modalId) {
   const modal = document.getElementById(modalId);
   if(modalId == 'reschdule-study-session-modal') {
     resetRescheduleSessionForm();
@@ -369,15 +407,9 @@ const HEADER_HIDING_MODALS = new Set([
     modal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
 
-    // Hide header for long/full-screen modals. Uses a counter so that
-    // if a header-hiding modal opens another one on top, the header
-    // only comes back once ALL such modals are closed.
-    if (HEADER_HIDING_MODALS.has(modalId)) {
-      window._headerHidingModalCount = (window._headerHidingModalCount || 0) + 1;
-
-      const header = document.getElementById('header');
-      if (header) header.classList.add('hidden');
-    }
+    // Hide the header whenever any modal is open
+    const header = document.getElementById('header');
+    if (header) header.classList.add('hidden');
   }
 }
 
@@ -388,21 +420,15 @@ const HEADER_HIDING_MODALS = new Set([
 export function closeModal(modalId) {
   const header = document.getElementById("header");
   const modal = document.getElementById(modalId);
-  
   if (modal) {
     modal.classList.remove('active');
     modal.classList.add('hidden');
     
     document.body.style.overflow = '';
 
-    // Restore header once the last header-hiding modal has closed.
-    if (HEADER_HIDING_MODALS.has(modalId)) {
-      window._headerHidingModalCount = Math.max(0, (window._headerHidingModalCount || 0) - 1);
-      if (window._headerHidingModalCount === 0 && header) {
-        header.classList.remove('hidden');
-      }
-    }
-    
+    // Show the header again whenever a modal closes
+    if (header) header.classList.remove('hidden');
+
     // Special cleanup for comment modal
     if (modalId === 'post-comments-modal') {
       // Import feedState dynamically to avoid circular dependency
@@ -536,4 +562,5 @@ if (typeof window !== 'undefined') {
   window.openModal = openModal;
   window.closeModal = closeModal;
   window.ShowNotification = ShowNotification;
+  window.navigateTo = navigateTo;
 }

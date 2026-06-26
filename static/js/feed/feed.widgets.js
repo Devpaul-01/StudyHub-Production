@@ -34,7 +34,9 @@ function createSuggestedConnectionsWidget(connections) {
          data-action="view-profile"
          data-username="${item.user?.username}">
       
-      <img src="${item.user?.avatar || '/static/default-avatar.png'}" class="user-avatar">
+      <img src="${item.user?.avatar || '/static/default-avatar.png'}"
+           class="user-avatar"
+           style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover; display: block;">
       <div class="user-name">${item.user?.name}</div>
       <div class="user-bio">${item.user?.department || 'Student'}</div>
       <div class="match-score">Match: ${item.match_score}%</div>
@@ -84,16 +86,15 @@ function createPopularTagsWidget(tags) {
   `;
 }
 
-/**
- * Rising Stars Widget
- */
 function createRisingStarsWidget(stars) {
   const cards = stars.slice(0, 10).map(star => `
     <div class="user-card"
          data-action="view-profile"
          data-username="${star.user?.username}">
       
-      <img src="${star.user?.avatar || '/static/default-avatar.png'}" class="user-avatar">
+      <img src="${star.user?.avatar || '/static/default-avatar.png'}"
+           class="user-avatar"
+           style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover; display: block;">
       <div class="user-name">${star.user?.name}</div>
       <div class="user-bio">${star.user?.department || 'Student'}</div>
       <div class="stat-badge">${star.trend || '📈'} +${star.weekly_gain || 0}</div>
@@ -107,6 +108,9 @@ function createRisingStarsWidget(stars) {
     </div>
   `;
 }
+
+
+
 
 /**
  * Open Threads Widget
@@ -151,7 +155,9 @@ function createStudyBuddyWidget(matches) {
          data-action="view-profile"
          data-username="${match.user?.username}">
       
-      <img src="${match.user?.avatar || '/static/default-avatar.png'}" class="user-avatar">
+      <img src="${match.user?.avatar || '/static/default-avatar.png'}"
+           class="user-avatar"
+           style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover; display: block;">
       <div class="user-name">${match.user?.name}</div>
       <div class="user-bio">${match.user?.department}</div>
       <div class="match-score">Match: ${match.match_score}%</div>
@@ -184,7 +190,9 @@ function createHelpSuggestionsWidget(suggestions) {
          data-action="view-profile"
          data-username="${item.user?.username}">
       
-      <img src="${item.user?.avatar || '/static/default-avatar.png'}" class="user-avatar">
+      <img src="${item.user?.avatar || '/static/default-avatar.png'}"
+           class="user-avatar"
+           style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover; display: block;">
       <div class="user-name">${item.user?.name}</div>
       <div class="user-bio">${item.match_details?.can_help_with?.[0] || 'Needs help'}</div>
 
@@ -216,7 +224,9 @@ function createTopBadgeEarnersWidget(earners) {
          data-action="view-profile"
          data-username="${earner.user?.username}">
       
-      <img src="${earner.user?.avatar || '/static/default-avatar.png'}" class="user-avatar">
+      <img src="${earner.user?.avatar || '/static/default-avatar.png'}"
+           class="user-avatar"
+           style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover; display: block;">
       <div class="user-name">${earner.user?.name}</div>
       <div class="user-bio">${earner.user?.department}</div>
       <div class="stat-badge">🏆 ${earner.stats?.total_badges || 0}</div>

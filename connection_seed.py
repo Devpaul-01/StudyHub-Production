@@ -1,7 +1,31 @@
 """
-Connection System Seed Script
-Creates realistic connections with separate requester/receiver notes.
-Run this AFTER user_seed.py
+Connection System Seed Script — RECEIVER-HEAVY FOR USER 1
+==========================================================
+Key changes vs previous version
+---------------------------------
+1. User 1 is the RECEIVER on ~75 % of their connections (others send to them).
+   Previously the requester/receiver choice was 50/50.
+
+2. FORCE_CLEAR = True — no interactive confirmation prompt.
+
+3. Total connections raised to 120 to give User 1 a richer network.
+
+4. Connections that involve User 1 are seeded with realistic statuses:
+      accepted  60 %   (these form mutual-count denominator for suggestions)
+      pending   30 %   (incoming requests still showing)
+      rejected   7 %
+      blocked    3 %
+
+5. Inter-user (non-User-1) connections give other users some accepted
+   connections so mutual-count numbers are non-zero.
+
+6. ISOLATION GUARANTEE — at least MIN_ISOLATED_USERS (default 20) users are
+   carved out before any User-1 connections are created. Those users never
+   appear as requester or receiver on any Connection row involving User 1,
+   in any status — no accepted/pending/rejected/blocked, no history at all.
+   They can still connect with each other in Phase 2.
+
+Run AFTER user_seed.py
 """
 
 import random
@@ -10,59 +34,72 @@ import logging
 from typing import List, Dict, Set, Tuple, Optional
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from extensions import db
-from models import (
-    User, Connection,
-    StudentProfile, OnboardingDetails
-)
+from models import User, Connection, StudentProfile, OnboardingDetails
+
 
 # ============================================================================
 # CONFIGURATION
 # ============================================================================
 
 class SeedConfig:
-    """Centralized configuration for connection seeding"""
-    NUM_CONNECTIONS = 100
+    NUM_CONNECTIONS   = 120
     SEED_RANDOM_STATE = 42
-    BATCH_SIZE = 20
+    BATCH_SIZE        = 20
+    FORCE_CLEAR       = True   # skip interactive confirmation
 
-    # Status distribution (realistic percentages)
-    STATUS_DISTRIBUTION = {
+    # Fraction of total connections that involve User 1
+    USER1_FRACTION    = 0.75   # 90 connections touch User 1
+
+    # For User-1 connections: probability that User 1 is the RECEIVER
+    USER1_AS_RECEIVER = 0.75   # 75 % incoming,  25 % outgoing
+
+    # Guarantee that at least this many users have ZERO connection rows
+    # touching User 1 (no requester/receiver relationship in any status,
+    # ever). These users are carved out BEFORE Phase 1 runs so they can
+    # never be picked as a User-1 connection partner.
+    MIN_ISOLATED_USERS = 20
+
+    # Status weights for User-1 connections
+    USER1_STATUS = {
         "accepted": 0.60,
-        "pending": 0.25,
-        "rejected": 0.10,
-        "blocked": 0.05
+        "pending":  0.30,
+        "rejected": 0.07,
+        "blocked":  0.03,
     }
 
-    # Date ranges
+    # Status weights for inter-user connections
+    OTHER_STATUS = {
+        "accepted": 0.55,
+        "pending":  0.25,
+        "rejected": 0.12,
+        "blocked":  0.08,
+    }
+
     MAX_DAYS_AGO = 180
     MIN_DAYS_AGO = 1
+
 
 config = SeedConfig()
 
 # ============================================================================
-# LOGGING SETUP
+# LOGGING
 # ============================================================================
 
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('seed_connections.log'),
-        logging.StreamHandler()
-    ]
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[logging.FileHandler("seed_connections.log"), logging.StreamHandler()],
 )
 logger = logging.getLogger(__name__)
 
+
 # ============================================================================
-# REALISTIC DATA POOLS
+# DATA POOLS
 # ============================================================================
 
 CONNECTION_TYPES = [
-    "study_partner",
-    "mentor_mentee",
-    "classmate",
-    "project_partner",
-    "tutoring"
+    "study_partner", "mentor_mentee", "classmate",
+    "project_partner", "tutoring",
 ]
 
 SUBJECTS = [
@@ -70,45 +107,44 @@ SUBJECTS = [
     "Data Structures", "Algorithms", "Database Systems",
     "Web Development", "Machine Learning", "Statistics",
     "Discrete Math", "Operating Systems", "Networks",
-    "Software Engineering", "Computer Architecture"
+    "Software Engineering", "Computer Architecture",
+    "Artificial Intelligence", "Signal Processing",
 ]
 
-REQUESTER_NOTES_TEMPLATES = [
+REQUESTER_NOTES = [
     "Hi! I saw you're also studying {subject}. Want to connect?",
     "Hey! Would love to be study partners this semester",
     "Hi! Our mutual friend suggested we connect",
     "Hello! I could use help with {subject}",
     "Hey! Let's collaborate on upcoming projects",
-    "Great study partner! Really helps with {subject}.",
-    "Met in {subject} class. Very knowledgeable.",
-    "Connected through mutual friends. Seems helpful.",
-    "Reached out for help with {subject}. Super patient!",
-    "Active in study groups. Good resource for {subject}.",
-    "Classmate from {subject}. Always willing to collaborate.",
-    "Found through recommendations. Excited to work together!",
+    "Really impressed by your posts on {subject}.",
+    "Met in {subject} class. Would love to keep in touch.",
+    "Connected through mutual friends. Excited to work together!",
     "Shared interest in {subject}. Looking forward to studying together.",
-    "Really good at explaining {subject} concepts.",
-    "Helpful and friendly. Great addition to my network.",
+    "Really good at explaining {subject} concepts — hope you'll help me!",
     "Connected for {subject} project collaboration.",
-    "Seems very organized and dedicated to studies.",
     "Mutual connection suggested we link up for {subject}.",
-    "Met during office hours. Very approachable.",
-    "Active contributor in forums. Reached out to connect."
+    "Met during office hours. Very approachable!",
+    "Active contributor in forums. Reached out to connect.",
+    "Saw your profile and think we'd make great study partners.",
+    "Your notes on {subject} are amazing — can we connect?",
+    "Hope to learn a lot from you on {subject}.",
+    "Looking for an accountability partner for {subject}.",
+    "Heard great things about you from classmates!",
+    "Want to form a study group for {subject} — interested?",
 ]
 
-RECEIVER_NOTES_TEMPLATES = [
+RECEIVER_NOTES = [
     "Seems motivated. Happy to help with {subject}.",
     "New connection. Will see how collaboration goes.",
     "Accepted because we're in the same {subject} class.",
     "Could use my help with {subject}. Willing to assist.",
     "Mutual friends vouched for them. Gave it a shot.",
-    "Added to expand my study network in {subject}.",
+    "Same department. Networking for future projects.",
     "Seems genuine. Looking forward to working together.",
     "Connection requested help. Happy to share knowledge.",
-    "Same department. Networking for future projects.",
-    "Reached out politely. Seems like good fit for study sessions.",
+    "Reached out politely. Seems like a good fit.",
     "Part of {subject} group project. Added for coordination.",
-    "Recommended by classmate. Hoping for good collaboration.",
     "Needs support in {subject}. I can help with that.",
     "Active in same threads. Good to have in network.",
     "Similar study style. Could work well together.",
@@ -116,384 +152,308 @@ RECEIVER_NOTES_TEMPLATES = [
     "Looking for {subject} study partner. This could work.",
     "Mutual interest in {subject} topics.",
     "Added during study group formation.",
-    "Seems responsible and committed to learning."
+    "Seems responsible and committed to learning.",
+    "Happy to mentor on {subject}.",
+    "Great energy — looking forward to our sessions.",
 ]
 
-# ============================================================================
-# HELPER FUNCTIONS - NOTES
-# ============================================================================
-
-def generate_note(template_list: List[str]) -> str:
-    """Generate a note from template with optional subject substitution"""
-    template = random.choice(template_list)
-
-    if "{subject}" in template and random.random() < 0.7:
-        return template.format(subject=random.choice(SUBJECTS))
-    elif "{subject}" in template:
-        return template.replace("{subject}", "various topics")
-    return template
-
-
-def should_have_notes() -> bool:
-    """Determine if a user should have notes (80% chance)"""
-    return random.random() < 0.8
-
 
 # ============================================================================
-# HELPER FUNCTIONS - DATE & TIME
+# HELPERS
 # ============================================================================
 
-def generate_response_time(status: str) -> Optional[datetime.timedelta]:
-    """Generate realistic response time based on status"""
+def gen_note(templates: List[str]) -> str:
+    t = random.choice(templates)
+    if "{subject}" in t:
+        return t.format(subject=random.choice(SUBJECTS)) if random.random() < 0.75 \
+               else t.replace("{subject}", "various topics")
+    return t
+
+
+def pick_status(weights: Dict[str, float]) -> str:
+    return random.choices(list(weights.keys()), weights=list(weights.values()))[0]
+
+
+def response_timedelta(status: str) -> Optional[datetime.timedelta]:
     if status == "accepted":
-        if random.random() < 0.70:
-            return datetime.timedelta(hours=random.randint(1, 24))
-        else:
-            return datetime.timedelta(days=random.randint(1, 7))
-    elif status == "rejected":
-        if random.random() < 0.50:
-            return datetime.timedelta(days=random.randint(1, 3))
-        else:
-            return datetime.timedelta(days=random.randint(7, 30))
-    elif status == "blocked":
-        return datetime.timedelta(hours=random.randint(0, 2))
+        return datetime.timedelta(hours=random.randint(1, 24)) \
+               if random.random() < 0.70 else \
+               datetime.timedelta(days=random.randint(1, 7))
+    if status == "rejected":
+        return datetime.timedelta(days=random.randint(1, 14))
+    if status == "blocked":
+        return datetime.timedelta(hours=random.randint(0, 3))
     return None
 
 
-# ============================================================================
-# DATABASE OPERATIONS
-# ============================================================================
-
-def verify_database_connection() -> bool:
-    """Verify database is accessible"""
-    return True
-
-
-def check_user_prerequisites() -> Tuple[bool, List[User]]:
-    """Check if enough users exist for seeding"""
-    all_users = User.query.filter_by(status="approved").all()
-
-    if len(all_users) < 2:
-        logger.error(f"Insufficient users: found {len(all_users)}, need at least 2")
-        print("❌ Error: Need at least 2 approved users to create connections")
-        print("💡 Tip: Run user_seed.py first")
-        return False, []
-
-    logger.info(f"Found {len(all_users)} approved users")
-    print(f"✅ Found {len(all_users)} approved users")
-    return True, all_users
-
-
-def clear_existing_connections() -> bool:
-    """Clear existing connection data with confirmation"""
-    try:
-        existing_count = Connection.query.count()
-
-        if existing_count > 0:
-            logger.warning(f"Found {existing_count} existing connections")
-            print(f"\n⚠️  Warning: {existing_count} connections already exist")
-            response = input("Clear all existing connection data? (yes/no): ")
-
-            if response.lower() != 'yes':
-                logger.info("Seed aborted by user")
-                print("❌ Seed aborted")
-                return False
-
-        print("🗑️  Clearing existing connection data...")
-        logger.info("Clearing existing connection data...")
-
-        Connection.query.delete()
-
-        db.session.commit()
-        logger.info("Existing data cleared successfully")
-        print("✅ Cleared existing data")
-        return True
-
-    except SQLAlchemyError as e:
-        db.session.rollback()
-        logger.error(f"Failed to clear existing data: {e}")
-        print(f"❌ Failed to clear data: {e}")
-        return False
-
-
-# ============================================================================
-# CONNECTION CREATION
-# ============================================================================
-
-def create_connection_record(
+def make_connection(
     requester: User,
-    receiver: User,
-    status: str,
-    requested_at: datetime.datetime
+    receiver:  User,
+    status:    str,
+    requested_at: datetime.datetime,
 ) -> Connection:
-    """Create a single connection record with separate requester/receiver notes"""
-
-    response_time = generate_response_time(status)
-    responded_at = requested_at + response_time if response_time else None
-    conn_type = random.choice(CONNECTION_TYPES)
-
-    requester_notes = generate_note(REQUESTER_NOTES_TEMPLATES) if should_have_notes() else None
-    receiver_notes = generate_note(RECEIVER_NOTES_TEMPLATES) if (status == "accepted" and should_have_notes()) else None
-
-    connection = Connection(
+    td = response_timedelta(status)
+    return Connection(
         requester_id=requester.id,
         receiver_id=receiver.id,
         status=status,
         requested_at=requested_at,
-        responded_at=responded_at,
-        connection_type=conn_type,
-        requester_notes=requester_notes,
-        receiver_notes=receiver_notes,
-        is_seen=random.choice([True, False]) if status == "pending" else True
+        responded_at=(requested_at + td) if td else None,
+        connection_type=random.choice(CONNECTION_TYPES),
+        requester_notes=gen_note(REQUESTER_NOTES) if random.random() < 0.80 else None,
+        receiver_notes=(gen_note(RECEIVER_NOTES)
+                        if status == "accepted" and random.random() < 0.80 else None),
+        is_seen=random.choice([True, False]) if status == "pending" else True,
     )
-
-    logger.debug(f"Created connection: {requester.id} -> {receiver.id} ({status})")
-    return connection
 
 
 # ============================================================================
-# MAIN SEED FUNCTION
+# DATABASE
+# ============================================================================
+
+def clear_existing_connections() -> bool:
+    try:
+        cnt = Connection.query.count()
+        if cnt:
+            print(f"🗑️  Auto-clearing {cnt} existing connections (FORCE_CLEAR=True)...")
+        Connection.query.delete()
+        db.session.commit()
+        print("✅ Connections cleared")
+        return True
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        logger.error(f"Clear failed: {e}")
+        print(f"❌ Clear failed: {e}")
+        return False
+
+
+def check_prerequisites() -> Tuple[bool, List[User]]:
+    users = User.query.filter_by(status="approved").all()
+    if len(users) < 2:
+        print("❌ Need at least 2 approved users. Run user_seed.py first.")
+        return False, []
+    print(f"✅ Found {len(users)} approved users")
+
+    # The isolation guarantee needs MIN_ISOLATED_USERS reserved PLUS enough
+    # left over to actually build User 1's network.
+    min_needed = config.MIN_ISOLATED_USERS + 2
+    if len(users) - 1 < min_needed:
+        print(f"⚠️  Only {len(users) - 1} non-primary users exist; the "
+              f"{config.MIN_ISOLATED_USERS}-user isolation guarantee will be "
+              f"reduced automatically (see Phase 1 output).")
+    return True, users
+
+
+# ============================================================================
+# MAIN SEED
 # ============================================================================
 
 def seed_connections() -> bool:
-    """
-    Main seeding function - creates connection records.
-    Returns True if successful, False otherwise.
-    """
-    print("🌱 Starting connection seed script...")
-    logger.info(f"Starting seed process for {config.NUM_CONNECTIONS} connections")
-
+    print("🌱 Starting connection seed (RECEIVER-HEAVY for User 1)...")
     random.seed(config.SEED_RANDOM_STATE)
 
-    if not verify_database_connection():
-        return False
-
-    success, all_users = check_user_prerequisites()
-    if not success:
+    ok, all_users = check_prerequisites()
+    if not ok:
         return False
 
     if not clear_existing_connections():
         return False
 
-    print(f"🔗 Creating {config.NUM_CONNECTIONS} connections...")
-    logger.info(f"Creating {config.NUM_CONNECTIONS} connections")
+    primary = User.query.filter_by(id=1).first()
+    if not primary:
+        print("❌ User with ID=1 not found. Run user_seed.py first.")
+        return False
 
-    connections_created = 0
-    connections_failed = 0
+    print(f"🎯 Primary user: {primary.name} (ID={primary.id})")
+
+    others = [u for u in all_users if u.id != primary.id]
+    random.shuffle(others)          # fresh order each run
+
+    # ── Carve out a guaranteed-isolated pool BEFORE any targets are set ──────
+    # These users will never be given a connection to/from User 1, in any
+    # status, so they end up with zero shared history with the primary user.
+    total_others    = len(others)
+    isolated_target = config.MIN_ISOLATED_USERS
+
+    if total_others < isolated_target + 2:
+        # Not enough users to both isolate 20 and still build a network —
+        # leave at least 2 users available for User-1 connections.
+        isolated_target = max(total_others - 2, 0)
+        print(f"⚠️  Only {total_others} other users available; reducing isolated "
+              f"pool to {isolated_target} so User 1 still has connection partners.")
+
+    isolated_users      = others[:isolated_target]
+    eligible_for_user1  = others[isolated_target:]
+    isolated_ids        = {u.id for u in isolated_users}
+
+    print(f"🔒 Reserved {len(isolated_users)} users with NO connection/history to "
+          f"User 1 (ids: {sorted(isolated_ids)})")
+
+    # User-1 target can't exceed the number of users actually eligible to
+    # connect with User 1 (each pair is only used once in Phase 1).
+    desired_user1_target = int(config.NUM_CONNECTIONS * config.USER1_FRACTION)
+    user1_conn_target     = min(desired_user1_target, len(eligible_for_user1))
+    other_conn_target     = config.NUM_CONNECTIONS - user1_conn_target
+
+    if user1_conn_target < desired_user1_target:
+        print(f"⚠️  Eligible pool ({len(eligible_for_user1)}) is smaller than the "
+              f"desired User-1 target ({desired_user1_target}); capping at "
+              f"{user1_conn_target}.")
+
+    print(f"📊 Plan: {user1_conn_target} with User 1  |  {other_conn_target} inter-user")
+
     used_pairs: Set[Tuple[int, int]] = set()
+    created = failed = 0
     now = datetime.datetime.utcnow()
 
-    # Get first user (ID=1) as the primary hub
-    primary_user = User.query.filter_by(id=1).first()
-    if not primary_user:
-        logger.error("User with ID=1 not found")
-        print("❌ Error: User with ID=1 not found. Please ensure user seeding creates user with ID=1")
-        return False
+    # ── Phase 1: User-1 connections (receiver-heavy) ─────────────────────────
+    print(f"\n🔗 Phase 1: User-1 connections ({user1_conn_target} total)...")
 
-    print(f"🎯 Primary user: {primary_user.name} (ID: {primary_user.id})")
-    logger.info(f"Using primary user: {primary_user.name} (ID: {primary_user.id})")
+    # Only draw from the eligible (non-isolated) pool.
+    pool = list(eligible_for_user1)
+    random.shuffle(pool)
 
-    primary_user_connections = int(config.NUM_CONNECTIONS * 0.90)
-    other_connections = config.NUM_CONNECTIONS - primary_user_connections
+    for other in pool:
+        if created >= user1_conn_target:
+            break
 
-    print(f"📊 Distribution: {primary_user_connections} with User 1, {other_connections} random")
-    logger.info(f"Connection distribution: {primary_user_connections} primary, {other_connections} random")
+        pair = tuple(sorted([primary.id, other.id]))
+        if pair in used_pairs:
+            continue
+        used_pairs.add(pair)
 
-    try:
-        # Phase 1: Connections with primary user (User ID=1)
-        print(f"\n🔗 Phase 1: Creating {primary_user_connections} connections with User 1...")
-        other_users = [u for u in all_users if u.id != primary_user.id]
+        # Decide direction: receiver 75 %, requester 25 %
+        if random.random() < config.USER1_AS_RECEIVER:
+            requester, receiver = other, primary      # other → User 1 (incoming)
+        else:
+            requester, receiver = primary, other      # User 1 → other (outgoing)
 
-        for i in range(primary_user_connections):
-            if connections_created >= config.NUM_CONNECTIONS:
-                break
+        status       = pick_status(config.USER1_STATUS)
+        days_ago     = random.randint(config.MIN_DAYS_AGO, config.MAX_DAYS_AGO)
+        requested_at = now - datetime.timedelta(days=days_ago)
 
-            try:
-                if not other_users:
-                    logger.warning("Ran out of other users for primary connections")
-                    break
-
-                other_user = random.choice(other_users)
-                other_users.remove(other_user)
-
-                if random.choice([True, False]):
-                    requester, receiver = primary_user, other_user
-                else:
-                    requester, receiver = other_user, primary_user
-
-                pair_key = tuple(sorted([requester.id, receiver.id]))
-
-                if pair_key in used_pairs:
-                    continue
-
-                used_pairs.add(pair_key)
-
-                status = random.choices(
-                    list(config.STATUS_DISTRIBUTION.keys()),
-                    weights=list(config.STATUS_DISTRIBUTION.values())
-                )[0]
-
-                days_ago = random.randint(config.MIN_DAYS_AGO, config.MAX_DAYS_AGO)
-                requested_at = now - datetime.timedelta(days=days_ago)
-
-                connection = create_connection_record(requester, receiver, status, requested_at)
-                db.session.add(connection)
-
-                connections_created += 1
-
-                if connections_created % config.BATCH_SIZE == 0:
-                    try:
-                        db.session.commit()
-                        logger.info(f"Committed batch: {connections_created}/{config.NUM_CONNECTIONS}")
-                        print(f"   ✓ Created {connections_created}/{config.NUM_CONNECTIONS} connections...")
-                    except IntegrityError as e:
-                        db.session.rollback()
-                        logger.error(f"Integrity error in batch at {connections_created}: {e}")
-                        connections_failed += 1
-
-            except Exception as e:
-                logger.error(f"Error creating connection {connections_created}: {e}")
-                connections_failed += 1
-                continue
-
-        # Phase 2: Random connections between other users
-        print(f"\n🔗 Phase 2: Creating {other_connections} random connections...")
-        remaining_users = [u for u in all_users if u.id != primary_user.id]
-
-        for _ in range(other_connections):
-            if connections_created >= config.NUM_CONNECTIONS:
-                break
-
-            try:
-                if len(remaining_users) < 2:
-                    break
-
-                requester, receiver = random.sample(remaining_users, 2)
-                pair_key = tuple(sorted([requester.id, receiver.id]))
-
-                if pair_key in used_pairs:
-                    continue
-
-                used_pairs.add(pair_key)
-
-                status = random.choices(
-                    list(config.STATUS_DISTRIBUTION.keys()),
-                    weights=list(config.STATUS_DISTRIBUTION.values())
-                )[0]
-
-                days_ago = random.randint(config.MIN_DAYS_AGO, config.MAX_DAYS_AGO)
-                requested_at = now - datetime.timedelta(days=days_ago)
-
-                connection = create_connection_record(requester, receiver, status, requested_at)
-                db.session.add(connection)
-
-                connections_created += 1
-
-                if connections_created % config.BATCH_SIZE == 0:
-                    try:
-                        db.session.commit()
-                        logger.info(f"Committed batch: {connections_created}/{config.NUM_CONNECTIONS}")
-                        print(f"   ✓ Created {connections_created}/{config.NUM_CONNECTIONS} connections...")
-                    except IntegrityError as e:
-                        db.session.rollback()
-                        logger.error(f"Integrity error in batch at {connections_created}: {e}")
-                        connections_failed += 1
-
-            except Exception as e:
-                logger.error(f"Error creating connection {connections_created}: {e}")
-                connections_failed += 1
-                continue
-
-        # Final commit
         try:
-            db.session.commit()
-            logger.info(f"Final commit successful: {connections_created} connections created")
-            print(f"✅ Created {connections_created} connections successfully!")
+            conn = make_connection(requester, receiver, status, requested_at)
+            db.session.add(conn)
+            created += 1
 
-            if connections_failed > 0:
-                logger.warning(f"{connections_failed} connections failed")
-                print(f"⚠️  {connections_failed} connections failed to create")
+            if created % config.BATCH_SIZE == 0:
+                db.session.commit()
+                print(f"   ✓ {created}/{config.NUM_CONNECTIONS} connections...")
 
-        except SQLAlchemyError as e:
-            db.session.rollback()
-            logger.error(f"Final commit failed: {e}")
-            print(f"❌ Final commit failed: {e}")
-            return False
+        except Exception as e:
+            logger.error(f"Phase-1 error: {e}")
+            failed += 1
 
-        print_summary_statistics()
-        return True
+    # ── Phase 2: Inter-user connections ──────────────────────────────────────
+    print(f"\n🔗 Phase 2: Inter-user connections ({other_conn_target} total)...")
 
-    except Exception as e:
-        logger.error(f"Unexpected error during seeding: {e}", exc_info=True)
+    attempts = 0
+    max_attempts = other_conn_target * 5
+
+    while (created - user1_conn_target) < other_conn_target:
+        attempts += 1
+        if attempts > max_attempts or len(others) < 2:
+            break
+
+        req, rec = random.sample(others, 2)
+        pair = tuple(sorted([req.id, rec.id]))
+        if pair in used_pairs:
+            continue
+        used_pairs.add(pair)
+
+        status       = pick_status(config.OTHER_STATUS)
+        days_ago     = random.randint(config.MIN_DAYS_AGO, config.MAX_DAYS_AGO)
+        requested_at = now - datetime.timedelta(days=days_ago)
+
+        try:
+            conn = make_connection(req, rec, status, requested_at)
+            db.session.add(conn)
+            created += 1
+
+            if created % config.BATCH_SIZE == 0:
+                db.session.commit()
+                print(f"   ✓ {created}/{config.NUM_CONNECTIONS} connections...")
+
+        except Exception as e:
+            logger.error(f"Phase-2 error: {e}")
+            failed += 1
+
+    # Final commit
+    try:
+        db.session.commit()
+        print(f"\n✅ {created} connections created  |  {failed} failed")
+    except SQLAlchemyError as e:
         db.session.rollback()
-        print(f"❌ Unexpected error: {e}")
+        print(f"❌ Final commit failed: {e}")
         return False
 
-
-def print_summary_statistics():
-    """Print summary of seeded connection data"""
-    print("\n" + "=" * 60)
-    print("📊 SEED SUMMARY")
-    print("=" * 60)
-
-    total_connections = Connection.query.count()
-    print(f"Total Connections: {total_connections}")
-
-    # Notes statistics
-    print(f"\n📝 Notes Statistics:")
-    requester_notes_count = Connection.query.filter(
-        Connection.requester_notes.isnot(None),
-        Connection.requester_notes != ""
-    ).count()
-    receiver_notes_count = Connection.query.filter(
-        Connection.receiver_notes.isnot(None),
-        Connection.receiver_notes != ""
-    ).count()
-    both_notes_count = Connection.query.filter(
-        Connection.requester_notes.isnot(None),
-        Connection.requester_notes != "",
-        Connection.receiver_notes.isnot(None),
-        Connection.receiver_notes != ""
-    ).count()
-
-    if total_connections > 0:
-        print(f"  Connections with requester notes: {requester_notes_count} ({requester_notes_count / total_connections * 100:.1f}%)")
-        print(f"  Connections with receiver notes:  {receiver_notes_count} ({receiver_notes_count / total_connections * 100:.1f}%)")
-        print(f"  Connections with both notes:      {both_notes_count} ({both_notes_count / total_connections * 100:.1f}%)")
-
-    # User 1 breakdown
-    primary_user = User.query.filter_by(id=1).first()
-    if primary_user:
-        primary_connections = Connection.query.filter(
-            db.or_(
-                Connection.requester_id == 1,
-                Connection.receiver_id == 1
-            )
-        ).count()
-        primary_pct = (primary_connections / total_connections * 100) if total_connections > 0 else 0
-
-        print(f"\n👤 User 1 ({primary_user.name}):")
-        print(f"  Connections: {primary_connections} ({primary_pct:.1f}% of total)")
-        print(f"  As Requester: {Connection.query.filter_by(requester_id=1).count()}")
-        print(f"  As Receiver:  {Connection.query.filter_by(receiver_id=1).count()}")
-
-    # Status distribution
-    print(f"\n📋 Connection Status:")
-    icons = {"accepted": "✅", "pending": "⏳", "rejected": "❌", "blocked": "🚫"}
-    for status in ["accepted", "pending", "rejected", "blocked"]:
-        count = Connection.query.filter_by(status=status).count()
-        pct = (count / total_connections * 100) if total_connections > 0 else 0
-        print(f"  {icons[status]} {status.capitalize()}: {count} ({pct:.1f}%)")
-
-    print("\n" + "=" * 60)
-    print("✨ Connection seed complete! Your data is ready to use.")
-    print("=" * 60 + "\n")
-
-    logger.info("Summary statistics printed successfully")
+    print_summary()
+    return True
 
 
 # ============================================================================
-# STANDALONE EXECUTION
+# SUMMARY
+# ============================================================================
+
+def print_summary():
+    print("\n" + "=" * 60)
+    print("📊 CONNECTION SEED SUMMARY")
+    print("=" * 60)
+
+    total = Connection.query.count()
+    print(f"Total connections: {total}")
+
+    # User 1 breakdown
+    user1 = User.query.filter_by(id=1).first()
+    if user1:
+        as_req = Connection.query.filter_by(requester_id=1).count()
+        as_rec = Connection.query.filter_by(receiver_id=1).count()
+        u1_total = as_req + as_rec
+        print(f"\n👤 User 1 ({user1.name}):")
+        print(f"   Total connections : {u1_total}  ({u1_total/total*100:.1f}% of all)")
+        print(f"   As REQUESTER (sent)    : {as_req}")
+        print(f"   As RECEIVER (received) : {as_rec}")
+        recv_pct = as_rec / u1_total * 100 if u1_total else 0
+        print(f"   Receiver share    : {recv_pct:.0f}%  "
+              f"{'✅' if recv_pct >= 60 else '⚠️  below target'}")
+
+    # Isolation check — users with NO connection row touching User 1 at all
+    touching_user1 = Connection.query.filter(
+        (Connection.requester_id == 1) | (Connection.receiver_id == 1)
+    ).all()
+    connected_ids = {c.requester_id for c in touching_user1} | \
+                    {c.receiver_id for c in touching_user1}
+    connected_ids.discard(1)
+
+    all_other_ids = {u.id for u in User.query.filter(User.id != 1).all()}
+    isolated_ids  = all_other_ids - connected_ids
+
+    print(f"\n🔒 Users with NO connection/history to User 1: {len(isolated_ids)}  "
+          f"{'✅' if len(isolated_ids) >= 20 else '⚠️  below target of 20'}")
+    if isolated_ids:
+        print(f"   ids: {sorted(isolated_ids)}")
+
+    # Status breakdown
+    print(f"\n📋 Status breakdown:")
+    icons = {"accepted": "✅", "pending": "⏳", "rejected": "❌", "blocked": "🚫"}
+    for st in ["accepted", "pending", "rejected", "blocked"]:
+        cnt = Connection.query.filter_by(status=st).count()
+        pct = cnt / total * 100 if total else 0
+        print(f"   {icons[st]} {st.capitalize()}: {cnt} ({pct:.1f}%)")
+
+    # Notes stats
+    rn = Connection.query.filter(Connection.requester_notes.isnot(None)).count()
+    rcn = Connection.query.filter(Connection.receiver_notes.isnot(None)).count()
+    print(f"\n📝 Notes: requester={rn}, receiver={rcn}")
+
+    print("\n" + "=" * 60)
+    print("✨ Connection seed complete!")
+    print("=" * 60 + "\n")
+
+
+# ============================================================================
+# STANDALONE
 # ============================================================================
 
 if __name__ == "__main__":
@@ -501,10 +461,4 @@ if __name__ == "__main__":
 
     with app.app_context():
         success = seed_connections()
-
-        if success:
-            logger.info("Connection seed script completed successfully")
-            exit(0)
-        else:
-            logger.error("Connection seed script failed")
-            exit(1)
+        exit(0 if success else 1)

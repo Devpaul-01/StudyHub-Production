@@ -354,9 +354,6 @@ function _registerThreadHandlers(socket, threadId, token) {
     import('./thread.render.js').then(({ confirmOptimisticMessage: renderConfirm }) => {
       renderConfirm(client_temp_id, data);
     });
-    if (typeof window.showToast === 'function') {
-      window.showToast('Message sent', 'success');
-    }
   };
   socket.on(THREAD_WS.MESSAGE_SENT, _threadHandlers[THREAD_WS.MESSAGE_SENT]);
 

@@ -319,7 +319,7 @@ function _onClick(e) {
     e.preventDefault();
     _hideMentionSuggestions();
     import('./thread.events.js').then(({ handleSendMessage }) =>
-      handleSendMessage().catch(() => showToast('Failed to send message', 'error'))
+      handleSendMessage().catch(() => {})
     );
     return;
   }
@@ -385,7 +385,7 @@ function _onClick(e) {
   if (_closest(t, "[data-action='thread-meeting-notes']")) {
     e.preventDefault();
     import('./thread.events.js').then(({ handleOpenMeetingNotes }) =>
-      handleOpenMeetingNotes().catch(() => showToast('Failed to open meeting notes', 'error'))
+      handleOpenMeetingNotes().catch(() => {})
     );
     return;
   }
@@ -1050,7 +1050,7 @@ function _onKeydown(e) {
       e.preventDefault();
       _hideMentionSuggestions();
       import('./thread.events.js').then(({ handleSendMessage }) =>
-        handleSendMessage().catch(() => showToast('Failed to send message', 'error'))
+        handleSendMessage().catch(() => {})
       );
     }
   }

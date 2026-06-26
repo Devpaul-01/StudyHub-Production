@@ -27,7 +27,7 @@ export function openEditHomeworkModal(assignmentId) {
   
   if (!assignment) {
     console.error('Assignment not found:', assignmentId);
-    showToast('Assignment not found', 'error');
+    showHomeworkToast('Assignment not found', 'error');
     return;
   }
 

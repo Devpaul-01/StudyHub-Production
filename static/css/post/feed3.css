@@ -4715,24 +4715,9 @@ a:focus-visible {
   position: relative; /* For positioning dropdown */
 }
 
-.advanced-comment-options {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  background: var(--bg-primary);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  padding: 0.5rem 0;
-  min-width: 200px;
-  z-index: 100;
-  margin-top: 0.25rem;
-  animation: slideDown 0.2s ease;
-}
 
-.advanced-comment-options.hidden {
-  display: none;
-}
+
+
 
 @keyframes slideDown {
   from {
@@ -4746,18 +4731,7 @@ a:focus-visible {
 }
 
 /* Option items */
-.advanced-comment-options .comment-option-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
-  cursor: pointer;
-  transition: background 0.2s;
-  border: none;
-  background: none;
-  width: 100%;
-  text-align: left;
-}
+
 
 .advanced-comment-options .comment-option-item:hover {
   background: var(--bg-secondary);

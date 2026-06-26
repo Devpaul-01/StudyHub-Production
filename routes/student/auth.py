@@ -9,11 +9,12 @@ from flask_dance.contrib.google import make_google_blueprint, google
 from flask_dance.consumer import oauth_authorized
 from sqlalchemy import or_, and_
 from sqlalchemy.orm import joinedload
+from sqlalchemy.exc import IntegrityError
 import jwt
 import datetime
 import os
 
-from models import User, StudentProfile, Notification, OnboardingDetails, Connection
+from models import User, StudentProfile, Notification, OnboardingDetails, Connection, UserActivity
 from extensions import db
 # generate_tokens_for_user is imported from .helpers below; removed duplicate from utils
 from utils import generate_verification_token, send_password_reset, send_verification_email, verify_token, decode_token
@@ -124,6 +125,139 @@ def _is_request_authorized_for_email(email):
     return False
 
 
+def _get_or_create_today_activity(user_id, today=None):
+    """
+    Get (or create) the UserActivity row for `user_id` for today's date.
+
+    `today` should be a date derived from UTC (see record_activity /
+    update_login_streak) — never datetime.date.today(), which uses the
+    server's *local* clock and will disagree with `last_active`
+    (stored in UTC), causing streaks/activity rows to fall on the
+    wrong day near midnight.
+
+    Does not commit — caller is responsible for committing the session.
+    """
+    if today is None:
+        today = datetime.datetime.utcnow().date()
+    activity = UserActivity.query.filter_by(user_id=user_id, activity_date=today).first()
+    if not activity:
+        activity = UserActivity(
+            user_id=user_id,
+            activity_date=today,
+            activity_score=0,
+            posts_created=0,
+            comments_created=0,
+            messages_sent=0,
+            helpful_count=0,
+        )
+        db.session.add(activity)
+    return activity
+
+
+# Maps an activity_type to the specific counter column it should bump,
+# in addition to the generic activity_score used by the heatmap.
+_ACTIVITY_COUNTER_FIELDS = {
+    "post":    "posts_created",
+    "comment": "comments_created",
+    "message": "messages_sent",
+    "helpful": "helpful_count",
+}
+
+
+def record_activity(user_id, activity_type, score=1, today=None):
+    """
+    Record one unit of activity for the analytics/heatmap system.
+
+    `activity_type` examples: "login", "register", "post", "comment",
+    "message", "helpful". Unrecognized types only bump activity_score
+    (no specific counter column exists for them yet).
+
+    `today` should be the same UTC date used by update_login_streak for
+    this request, so the activity row and the streak never disagree
+    about which calendar day "today" is.
+
+    Does not commit — caller should commit alongside any other changes
+    in the same request (keeps it part of the same transaction).
+    """
+    try:
+        activity = _get_or_create_today_activity(user_id, today=today)
+        activity.activity_score += score
+
+        counter_field = _ACTIVITY_COUNTER_FIELDS.get(activity_type)
+        if counter_field:
+            setattr(activity, counter_field, getattr(activity, counter_field) + 1)
+
+        return activity
+    except Exception as e:
+        current_app.logger.error(f"record_activity error ({activity_type}, user {user_id}): {str(e)}")
+        return None
+
+
+def update_login_streak(user, now=None):
+    """
+    Update `user.login_streak` based on consecutive calendar days logged in,
+    using `user.last_active` as the timestamp of the previous login.
+
+    Rules:
+      - First-ever login            -> streak = 1
+      - Same calendar day as before -> streak unchanged (no double-counting)
+      - Logged in yesterday         -> streak += 1
+      - Any bigger gap              -> streak resets to 1
+
+    `now` (if given) is the UTC datetime to treat as "now" — pass this
+    through to record_activity()'s `today` argument so the streak and
+    the daily activity row always agree on which calendar day it is.
+    Both `last_active` and `now` MUST be UTC; mixing UTC timestamps with
+    server-local `datetime.date.today()` is what causes streaks to skip
+    or double-count near midnight.
+
+    Mutates `user` in place (login_streak, last_active). Does not commit —
+    caller should commit alongside token generation / activity recording.
+    """
+    now = now or datetime.datetime.utcnow()
+    today = now.date()
+    last_login_date = user.last_active.date() if user.last_active else None
+
+    if last_login_date == today:
+        pass  # already logged in today, streak stays the same
+    elif last_login_date == today - datetime.timedelta(days=1):
+        user.login_streak = (user.login_streak or 0) + 1
+    else:
+        user.login_streak = 1
+
+    user.last_active = now
+
+
+def _record_login_and_commit(user):
+    """
+    Update login streak + record 'login' activity, then commit — recovering
+    automatically if a concurrent request (e.g. a double-clicked login button)
+    already inserted today's UserActivity row first.
+
+    UserActivity has a UniqueConstraint('user_id', 'activity_date'). The
+    get-or-create in _get_or_create_today_activity is a check-then-insert
+    with no row lock, so two simultaneous logins for the same user on the
+    same day can both decide "no row yet" and both try to insert one. The
+    loser's commit fails with IntegrityError. Without handling that here,
+    that error surfaces as an unhandled 500 on the login route. We catch
+    it, roll back, and retry once — the retry will find the winner's row
+    already present and update it instead of inserting.
+    """
+    now = datetime.datetime.utcnow()
+    update_login_streak(user, now=now)
+    record_activity(user.id, "login", today=now.date())
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        # Re-fetch the user in case the rollback expired it, then retry once.
+        user = User.query.get(user.id)
+        update_login_streak(user, now=now)
+        record_activity(user.id, "login", today=now.date())
+        db.session.commit()
+    return user
+
+
 # ============================================================================
 # GOOGLE OAUTH
 # ============================================================================
@@ -196,6 +330,8 @@ def google_callback():
 
         if existing_user:
             if existing_user.status == "approved":
+                existing_user = _record_login_and_commit(existing_user)
+
                 access_token, refresh_token_val = generate_tokens_for_user(existing_user)
                 response = make_response(redirect("/student/profile/homepage"))
                 response.set_cookie("access_token",  access_token,      httponly=False, secure=False, samesite="Lax", max_age=30 * 60)
@@ -243,6 +379,7 @@ def google_callback():
             related_id=new_user.id,
         )
         db.session.add(welcome_notification)
+        record_activity(new_user.id, "register", score=5)
         db.session.commit()
 
         session["google_name"]  = name
@@ -696,6 +833,7 @@ Ready to start? Complete your profile and ask your first question!
             related_id=new_user.id,
         )
         db.session.add(welcome_notification)
+        record_activity(new_user.id, "register", score=5)
         db.session.commit()
 
         if google_verified:
@@ -772,6 +910,8 @@ def login():
         if user.status != "approved":
             return error_response("Your account is pending approval.")
 
+        user = _record_login_and_commit(user)
+
         access_token, refresh_token = generate_tokens_for_user(user)
 
         response = make_response(success_response(
@@ -784,6 +924,7 @@ def login():
                     "email":    user.email,
                 },
                 "redirect": "/student/profile/homepage",
+                "login_streak": user.login_streak,
             },
         ))
         response.set_cookie("access_token",  access_token,  httponly=False, secure=False, samesite="Lax", max_age=30 * 60)
@@ -791,6 +932,7 @@ def login():
         return response
 
     except Exception as e:
+        db.session.rollback()
         current_app.logger.error(f"Login error: {str(e)}")
         return error_response("Login failed. Please try again.")   # FIX: no str(e) leak
 

@@ -43,7 +43,6 @@ export const homeworkAPI = {
    * Toggle assignment status
    */
   async toggleAssignmentStatus(id, status) {
-    showToast(`Sending homwework status: ${status}`)
     return await api.post(`/assignments/${id}/quick-actions`, {action:status });
   },
 

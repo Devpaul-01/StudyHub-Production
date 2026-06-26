@@ -3708,6 +3708,7 @@ def post_comments(current_user, post_id):
                     "text_content": r.text_content,
                     "likes_count": r.likes_count,
                     "post_is_solved": post_is_solved,
+                    "is_author": post.student_id == r.student_id,
                     "replies_count": r.replies_count,
                     "helpful_count": r.helpful_count,
                     "resources": r.resources,
@@ -3741,6 +3742,8 @@ def post_comments(current_user, post_id):
                 "resources": c.resources,
                 "is_solution": c.is_solution,
                 "post_is_solved": post_is_solved,
+                "is_author": post.student_id == r.student_id,
+
                 "depth_level": c.depth_level,
                 "is_you": comment_author.id == current_user.id,
                 "posted_at": c.posted_at.isoformat(),

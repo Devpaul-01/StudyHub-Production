@@ -12,7 +12,7 @@ import datetime
 from flask import session
 
 from models import (
-    User, StudentProfile, Post, Comment, Thread, ThreadMember,
+    User, StudentProfile, Post, Comment, ThreadJoinRequest , Thread, ThreadMember,
     UserBadge, Badge, ReputationHistory, UserActivity, Connection, Notification,
     PostReaction, Bookmark, OnboardingDetails,
 )
@@ -120,19 +120,60 @@ def get_my_posts(current_user):
             Post.posted_at.desc(),
         ).limit(30).all()
 
-        # FIX: batch-fetch reactions to avoid one query per post (N+1 eliminated)
-        reacted_post_ids = set()
-        if posts:
-            reacted_post_ids = {
-                r.post_id
-                for r in PostReaction.query.filter(
-                    PostReaction.student_id == current_user.id,
-                    PostReaction.post_id.in_([p.id for p in posts]),
-                ).all()
-            }
+        if not posts:
+            return jsonify({
+                "status": "success",
+                "data": {"posts": [], "total": 0, "filter": post_type_filter},
+            })
 
-        posts_data = [
-            {
+        post_ids = [p.id for p in posts]
+
+        # ── 1. Reactions (need full row for reaction_type) ──────────────────
+        reactions_map = {
+            r.post_id: r
+            for r in PostReaction.query.filter(
+                PostReaction.student_id == current_user.id,
+                PostReaction.post_id.in_(post_ids),
+            ).all()
+        }
+
+        # ── 2. Thread info ───────────────────────────────────────────────────
+        thread_enabled_ids = [p.id for p in posts if p.thread_enabled]
+        threads_map      = {}   # post_id  -> Thread
+        thread_join_map  = {}   # thread_id -> join status
+        thread_member_set = set()  # thread_ids where user is member
+
+        if thread_enabled_ids:
+            threads = Thread.query.filter(
+                Thread.post_id.in_(thread_enabled_ids)
+            ).all()
+            threads_map = {t.post_id: t for t in threads}
+
+            thread_ids = [t.id for t in threads]
+            if thread_ids:
+                from models import ThreadJoinRequest  # already imported if at top
+                join_reqs = ThreadJoinRequest.query.filter(
+                    ThreadJoinRequest.thread_id.in_(thread_ids),
+                    ThreadJoinRequest.requester_id == current_user.id,
+                ).all()
+                thread_join_map = {jr.thread_id: jr.status for jr in join_reqs}
+
+                members = ThreadMember.query.filter(
+                    ThreadMember.thread_id.in_(thread_ids),
+                    ThreadMember.student_id == current_user.id,
+                ).all()
+                thread_member_set = {m.thread_id for m in members}
+
+        # ── Assemble ─────────────────────────────────────────────────────────
+        posts_data = []
+        for p in posts:
+            reaction     = reactions_map.get(p.id)
+            thread       = threads_map.get(p.id) if p.thread_enabled else None
+            thread_id    = thread.id if thread else None
+            requested_thread  = thread_join_map.get(thread.id) if thread else None
+            is_member    = (thread.id in thread_member_set) if thread else False
+
+            posts_data.append({
                 "id":           p.id,
                 "title":        p.title,
                 "text_content": (
@@ -140,20 +181,27 @@ def get_my_posts(current_user):
                     if p.text_content and len(p.text_content) > 150
                     else p.text_content
                 ),
-                "user_reacted":    p.id in reacted_post_ids,   # FIX: no per-post query
                 "post_type":       p.post_type,
                 "department":      p.department,
                 "tags":            p.tags or [],
-                "likes_count":     p.positive_reactions_count or 0,  # FIX: was p.likes_count (doesn't exist)
-                "comments_count":  p.comments_count or 0,
-                "views":           p.views_count or 0,               # FIX: removed unsafe getattr shim
+                "resources":       p.resources or [],          # full array, not bool
+                "thread_enabled":  bool(p.thread_enabled),
+                "thread_id":       thread_id,
                 "is_pinned":       bool(p.is_pinned),
                 "is_solved":       bool(p.is_solved),
+                "likes_count":     p.positive_reactions_count or 0,
+                "comments_count":  p.comments_count or 0,
+                "views_count":     p.views_count or 0,         # renamed from "views"
                 "posted_at":       p.posted_at.isoformat(),
-                "has_resources":   bool(p.resources),
-            }
-            for p in posts
-        ]
+                "is_author":       True,                       # always true on this endpoint
+                "user_interactions": {
+                    "user_reacted":       bool(reaction),
+                    "reaction_type":      reaction.reaction_type if reaction else None,
+                    "user_followed":      False,               # own posts — not applicable
+                    "requested_thread":   requested_thread,
+                    "is_thread_member":   is_member,
+                },
+            })
 
         return jsonify({
             "status": "success",
@@ -167,7 +215,6 @@ def get_my_posts(current_user):
     except Exception as e:
         current_app.logger.error(f"Get my posts error: {str(e)}")
         return error_response("Failed to load posts")
-
 
 # ============================================================================
 # MY STATS

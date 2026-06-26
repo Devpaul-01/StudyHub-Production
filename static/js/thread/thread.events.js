@@ -438,7 +438,6 @@ export async function handleCreateThread(dataOrForm) {
   }
 
   try {
-    showToast('Creating thread…', 'info');
     const result = await createStandaloneThread(data);
 
     const modal = document.getElementById('thread-create-modal');
@@ -488,11 +487,6 @@ export async function handleSendMessage() {
     if (sendBtn) { sendBtn.disabled = true; sendBtn.textContent = '…'; }
 
     try {
-      showToast(
-        pendingAtts.length > 1 ? `Uploading ${pendingAtts.length} files…` : 'Uploading…',
-        'info'
-      );
-
       for (let i = 0; i < pendingAtts.length; i++) {
         const att = pendingAtts[i];
         const result = await uploadAttachment(
@@ -919,8 +913,6 @@ export async function handleLeaveThread(threadId) {
 
 export async function handleSaveThreadEdit(threadId, fields) {
   try {
-    showToast('Saving changes…', 'info');
-
     await updateThread(threadId, {
       title:       fields.title,
       description: fields.description,
@@ -953,7 +945,6 @@ export async function handleCloseThread(threadId) {
   try {
     await closeThread(threadId);
     addOrUpdateThreadInList({ id: threadId, is_open: false });
-    showToast('Thread closed', 'success');
     const { renderThreadHeader } = await import('./thread.render.js');
     const detail  = await fetchThread(threadId);
     const detail2 = detail.thread ?? detail.data?.thread ?? detail;
@@ -967,7 +958,6 @@ export async function handleReopenThread(threadId) {
   try {
     await reopenThread(threadId);
     addOrUpdateThreadInList({ id: threadId, is_open: true });
-    showToast('Thread reopened', 'success');
     const { renderThreadHeader } = await import('./thread.render.js');
     const detail  = await fetchThread(threadId);
     const detail2 = detail.thread ?? detail.data?.thread ?? detail;

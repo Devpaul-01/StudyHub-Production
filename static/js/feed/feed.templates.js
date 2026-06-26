@@ -1003,7 +1003,17 @@ export function createPostCard(post) {
     </div>
   `;
 }
+
 export function createCommentCard(comment, context = 'modal') {
+
+showToast(`Debug: ${JSON.stringify({ 
+  is_you: comment.is_you,
+  text: comment.text_content,
+  is_author: comment.user_interactions?.is_author, 
+  post_is_solved: comment.post_is_solved, 
+  is_solution: comment.is_solution 
+})}`, "info");
+
   const author = comment.author || {};
   const uniqueId = `comment-card-${context}-${comment.id}`;
   const resourcesHTML = buildCommentResourceHTML(
@@ -1086,7 +1096,7 @@ export function createCommentCard(comment, context = 'modal') {
         </button>
 
         <!-- Mark Solution Button (for post authors only) -->
-        ${!comment.is_you && comment.user_interactions?.is_author && !comment.post_is_solved && !comment.is_solution ? `
+        ${!comment.is_you && comment.is_author && !comment.post_is_solved && !comment.is_solution ? `
           <button class="comment-action-btn solution" 
                   data-action="mark-solution"
                   data-comment-id="${comment.id}"
@@ -1134,22 +1144,7 @@ export function createCommentCard(comment, context = 'modal') {
       <!-- Inline Advanced Options Dropdown (Hidden by default) -->
       ${comment.is_you ? `
         <div class="advanced-comment-options hidden">
-          <!-- Copy Link Option -->
-          <button class="comment-option-item" 
-                  data-action="copy-comment-link"
-                  data-comment-id="${comment.id}">
-            <div class="comment-option-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-              </svg>
-            </div>
-            <div class="comment-option-content">
-              <div class="comment-option-title">Copy Link</div>
-              <div class="comment-option-description">Share this comment</div>
-            </div>
-          </button>
-
+          
           ${comment.resources && comment.resources.length > 0 ? `
           <!-- View Resources Option -->
           <button class="comment-option-item" 

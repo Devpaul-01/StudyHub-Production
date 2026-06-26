@@ -41,7 +41,17 @@ CHANGES (2026-06):
     image processing for Groq providers.
   - OpenRouter: added as final fallback provider with OpenAI-compatible API;
     supports vision via meta-llama/llama-4-scout; uses OPENROUTER_API_KEY_1…_5.
-"""
+  - Provider-type blacklisting: MultiProviderManager now tracks failures per
+    provider type (cerebras/groq/mistral/openrouter). After
+    PROVIDER_FAILURE_THRESHOLD (3) failures within PROVIDER_FAILURE_WINDOW (5 min),
+    ALL keys for that provider type are blacklisted for PROVIDER_BLACKLIST_DURATION
+    (30 min). This handles load/outage events like Cerebras being fully down —
+    the system stops hammering it and routes all traffic to the next provider
+    without waiting for individual key cooldowns to expire.
+  - Response cleaning: clean_ai_response() strips reasoning/scratchpad blocks
+    (<think>…</think> etc.), stray SSE protocol artefacts, bare code-fence
+    wrapping, and excessive blank lines before responses are stored or returned.
+    Applied to streamed chat replies, sync thread replies, and title generation."""
 
 import io
 import os
@@ -141,11 +151,27 @@ PROVIDER_ORDER = ["cerebras", "groq", "mistral", "openrouter"]
 class MultiProviderManager:
     """Manage multiple API providers and rotate between them"""
 
+    # How many failures within the sliding window triggers a provider-level blacklist
+    PROVIDER_FAILURE_THRESHOLD = 3
+    # Sliding window for counting failures (seconds)
+    PROVIDER_FAILURE_WINDOW = 300   # 5 minutes
+    # How long a blacklisted provider stays locked out (seconds)
+    PROVIDER_BLACKLIST_DURATION = 1800  # 30 minutes
+
     def __init__(self):
         self.providers = self._load_providers()
         self.current_provider_index = 0
-        self.failed_providers: dict = {}   # {provider_name: fail_time}
-        self.cooldown_period = 3600        # 1-hour cooldown (mirrors multiProvider.js)
+
+        # Per-key cooldown  {provider_name: datetime}  — unchanged
+        self.failed_providers: dict = {}
+        self.cooldown_period = 3600   # 1-hour per-key cooldown
+
+        # Per-provider-type failure tracking
+        # {provider_type: [datetime, ...]}  — rolling list of failure timestamps
+        self._provider_type_failures: dict = {}
+        # {provider_type: datetime}  — when the type was blacklisted
+        self._blacklisted_types: dict = {}
+
         # Kick off background model discovery after providers are loaded
         self._warm_model_discovery()
 
@@ -330,43 +356,116 @@ class MultiProviderManager:
     # Runtime helpers
     # ----------------------------------------------------------
 
+    # ----------------------------------------------------------
+    # Provider-type blacklist helpers
+    # ----------------------------------------------------------
+
+    def _record_provider_type_failure(self, provider_type: str):
+        """
+        Record a failure for the given provider type and blacklist the entire
+        type if it has exceeded PROVIDER_FAILURE_THRESHOLD failures within
+        PROVIDER_FAILURE_WINDOW seconds.
+        """
+        now = datetime.datetime.utcnow()
+        window_start = now - datetime.timedelta(seconds=self.PROVIDER_FAILURE_WINDOW)
+
+        # Prune old failures outside the sliding window
+        timestamps = self._provider_type_failures.get(provider_type, [])
+        timestamps = [t for t in timestamps if t >= window_start]
+        timestamps.append(now)
+        self._provider_type_failures[provider_type] = timestamps
+
+        failure_count = len(timestamps)
+        logger.info(
+            f"📊 Provider type '{provider_type}' failure count in last "
+            f"{self.PROVIDER_FAILURE_WINDOW}s: {failure_count}/{self.PROVIDER_FAILURE_THRESHOLD}"
+        )
+
+        if failure_count >= self.PROVIDER_FAILURE_THRESHOLD:
+            if provider_type not in self._blacklisted_types:
+                logger.error(
+                    f"🚫 Provider type '{provider_type}' has failed {failure_count} times "
+                    f"— blacklisting ALL {provider_type} keys for "
+                    f"{self.PROVIDER_BLACKLIST_DURATION // 60} min"
+                )
+            self._blacklisted_types[provider_type] = now
+
+    def _is_provider_type_blacklisted(self, provider_type: str) -> bool:
+        """Return True if the provider type is currently blacklisted."""
+        blacklisted_at = self._blacklisted_types.get(provider_type)
+        if not blacklisted_at:
+            return False
+        elapsed = (datetime.datetime.utcnow() - blacklisted_at).total_seconds()
+        if elapsed >= self.PROVIDER_BLACKLIST_DURATION:
+            # Blacklist expired — clear it and reset failure counters
+            del self._blacklisted_types[provider_type]
+            self._provider_type_failures.pop(provider_type, None)
+            logger.info(f"✅ Provider type '{provider_type}' blacklist expired — re-enabling")
+            return False
+        return True
+
+    # ----------------------------------------------------------
+    # Runtime helpers
+    # ----------------------------------------------------------
+
     def get_working_provider(self, needs_vision=False):
-        """Get next working provider"""
+        """Get next working provider, skipping blacklisted provider types and failed keys."""
         if not self.providers:
             logger.error("❌ No API providers configured!")
             return None
 
-        # Clear expired cooldowns
+        # Clear expired per-key cooldowns
         now = datetime.datetime.utcnow()
         self.failed_providers = {
             name: fail_time for name, fail_time in self.failed_providers.items()
-            if (now - fail_time).seconds < self.cooldown_period
+            if (now - fail_time).total_seconds() < self.cooldown_period
         }
 
         attempts = 0
         while attempts < len(self.providers):
             provider = self.providers[self.current_provider_index]
+            provider_type = provider.get("_provider_id", provider["name"])
 
-            if provider["name"] not in self.failed_providers:
-                if needs_vision and not provider["supports_vision"]:
-                    logger.info(f"⏭️ Skipping {provider['name']} (no vision support)")
-                    self.rotate()
-                    attempts += 1
-                    continue
+            # Skip entire provider type if blacklisted
+            if self._is_provider_type_blacklisted(provider_type):
+                logger.info(f"⏭️ Skipping {provider['name']} — provider type '{provider_type}' is blacklisted")
+                self.rotate()
+                attempts += 1
+                continue
 
-                logger.info(f"✅ Using provider: {provider['name']}")
-                return provider
+            # Skip individual failed key
+            if provider["name"] in self.failed_providers:
+                self.rotate()
+                attempts += 1
+                continue
 
-            self.rotate()
-            attempts += 1
+            if needs_vision and not provider["supports_vision"]:
+                logger.info(f"⏭️ Skipping {provider['name']} (no vision support)")
+                self.rotate()
+                attempts += 1
+                continue
 
-        logger.error("❌ All providers are in cooldown!")
+            logger.info(f"✅ Using provider: {provider['name']}")
+            return provider
+
+        logger.error("❌ All providers are in cooldown or blacklisted!")
         return None
 
-    def mark_provider_failed(self, provider_name, error_message=""):
-        """Mark provider as failed with cooldown"""
+    def mark_provider_failed(self, provider_name: str, error_message: str = ""):
+        """
+        Mark a specific provider key as failed (per-key cooldown) AND record
+        a failure against its provider type so repeated failures trigger a
+        full type-level blacklist.
+        """
         self.failed_providers[provider_name] = datetime.datetime.utcnow()
-        logger.warning(f"⚠️ Provider {provider_name} failed: {error_message}")
+        logger.warning(f"⚠️ Provider key '{provider_name}' failed: {error_message}")
+
+        # Find the provider type for this key and record the type-level failure
+        for p in self.providers:
+            if p["name"] == provider_name:
+                provider_type = p.get("_provider_id", provider_name)
+                self._record_provider_type_failure(provider_type)
+                break
 
     def rotate(self):
         """Move to next provider"""
@@ -376,18 +475,37 @@ class MultiProviderManager:
         """Get provider statistics"""
         provider_details = []
         for p in self.providers:
+            provider_type = p.get("_provider_id", p["name"])
             provider_details.append({
                 "name": p["name"],
+                "provider_type": provider_type,
                 "text_model": p.get("text_model"),
                 "supports_vision": p.get("supports_vision", False),
                 "vision_model": p.get("vision_model"),
                 "available_models": len(p.get("text_model_fallbacks", [])),
-                "failed": p["name"] in self.failed_providers,
+                "key_failed": p["name"] in self.failed_providers,
+                "type_blacklisted": self._is_provider_type_blacklisted(provider_type),
+                "type_failure_count": len(self._provider_type_failures.get(provider_type, [])),
             })
+
+        blacklisted_info = {}
+        for pt, ts in self._blacklisted_types.items():
+            elapsed = (datetime.datetime.utcnow() - ts).total_seconds()
+            remaining = max(0, self.PROVIDER_BLACKLIST_DURATION - elapsed)
+            blacklisted_info[pt] = {
+                "blacklisted_at": ts.isoformat(),
+                "remaining_seconds": int(remaining),
+            }
+
         return {
             "total_providers": len(self.providers),
-            "active_providers": len(self.providers) - len(self.failed_providers),
-            "failed_providers": list(self.failed_providers.keys()),
+            "active_providers": sum(
+                1 for p in self.providers
+                if p["name"] not in self.failed_providers
+                and not self._is_provider_type_blacklisted(p.get("_provider_id", p["name"]))
+            ),
+            "failed_keys": list(self.failed_providers.keys()),
+            "blacklisted_provider_types": blacklisted_info,
             "current_provider": self.providers[self.current_provider_index]["name"] if self.providers else None,
             "providers": provider_details,
         }
@@ -713,7 +831,8 @@ def generate_conversation_title(first_message, provider=None):
                     # "reasoning_content". If max_tokens is too low, "content" can
                     # come back missing entirely while reasoning_content is set —
                     # that's what was causing the bare 'content' KeyError.
-                    title = (message.get("content") or message.get("reasoning_content") or "").strip().strip('"\'')
+                    title = (message.get("content") or message.get("reasoning_content") or "")
+                    title = clean_ai_response(title).strip('"\'')
                 except (KeyError, IndexError, TypeError):
                     logger.warning(f"⚠️ Unexpected title response shape: {result}")
                     title = ""
@@ -730,6 +849,77 @@ def generate_conversation_title(first_message, provider=None):
     # Fallback: truncate the first message cleanly
     clean = ' '.join(first_message.split())
     return clean if len(clean) <= 60 else clean[:57] + '...'
+
+
+# ===========================================================
+# RESPONSE CLEANING
+# ===========================================================
+
+# Patterns that some reasoning/chat models emit at the start of responses
+# even when not asked to — strip these before showing text to the user.
+_REASONING_PREFIX_RE = re.compile(
+    r"^(<think>.*?</think>|<reasoning>.*?</reasoning>|<scratchpad>.*?</scratchpad>)\s*",
+    re.DOTALL | re.IGNORECASE,
+)
+
+# Stray SSE/data protocol artefacts that can leak into streamed content
+_SSE_ARTIFACT_RE = re.compile(r"^data:\s*", re.MULTILINE)
+
+# Some models wrap the whole reply in triple back-ticks with no language tag
+_BARE_CODE_FENCE_RE = re.compile(r"^```\s*\n(.*?)\n```\s*$", re.DOTALL)
+
+
+def clean_ai_response(text: str) -> str:
+    """
+    Sanitise a raw AI response before it is stored or sent to the client.
+
+    Cleaning steps (in order):
+      1. Strip leading/trailing whitespace.
+      2. Remove internal reasoning/scratchpad blocks that some models emit
+         (e.g. <think>…</think> from DeepSeek-style models).
+      3. Remove stray SSE protocol prefixes ("data: ") that can bleed through
+         when a streamed chunk is accidentally captured verbatim.
+      4. Unwrap a response that is *entirely* a bare triple-back-tick block
+         with no language tag (the model mistakenly wrapping prose in fences).
+      5. Collapse three-or-more consecutive blank lines to two (keeps intentional
+         whitespace but removes runaway vertical padding).
+      6. Final strip.
+
+    The function is intentionally conservative — it does NOT strip markdown
+    formatting (bold, headers, code blocks with language tags) because those
+    are meaningful to the frontend renderer.
+    """
+    if not text:
+        return ""
+
+    # 1. Initial strip
+    text = text.strip()
+
+    # 2. Remove leading reasoning/scratchpad blocks
+    text = _REASONING_PREFIX_RE.sub("", text).strip()
+
+    # 3. Remove stray SSE prefixes
+    text = _SSE_ARTIFACT_RE.sub("", text).strip()
+
+    # 4. Unwrap bare code fences wrapping the entire response (prose mistake)
+    bare_match = _BARE_CODE_FENCE_RE.match(text)
+    if bare_match:
+        inner = bare_match.group(1).strip()
+        # Only unwrap if the inner text looks like prose (no newline-separated
+        # code lines that start with keywords), to avoid stripping real code.
+        first_line = inner.splitlines()[0] if inner else ""
+        looks_like_code = re.match(
+            r"^\s*(def |class |import |from |#include|function |var |const |let |public |private )",
+            first_line,
+        )
+        if not looks_like_code:
+            text = inner
+
+    # 5. Collapse excessive blank lines (3+ → 2)
+    text = re.sub(r"\n{3,}", "\n\n", text)
+
+    # 6. Final strip
+    return text.strip()
 
 
 # ===========================================================
@@ -1160,7 +1350,8 @@ def _call_provider_sync(messages: list, provider: dict) -> str | None:
         )
         response.raise_for_status()
         data = response.json()
-        return data["choices"][0]["message"]["content"].strip()
+        raw = data["choices"][0]["message"]["content"] or ""
+        return clean_ai_response(raw)
 
     except req_lib.exceptions.Timeout:
         logger.error("Learnora sync call: timeout")
@@ -1485,9 +1676,11 @@ def chat(current_user):
                 with db.session.begin_nested():
                     conv = db.session.query(AIConversation).get(conversation_id)
 
+                    cleaned_response = clean_ai_response(full_response) if full_response else ""
+
                     assistant_msg = {
                         "role": "assistant",
-                        "content": full_response if full_response else "[Error: No response]",
+                        "content": cleaned_response if cleaned_response else "[Error: No response]",
                         "model": assistant.model,
                         "provider": provider['name'],
                         "timestamp": datetime.datetime.utcnow().isoformat(),
@@ -1497,11 +1690,11 @@ def chat(current_user):
 
                     conv.messages.append(assistant_msg)
                     conv.total_messages += 1
-                    conv.tokens_used += handler.total_tokens + len(full_response) // 4
+                    conv.tokens_used += handler.total_tokens + len(cleaned_response) // 4
                     conv.is_last_message_complete = response_complete
 
                     if not response_complete:
-                        conv.last_incomplete_message = full_response
+                        conv.last_incomplete_message = cleaned_response
 
                     if error_occurred:
                         conv.error_count += 1

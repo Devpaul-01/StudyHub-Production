@@ -238,6 +238,11 @@ html { scroll-behavior: smooth; }
   animation: splash-load-fill 2s 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
+@keyframes splash-load-fill {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
+
 /* ── Analytics nav icon fix ─── */
 .nav-section + .nav-section { border-top: 1px solid var(--border, #e5e7eb); margin-top: 8px; padding-top: 8px; }
 
@@ -263,6 +268,15 @@ html { scroll-behavior: smooth; }
 
 /* ── Learnora icon in nav refined ─── */
 .nav-item svg { flex-shrink: 0; }
+
+/* ── Mobile create FAB hover/active states ─── */
+#mobile-create-fab:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 24px rgba(102,126,234,0.55), 0 3px 10px rgba(0,0,0,0.2) !important;
+}
+#mobile-create-fab:active {
+  transform: scale(0.95);
+}
 </style>
 
 <script>
@@ -988,7 +1002,7 @@ html { scroll-behavior: smooth; }
         <div class="notifications-header">
             <h2 class="notifications-title">Notifications</h2>
             
-            <div class="notifications-actions">
+            <div class="notifications-actions" style="position: relative;">
                 <!-- Options Menu Button -->
                 <button class="icon-button" data-action="toggle-notification-options" aria-label="Notification options">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -999,16 +1013,17 @@ html { scroll-behavior: smooth; }
                 </button>
                 
                 <!-- Options Dropdown -->
-                <div class='notification-settings hidden' id='notification-settings-modal'>
-                    <label class="switch">
+                <div class='notification-settings hidden' id='notification-settings-modal'
+                    style="position: absolute; top: calc(100% + 8px); right: 0; width: 320px; max-width: 90vw; background: #fff; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); padding: 16px 20px; display: flex; flex-direction: column; gap: 14px; z-index: 100; box-sizing: border-box;">
+                    <label class="switch" style="display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 12px;">
+                        <span style="flex: 1;">Enable Notification Sound</span>
                         <input type="checkbox" role="switch" id="toggle-notification-sound">
                         <span class="slider"></span>
-                        Enable Notification Sound
                     </label>
-                    <label class="switch">
+                    <label class="switch" style="display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 12px;">
+                        <span style="flex: 1;">Enable Notifications</span>
                         <input type="checkbox" role="switch" id="toggle-notification">
                         <span class="slider"></span>
-                        Enable Notifications
                     </label>
                 </div>
             </div>
@@ -1220,7 +1235,7 @@ html { scroll-behavior: smooth; }
                             type="text" 
                             class="connections-search-input" 
                             id="connections-search-input"
-                            placeholder="Search connections by name, department, or skills..."
+                            placeholder="Search students by name..."
                             autocomplete="off"
                         >
                         <button data-action='clear-search-input' class="search-clear-btn hidden" id="search-clear-btn">
@@ -1630,7 +1645,7 @@ html { scroll-behavior: smooth; }
         max-width: 380px;
         line-height: 1.7;
       ">
-        Join focused study sessions with your classmates, get real-time AI guidance from <strong style="color:#c7d2fe;">Learnora</strong>, and soon — live <strong style="color:#c7d2fe;">audio & video calls</strong> built right into your study groups.
+        Create and join focused study sessions with your classmates, get real-time AI guidance from <strong style="color:#c7d2fe;">Learnora</strong>, and soon — live <strong style="color:#c7d2fe;">audio & video calls</strong> built right into your study groups.
       </p>
     </div>
 
@@ -2786,49 +2801,11 @@ html { scroll-behavior: smooth; }
   </button>
 </div>
         
-<div id="p-edit-modal" class="p-modal-overlay hidden" role="dialog" aria-modal="true" style="display:none;"
-  <div class="p-modal-box">
 
-    <div class="p-modal-header">
-      <h3 class="p-modal-title">Edit Profile</h3>
-      <button data-action="profile-close-modal" data-modal-id="p-edit-modal" class="p-modal-close">✕</button>
-    </div>
 
-    <!-- Name -->
-    <label class="p-label">Name</label>
-    <input id="p-edit-name" type="text" class="p-input" placeholder="Your full name" maxlength="80">
+   <!-- closes p-edit-modal -->
 
-    <!-- Bio -->
-    <label class="p-label">Bio</label>
-    <textarea id="p-edit-bio" class="p-input" rows="3"
-      placeholder="Tell classmates about yourself…" maxlength="400" style="resize:vertical;"></textarea>
-
-    <!-- Learning goals -->
-    <label class="p-label">Learning Goals</label>
-    <div id="p-edit-goals-list" style="margin-bottom:0.5rem;">
-      <!-- Populated by JS -->
-    </div>
-    <div style="display:flex;gap:0.5rem;">
-      <input id="p-edit-goal-input" type="text" class="p-input" style="flex:1;"
-        placeholder="Add a goal and press +" maxlength="80">
-      <button data-action="profile-add-goal" class="p-btn p-btn--primary" style="flex-shrink:0;">＋</button>
-    </div>
-
-    <!-- Also open academic info from here -->
-    <button data-action="profile-open-academic"
-      style="width:100%;margin-top:0.75rem;padding:0.5rem;background:var(--bg-tertiary);
-             border:1px solid var(--border);border-radius:8px;cursor:pointer;
-             font-size:0.82rem;color:var(--text-primary);">
-      ✏️ Edit Academic Info
-    </button>
-
-    <!-- Actions -->
-    <div class="p-modal-footer">
-      <button data-action="profile-close-modal" data-modal-id="p-edit-modal" class="p-btn p-btn--secondary">Cancel</button>
-      <button data-action="profile-save-edit" class="p-btn p-btn--primary">Save Changes</button>
-    </div>
-  </div>
-</div>
+        </div>
 
 
 <!-- ==================== ACADEMIC INFO MODAL ==================== -->
@@ -2864,6 +2841,90 @@ html { scroll-behavior: smooth; }
       <button data-action="profile-close-modal" data-modal-id="p-academic-modal" class="p-btn p-btn--secondary">Cancel</button>
       <button data-action="profile-save-academic" class="p-btn p-btn--primary">Save</button>
     </div>
+  </div>
+</div>
+
+<div id="p-edit-modal" class="hidden" role="dialog" aria-modal="true"
+  style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;
+         display:flex;align-items:center;justify-content:center;padding:1rem;">
+
+  <div style="background:var(--bg-secondary);border:1px solid var(--border);
+              border-radius:12px;width:100%;max-width:480px;max-height:90vh;
+              overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.3);
+              display:flex;flex-direction:column;">
+
+    <!-- Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;
+                padding:1rem 1.25rem;border-bottom:1px solid var(--border);
+                position:sticky;top:0;background:var(--bg-secondary);z-index:1;">
+      <h3 style="margin:0;font-size:1rem;font-weight:600;color:var(--text-primary);">Edit Profile</h3>
+      <button data-action="profile-close-modal" data-modal-id="p-edit-modal"
+        style="background:none;border:none;cursor:pointer;font-size:1.1rem;
+               color:var(--text-secondary);padding:0.25rem;line-height:1;
+               border-radius:4px;">✕</button>
+    </div>
+
+    <!-- Body -->
+    <div style="padding:1.25rem;display:flex;flex-direction:column;gap:0.75rem;">
+
+      <!-- Name -->
+      <label style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);
+                    display:block;margin-bottom:0.25rem;">Name</label>
+      <input id="p-edit-name" type="text" placeholder="Your full name" maxlength="80"
+        style="width:100%;padding:0.55rem 0.75rem;border:1px solid var(--border);
+               border-radius:8px;background:var(--bg-primary);color:var(--text-primary);
+               font-size:0.9rem;outline:none;box-sizing:border-box;">
+
+      <!-- Bio -->
+      <label style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);
+                    display:block;margin-bottom:0.25rem;">Bio</label>
+      <textarea id="p-edit-bio" rows="3" placeholder="Tell classmates about yourself…" maxlength="400"
+        style="width:100%;padding:0.55rem 0.75rem;border:1px solid var(--border);
+               border-radius:8px;background:var(--bg-primary);color:var(--text-primary);
+               font-size:0.9rem;outline:none;resize:vertical;
+               font-family:inherit;box-sizing:border-box;"></textarea>
+
+      <!-- Learning Goals -->
+      <label style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);
+                    display:block;margin-bottom:0.25rem;">Learning Goals</label>
+      <div id="p-edit-goals-list" style="margin-bottom:0.25rem;">
+        <!-- Populated by JS -->
+      </div>
+      <div style="display:flex;gap:0.5rem;">
+        <input id="p-edit-goal-input" type="text" placeholder="Add a goal and press +" maxlength="80"
+          style="flex:1;padding:0.55rem 0.75rem;border:1px solid var(--border);
+                 border-radius:8px;background:var(--bg-primary);color:var(--text-primary);
+                 font-size:0.9rem;outline:none;box-sizing:border-box;">
+        <button data-action="profile-add-goal"
+          style="flex-shrink:0;padding:0.55rem 0.9rem;background:var(--accent,#0057FF);
+                 color:#fff;border:none;border-radius:8px;cursor:pointer;
+                 font-size:1rem;font-weight:600;line-height:1;">＋</button>
+      </div>
+
+      <!-- Edit Academic Info -->
+      <button data-action="profile-open-academic"
+        style="width:100%;margin-top:0.25rem;padding:0.55rem;
+               background:var(--bg-tertiary);border:1px solid var(--border);
+               border-radius:8px;cursor:pointer;font-size:0.82rem;
+               color:var(--text-primary);text-align:center;font-family:inherit;">
+        ✏️ Edit Academic Info
+      </button>
+    </div>
+
+    <!-- Footer -->
+    <div style="display:flex;justify-content:flex-end;gap:0.75rem;
+                padding:1rem 1.25rem;border-top:1px solid var(--border);
+                position:sticky;bottom:0;background:var(--bg-secondary);z-index:1;">
+      <button data-action="profile-close-modal" data-modal-id="p-edit-modal"
+        style="padding:0.55rem 1.1rem;background:transparent;
+               border:1px solid var(--border);border-radius:8px;cursor:pointer;
+               font-size:0.88rem;color:var(--text-primary);font-family:inherit;">Cancel</button>
+      <button data-action="profile-save-edit"
+        style="padding:0.55rem 1.1rem;background:var(--accent,#0057FF);
+               color:#fff;border:none;border-radius:8px;cursor:pointer;
+               font-size:0.88rem;font-weight:600;font-family:inherit;">Save Changes</button>
+    </div>
+
   </div>
 </div>
 
@@ -3161,7 +3222,7 @@ html { scroll-behavior: smooth; }
           <!-- Hidden file input -->
           <input 
             type="file" 
-            id="hw-resource-upload-input" 
+            id="hw-create-resource-upload-input" 
             accept="image/*,video/*,.pdf,.doc,.docx,.txt"
             style="display: none;"
           />
@@ -3252,49 +3313,6 @@ html { scroll-behavior: smooth; }
 </div>
 
 
-<!-- ==================== RESOURCE PREVIEW MODAL (NEW) ==================== -->
-<!-- Add this modal to your global modals section in feed.html -->
-
-<div class="hw-modal-overlay hidden" id="hw-resource-preview-modal">
-  <div class="hw-modal hw-modal-large">
-    <div class="hw-modal-header">
-      <h3 class="hw-modal-title">Resource Preview</h3>
-      <button class="hw-modal-close" data-action="close-homework-modal" data-modal-id="hw-resource-preview-modal">
-        &times;
-      </button>
-    </div>
-    
-    <div class="hw-modal-body hw-resource-preview-body">
-      <div id="hw-resource-preview-content">
-        <!-- Preview content will be inserted here -->
-      </div>
-    </div>
-
-    <div class="hw-modal-footer">
-      <button 
-        type="button" 
-        class="hw-btn hw-btn-primary" 
-        data-action="download-resource"
-      >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="7 10 12 15 17 10"/>
-          <line x1="12" y1="15" x2="12" y2="3"/>
-        </svg>
-        Download
-      </button>
-      <button 
-        type="button" 
-        class="hw-btn hw-btn-secondary" 
-        data-action="close-homework-modal" 
-        data-modal-id="hw-resource-preview-modal"
-      >
-        Close
-      </button>
-    </div>
-  </div>
-</div>
-
 <!-- Homework Details Modal -->
 <div class="hw-modal-overlay hidden" id="hw-details-modal">
   <div class="hw-modal">
@@ -3372,48 +3390,6 @@ html { scroll-behavior: smooth; }
         class="hw-btn hw-btn-secondary" 
         data-action="close-homework-modal" 
         data-modal-id="hw-submission-modal"
-      >
-        Close
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- Resource Preview Modal -->
-<div class="hw-modal-overlay hidden" id="hw-resource-preview-modal">
-  <div class="hw-modal">
-    <div class="hw-modal-header">
-      <h3 class="hw-modal-title">Resource Preview</h3>
-      <button class="hw-modal-close" data-action="close-homework-modal" data-modal-id="hw-resource-preview-modal">
-        &times;
-      </button>
-    </div>
-    
-    <div class="hw-modal-body">
-      <div id="hw-resource-preview-content">
-        <!-- Resource preview will be populated dynamically -->
-      </div>
-    </div>
-
-    <div class="hw-modal-footer">
-      <button 
-        type="button" 
-        class="hw-btn hw-btn-primary" 
-        data-action="download-resource"
-        data-url=""
-      >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="7 10 12 15 17 10"/>
-          <line x1="12" y1="15" x2="12" y2="3"/>
-        </svg>
-        Download
-      </button>
-      <button 
-        type="button" 
-        class="hw-btn hw-btn-secondary" 
-        data-action="close-homework-modal" 
-        data-modal-id="hw-resource-preview-modal"
       >
         Close
       </button>
@@ -3858,7 +3834,7 @@ html { scroll-behavior: smooth; }
       <button data-url='' data-action='download-resource' id="study-session-resource-download-btn" class="btn btn-primary">
         📥 Download
       </button>
-      <buttondata-modal-id='study-session-resource-preview-modal'  class="btn btn-secondary" data-action='close-study-session-resource-modal'>Close</button>
+      <button data-modal-id='study-session-resource-preview-modal' class="btn btn-secondary" data-action='close-study-session-resource-modal'>Close</button>
     </div>
   </div>
 </div>
@@ -4748,8 +4724,6 @@ html { scroll-behavior: smooth; }
   aria-label="Ask Learnora"
   class="ask-learnora-btn"
 >
-  <!-- icon markup here -->
-</button>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <line x1="22" y1="2" x2="11" y2="13"/>
             <polygon points="22 2 15 22 11 13 2 9 22 2"/>
@@ -5130,16 +5104,39 @@ html { scroll-behavior: smooth; }
 
       
         <!-- END OF GLOBAL MODALS CONTAINER -->
-        <button 
+       <button
   id="mobile-create-fab"
   class="mobile-fab"
   data-action="open-modal"
   data-modal-id="create-modal"
-  aria-label="Create post or thread">
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-    <line x1="12" y1="5" x2="12" y2="19"></line>
-    <line x1="5" y1="12" x2="19" y2="12"></line>
+  aria-label="Create post or thread"
+  style="
+    position: fixed;
+    right: 1.5rem;
+    bottom: 6rem;
+    z-index: 999;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.45), 0 2px 6px rgba(0,0,0,0.18);
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+  ">
+
+  <!-- Compose / pen-plus icon -->
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+    stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Pencil body -->
+    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+    <!-- Pen tip editing line -->
+    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
   </svg>
+
 </button>
 
   <div id="thread-message-options-sheet"
@@ -5620,35 +5617,56 @@ function _closeMessagesOverlay() {
 */
 let _messagingInitialized = false;
 
-function _openMessagesOverlay(){
-    log?.('Opening messages overlay');
+function _openMessagesOverlay() {
+    showToast("Opening messages overlay");
+
+    // ── Guard: overlay element must exist ────────────────────────────
     const overlay = document.getElementById('messages');
-    if (!overlay) return;
+    if (!overlay) {
+        showToast("Overlay element not found");
+        return;
+    }
 
-  
+    // ── Hide floating UI elements ────────────────────────────────────
     _bottomNav?.classList.add('hidden');
-    _helpBtn?.classList.add('hidden');
+    showToast("Bottom nav hidden");
 
+    _helpBtn?.classList.add('hidden');
+    showToast("Help button hidden");
+    const header = document.getElementById('header');
+    if (header) header.classList.add('hidden');
+
+    // ── Show overlay & lock scroll ───────────────────────────────────
     overlay.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
+    showToast("Overlay visible, scroll locked");
 
+    // ── Sync active state on nav items ──────────────────────────────
     document.querySelectorAll('.nav-item, .bottom-nav-item').forEach(item => {
         item.classList.remove('active');
         if (item.dataset.target === 'messages') item.classList.add('active');
     });
+    showToast("Nav items synced");
 
+    // ── Update current section ───────────────────────────────────────
     currentSection = 'messages';
     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-    toggleMobileSidebar();
+    showToast("Section set to messages");
 
-    // ── Only initialise once ──────────────────────────────────────────
-    // Calling initializeMessaging() multiple times stacks socket listeners,
-    // causing the API to get hammered every time you switch conversations.
+    // ── Close mobile sidebar if open ─────────────────────────────────
+    toggleMobileSidebar();
+    showToast("Mobile sidebar toggled");
+
+    // ── Initialise messaging once (prevents stacked socket listeners) ─
     if (!_messagingInitialized && typeof initializeMessaging === 'function') {
         _messagingInitialized = true;
         initializeMessaging();
+        showToast("Messaging initialized");
+    } else {
+        showToast("Messaging already initialized, skipping");
     }
 }
+
 
 const _header    = document.querySelector('header');
 const el         = document.getElementById('sidebar-toggle-btn');
@@ -5667,65 +5685,10 @@ function _closeMessagesOverlay() {
     _helpBtn?.classList.remove('hidden');
 }
 
-function navigateTo(sectionId, event) {
-    if (event) event.preventDefault();
 
-    // ── Messages: full-screen fixed overlay (NOT a .section) ───────────────
-    if (sectionId === 'messages') {
-        _openMessagesOverlay();
-        return;
-    }
 
-    const implementedSections = [
-        'feed', 'profile','threads', 'learnora', 'leaderboard', 'analytics', 'study-session', 'advanced-search', 'homework',
-        'notifications', 'activity-feed', 'connections'
-    ];
 
-    if (!implementedSections.includes(sectionId)) {
-        if (typeof showToast === 'function') {
-            showToast(`${sectionId} feature coming soon!`, 'info');
-        }
-        return;
-    }
 
-    // Close messages overlay if it was open
-    _closeMessagesOverlay();
-
-    // Deactivate all sections then activate the target
-    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-    const targetSection = document.getElementById(sectionId);
-    if (targetSection) {
-        targetSection.classList.remove('hidden');
-        targetSection.classList.add('active');
-        currentSection = sectionId;
-    }
-
-    // ── Header + bottom-nav visibility ─────────────────────────────────────
-    if (sectionId === 'feed') {
-  
-        el.classList.remove('hidden');
-      
-        _bottomNav?.classList.remove('hidden');
-        _helpBtn?.classList.remove('hidden');
-    } else {
-      
-        _bottomNav?.classList.add('hidden');
-        _helpBtn?.classList.add('hidden');
-        
-    }
-
-    // Highlight correct nav item
-    document.querySelectorAll('.nav-item, .bottom-nav-item').forEach(item => {
-        item.classList.remove('active');
-        if (item.dataset.target === sectionId) {
-            item.classList.add('active');
-        }
-    });
-    closeMobileSidebar();
-    
-
-    
-}
 function toggleMobileSidebar(event) {
     if (event) event.preventDefault();
     const sidebar = document.getElementById('sections-sidebar');
@@ -5754,6 +5717,8 @@ function logout(event) {
         
     }
 }
+
+window.closeMobileSidebar = closeMobileSidebar;
 function handleAskLearnoraClick() {
   const modal = document.getElementById('ask-learnora-modal');
   const input = document.getElementById('ask-learnora-input');
@@ -5792,10 +5757,10 @@ document.addEventListener('input', (e) => {
 
 
 
-window.navigateTo = navigateTo;
 window.clcloseMobileSidebar = closeMobileSidebar;
 window.toggleMobileSidebar = toggleMobileSidebar;
 window.logout = logout;
+window._openMessagesOverlay = _openMessagesOverlay;
 
 </script>
 

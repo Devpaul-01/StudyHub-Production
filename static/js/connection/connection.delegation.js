@@ -185,7 +185,6 @@ export const ConnectionHandlers = {
   
   'filter-sessions': (target, event) => {
     event.stopPropagation();
-    showToast("Filter session called", 'info');
     filterSessions(target);
   },
 
@@ -359,7 +358,6 @@ export const ConnectionHandlers = {
     const textarea = document.getElementById('connection-message-input');
     const message = textarea.value.trim();
     sendConnectionRequest(pending.user_id, message, target);
-    showToast("Connection request sent");
     closeModal('connection-request-message-modal');
   },
     
@@ -499,10 +497,7 @@ export const ConnectionHandlers = {
   closeModal('find-help-modal');
 
   // TODO: wire this up to your messaging system when it's built
-  // For now just navigate the user to messages with this person pre-selected
-  showToast(`Opening chat with ${userName}...`, 'info');
-
-  // When your messaging system is ready, replace the line above with something like:
+  // When your messaging system is ready, replace with something like:
   // navigateToMessages(userId);
   // or: openMessageModal(userId, userName);
 },

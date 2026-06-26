@@ -290,10 +290,7 @@ export async function deleteConversation(id) {
 export async function sendMessage({ isContinue = false } = {}) {
   const conversationId = learnoraState.get('activeConversationId');
 
-  if (!conversationId) {
-    if (typeof showToast === 'function') showToast('Please start or select a conversation first', 'info');
-    return;
-  }
+  if (!conversationId) return;
 
   // If streaming, queue the message instead of silently dropping it
   if (learnoraState.get('isStreaming') && !isContinue) {
@@ -363,8 +360,6 @@ export async function sendMessage({ isContinue = false } = {}) {
 
     $messages.insertAdjacentHTML('beforeend', renderAiMessage(errText, false));
     scrollToBottom($messages);
-
-    if (typeof showToast === 'function') showToast(errText, 'error');
   } finally {
     learnoraState.set({ isStreaming: false });
     $sendBtn?.classList.remove('lr-send-btn--streaming');

@@ -6,7 +6,8 @@
  * ============================================================================
  */
 
-import { formatTime } from '../move/feed.utils.js';
+import { formatTime } from '../feed/feed.utils.js';
+import { buildPostResourcesContainer, buildResourceLinks } from '../feed/feed.templates.js';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PRIVATE HELPERS
@@ -134,76 +135,169 @@ export function buildProfileHeader(data) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function buildProfilePostCard(post) {
-  const meta = getTypeMeta(post.post_type);
-  const tags = (post.tags || []).slice(0, 3);
+  const meta      = getTypeMeta(post.post_type);
+  const tags      = (post.tags || []).slice(0, 3);
+  const length    = post.resources?.length || 0;
+  const resources = post.resources || [];
+
+  // ── Resources carousel (mirrors feed's buildPostResourcesContainer signature) ──
+  const resourcesHTML = length > 0
+    ? buildPostResourcesContainer(resources, post.id)
+    : '';
+
+  // ── Download-links toggle (mirrors feed) ──
+  const resourceLinksHTML = length > 0
+    ? buildResourceLinks(resources)
+    : '';
+
+  // ── Tags ──
+  const tagsHTML = tags.length
+    ? `<div class="post-tags" style="margin-top:1rem;">
+         ${tags.map(t => `<span class="tag p-chip" data-action="view-tag-posts" data-tag="${t}" style="cursor:pointer;">#${t}</span>`).join('')}
+       </div>`
+    : '';
 
   return `
-    <div class="profile-post-card" data-post-id="${post.id}">
+    <div data-resource-length="${length}"
+         data-resources='${JSON.stringify(resources).replace(/'/g, "&apos;").replace(/"/g, "&quot;")}'
+         id="post-${post.id}"
+         data-post-id="${post.id}"
+         class="profile-post-card post-card"
+         style="background:var(--bg-primary);border:1px solid var(--border);border-radius:12px;
+                padding:1.5rem;margin-bottom:1rem;position:relative;">
 
-      ${post.is_pinned
-        ? `<div style="position:absolute;top:0.65rem;right:0.65rem;font-size:0.68rem;
-                       padding:0.15rem 0.5rem;background:var(--warning);color:#fff;border-radius:20px;">📌 Pinned</div>`
-        : ''}
+      <!-- ── Post header: avatar + author info + pin button (mirrors feed layout) ── -->
+      <div class="post-header" style="display:flex;align-items:flex-start;gap:1rem;">
+        <img data-action="view-avatar"
+             data-username="${post.author?.username || ''}"
+             src="${post.author?.avatar || '/static/default-avatar.png'}"
+             class="avatar"
+             onerror="this.src='/static/default-avatar.png'"
+             style="width:48px;height:48px;border-radius:50%;cursor:pointer;">
 
-      <div style="display:flex;gap:0.5rem;align-items:flex-start;padding-right:${post.is_pinned ? '4rem' : '0'};">
-        <span style="font-size:0.9rem;flex-shrink:0;">${meta.icon}</span>
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:0.65rem;font-weight:700;color:${meta.color};text-transform:uppercase;letter-spacing:0.05em;">${meta.label}</div>
-          <!-- Title click → opens existing comments modal via unified handler -->
-          <h4
-            data-action="open-comments"
-            data-post-id="${post.id}"
-            style="margin:0.1rem 0 0;font-size:0.88rem;font-weight:600;color:var(--text-primary);
-                   line-height:1.4;cursor:pointer;word-break:break-word;">
-            ${post.title}
-          </h4>
+        <div class="post-author" style="flex:1;">
+          <div class="post-author-info" style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.25rem;">
+            <div data-action="view-profile"
+                 data-username="${post.author?.username || ''}"
+                 class="post-author-name"
+                 style="font-weight:600;cursor:pointer;">
+              ${post.author?.name || 'Anonymous'}
+            </div>
+          </div>
+          <div class="post-time" style="font-size:0.875rem;color:var(--text-secondary);">${formatTime(post.posted_at)}</div>
+
+          ${post.is_solved || post.is_pinned ? `
+            <div class="post-header-badges" style="display:flex;gap:0.5rem;margin-top:0.5rem;">
+              ${post.is_solved ? `<span class="solved-badge" style="padding:0.25rem 0.5rem;background:var(--success);color:#fff;border-radius:4px;font-size:0.75rem;">✓ Solved</span>` : ''}
+              ${post.is_pinned ? `<span style="padding:0.25rem 0.5rem;background:var(--warning);color:#fff;border-radius:4px;font-size:0.75rem;">📌 Pinned</span>` : ''}
+            </div>` : ''}
         </div>
+
+        <button data-action="toggle-post-options"
+                class="post-options-btn"
+                id="options-btn-${post.id}"
+                style="padding:0.5rem;background:var(--bg-tertiary);border:none;border-radius:4px;cursor:pointer;font-size:1.25rem;position:relative;">
+          ⋯
+        </button>
       </div>
 
-      ${post.text_content
-        ? `<p style="margin:0.4rem 0 0;font-size:0.78rem;color:var(--text-secondary);line-height:1.5;">${post.text_content}</p>`
-        : ''}
+      <!-- ── Post-type indicator (mirrors feed — rendered below header) ── -->
+      <div class="post-type-indicator" style="display:flex;align-items:center;gap:0.5rem;margin-top:1rem;">
+        <span style="display:flex;align-items:center;">${meta.icon}</span>
+        <span class="post-type-label"
+              style="text-transform:capitalize;font-size:0.875rem;color:var(--text-secondary);">
+          ${meta.label}
+        </span>
+      </div>
 
-      ${tags.length
-        ? `<div style="display:flex;gap:0.3rem;flex-wrap:wrap;margin-top:0.4rem;">
-             ${tags.map(t => `<span class="p-chip">#${t}</span>`).join('')}
+      <!-- ── Title (mirrors feed — plain div, opens comments on click) ── -->
+      ${post.title
+        ? `<div class="post-title"
+                data-action="open-comments"
+                data-post-id="${post.id}"
+                style="font-size:1.25rem;font-weight:600;margin-top:1rem;cursor:pointer;
+                       line-height:1.4;word-break:break-word;">
+             ${post.title}
            </div>`
         : ''}
 
-      <!-- Footer -->
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;margin-top:0.55rem;flex-wrap:wrap;">
-        <button class="stat-btn reaction-btn ${post.user_reacted ? 'reacted' : ''}" 
-          data-action="toggle-reactions"
-          data-post-id="${post.id}"
-          aria-label="React to post">
+      <!-- ── Body ── -->
+      <div class="post-content" style="margin-top:0.75rem;line-height:1.6;">
+        ${post.text_content || ''}
+      </div>
+
+      <!-- ── Resources carousel ── -->
+      ${resourcesHTML}
+
+      <!-- ── Download-links toggle ── -->
+      ${length > 0 ? `
+        <button class="btn-toggle-details" data-action="view-post-resource-links" data-post-id="${post.id}">
+          <span class="download-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+          </span>
+          <span class="toggle-text">Show Download Links</span>
+          <svg class="toggle-icon" width="16" height="16" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
+        <div class="resource-link-modal hidden"
+             style="margin-top:0.5rem;padding:1rem;background:var(--bg-secondary);border-radius:8px;">
+          ${resourceLinksHTML}
+        </div>` : ''}
+
+      <!-- ── Tags ── -->
+      ${tagsHTML}
+
+      <!-- ── Stats bar — mirrors feed's .post-stats exactly ── -->
+      <div class="post-stats">
+
+        <!-- Reaction / like button -->
+        <button class="stat-btn reaction-btn ${post.user_reacted ? 'reacted' : ''}"
+                data-action="toggle-reactions"
+                data-post-id="${post.id}"
+                aria-label="React to post">
           <span class="reaction-icon">
-  <svg class="heart-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-  </svg>
-</span>
-    <span class="reaction-count">${post.likes_count > 0 ? post.likes_count : ''}</span>
-    
-</button>
-          
-  <button class="stat-btn" data-action="open-comments">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-    </svg>
-    <span>${post.comments_count || 0}</span>
-  </button>
-          <span>👁 ${post.views || 0}</span>
-          ${post.is_solved ? `<span style="color:var(--success);font-weight:600;">✓ Solved</span>` : ''}
-          ${post.has_resources ? `<span title="Has attachments">📎</span>` : ''}
-        </div>
-        <div style="display:flex;align-items:center;gap:0.35rem;">
-          <span style="font-size:0.7rem;color:var(--text-secondary);">${formatTime(post.posted_at)}</span>
-          <button data-action="${post.is_pinned ? 'profile-unpin-post' : 'profile-pin-post'}"
-                  data-post-id="${post.id}"
-                  class="p-action-btn" title="${post.is_pinned ? 'Unpin' : 'Pin'}">📌</button>
-          <button data-action="profile-delete-post"
-                  data-post-id="${post.id}"
-                  class="p-action-btn p-action-btn--danger" title="Delete">🗑️</button>
-        </div>
+            <svg class="heart-icon" width="18" height="18" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+          </span>
+          <span class="reaction-count">${post.likes_count > 0 ? post.likes_count : ''}</span>
+        </button>
+
+        <!-- Comments button -->
+        <button class="stat-btn"
+                data-action="open-comments"
+                data-post-id="${post.id}">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          <span>${post.comments_count || 0}</span>
+        </button>
+
+        <!-- Share button -->
+        <button class="share-btn" data-action="share-post" data-post-id="${post.id}">
+          <span class="share-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="18" cy="5" r="3"/>
+              <circle cx="6" cy="12" r="3"/>
+              <circle cx="18" cy="19" r="3"/>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+            </svg>
+          </span>
+          <span>Share</span>
+        </button>
+
       </div>
     </div>`;
 }

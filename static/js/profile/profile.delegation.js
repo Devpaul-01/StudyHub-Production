@@ -20,6 +20,7 @@ import {
   buildReputationTab,
   buildGoalsList,
 } from './profile.templates.js';
+import { closeModal, openModal } from '../feed/feed.utils.js';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PRIVATE DOM HELPERS
@@ -115,13 +116,11 @@ async function renderCurrentTab() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function openProfileModal(id) {
-  const modal = $id(id);
-  if (modal) modal.classList.add('active');
+  openModal(id);
 }
 
 function closeProfileModal(id) {
-  const modal = $id(id);
-  if (modal) modal.classList.remove('active');
+  closeModal(id);
 }
 
 function populateEditModal() {

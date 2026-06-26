@@ -1639,10 +1639,11 @@ def get_mutual_connections(current_user, user_id):
 # COMPLETE FIXED SUGGESTIONS ENDPOINT
 # Replace lines 771-882 in your connections.py
 # ============================================================================
-
+'''
 @connections_bp.route("/connections/suggestions", methods=["GET"])
 @token_required
 def connection_suggestions(current_user):
+
     """Get connection suggestions with study partners and mentors"""
     try:
         profile    = StudentProfile.query.filter_by(user_id=current_user.id).first()
@@ -1846,8 +1847,256 @@ def connection_suggestions(current_user):
         import traceback
         current_app.logger.error(traceback.format_exc())
         return error_response("Failed to load suggestions")
+'''
 
+@connections_bp.route("/connections/suggestions", methods=["GET"])
+@token_required
+def connection_suggestions(current_user):
+    """Get connection suggestions with study partners and mentors"""
+    logger.info(f"[connection_suggestions] start user_id={current_user.id}")
 
+    try:
+        profile    = StudentProfile.query.filter_by(user_id=current_user.id).first()
+        onboarding = OnboardingDetails.query.filter_by(user_id=current_user.id).first()
+
+        if not profile:
+            logger.warning(f"[connection_suggestions] no profile found for user_id={current_user.id}")
+            return error_response("Profile not found", 404)
+
+        if not onboarding:
+            logger.info(f"[connection_suggestions] user_id={current_user.id} has no onboarding details — "
+                        f"scoring will be skipped for both categories")
+
+        # Build excluded IDs from existing connections
+        existing_connections = Connection.query.filter(
+            or_(
+                Connection.requester_id == current_user.id,
+                Connection.receiver_id == current_user.id
+            )
+        ).all()
+        logger.debug(f"[connection_suggestions] user_id={current_user.id} "
+                     f"existing_connections_count={len(existing_connections)}")
+
+        excluded_ids = {current_user.id}
+        for conn in existing_connections:
+            other_id = conn.receiver_id if conn.requester_id == current_user.id else conn.requester_id
+            excluded_ids.add(other_id)
+
+        logger.debug(f"[connection_suggestions] user_id={current_user.id} excluded_ids_count={len(excluded_ids)}")
+
+        # OPTIMIZED: Single 3-way join fetches all candidates with profiles and
+        # onboarding at once — replaces 2 per-candidate queries inside the loop.
+        candidates_data = (
+            db.session.query(User, StudentProfile, OnboardingDetails)
+            .join(StudentProfile, StudentProfile.user_id == User.id)
+            .join(OnboardingDetails, OnboardingDetails.user_id == User.id)
+            .filter(
+                User.id.notin_(excluded_ids),
+                User.status == "approved",
+            )
+            .limit(100)
+            .all()
+        )
+
+        logger.info(f"[connection_suggestions] user_id={current_user.id} "
+                    f"candidates_fetched={len(candidates_data)}")
+
+        if not candidates_data:
+            logger.info(f"[connection_suggestions] user_id={current_user.id} no candidates found, returning empty result")
+            return jsonify({
+                "status": "success",
+                "data": {"study_partners": [], "mentors": [], "total": 0},
+            })
+
+        # OPTIMIZED: Pre-load current user's connections for mutual count computation.
+        # We compute mutuals in batch (2 queries total) for all qualifying candidates
+        # instead of 4 queries per candidate.
+        my_conns = Connection.query.filter(
+            or_(
+                Connection.requester_id == current_user.id,
+                Connection.receiver_id == current_user.id
+            ),
+            Connection.status == "accepted"
+        ).all()
+        my_conn_ids = {
+            c.receiver_id if c.requester_id == current_user.id else c.requester_id
+            for c in my_conns
+        }
+        logger.debug(f"[connection_suggestions] user_id={current_user.id} "
+                     f"accepted_connections_count={len(my_conn_ids)}")
+
+        class_hierarchy = {
+            "Freshman": 1, "Sophomore": 2, "Junior": 3, "Senior": 4,
+            "100 Level": 1, "200 Level": 2, "300 Level": 3, "400 Level": 4, "500 Level": 5,
+        }
+        current_level = class_hierarchy.get(profile.class_name, 0) if profile.class_name else 0
+        logger.debug(f"[connection_suggestions] user_id={current_user.id} "
+                     f"class_name={profile.class_name!r} current_level={current_level}")
+
+        # First pass: score all candidates (no DB hits)
+        study_partners_raw = []
+        mentors_raw        = []
+
+        for candidate, cand_profile, cand_onboarding in candidates_data:
+            # ---- STUDY PARTNER SCORING ----
+            if onboarding:
+                sp_score   = 0
+                sp_reasons = []
+
+                if profile.department and cand_profile.department == profile.department:
+                    sp_score += 30
+                    sp_reasons.append(f"Same major: {profile.department}")
+
+                if profile.class_name and cand_profile.class_name == profile.class_name:
+                    sp_score += 10
+                    sp_reasons.append(f"Same class: {profile.class_name}")
+
+                if onboarding.subjects and cand_onboarding.subjects:
+                    common = (
+                        set(s.lower().strip() for s in onboarding.subjects)
+                        & set(s.lower().strip() for s in cand_onboarding.subjects)
+                    )
+                    if common:
+                        sp_score += min(len(common) * 8, 25)
+                        sp_reasons.append(f"Studying: {', '.join(list(common)[:2])}")
+
+                if (
+                    onboarding.learning_style
+                    and cand_onboarding.learning_style
+                    and onboarding.learning_style == cand_onboarding.learning_style
+                ):
+                    sp_score += 10
+                    sp_reasons.append("Similar learning style")
+
+                logger.debug(f"[connection_suggestions] sp_score candidate_id={candidate.id} "
+                             f"score={sp_score} reasons={sp_reasons}")
+
+                if sp_score >= 30:
+                    study_partners_raw.append((candidate, cand_profile, cand_onboarding, sp_score, sp_reasons))
+
+            # ---- MENTOR SCORING ----
+            if onboarding and current_level > 0:
+                cand_level = class_hierarchy.get(cand_profile.class_name, 0)
+                if (
+                    cand_level > current_level
+                    and cand_profile.department == profile.department
+                ):
+                    m_score   = 20
+                    m_reasons = [f"Same major: {profile.department}"]
+
+                    level_diff = cand_level - current_level
+                    m_score += min(level_diff * 15, 30)
+                    m_reasons.append(f"Higher class level: {cand_profile.class_name}")
+
+                    if onboarding.help_subjects and cand_onboarding.strong_subjects:
+                        helpful = (
+                            set(s.lower().strip() for s in onboarding.help_subjects)
+                            & set(s.lower().strip() for s in cand_onboarding.strong_subjects)
+                        )
+                        if helpful:
+                            m_score += min(len(helpful) * 10, 25)
+                            m_reasons.append(f"Can help with: {', '.join(list(helpful)[:2])}")
+
+                    if candidate.reputation >= 500:
+                        m_score += 10
+                        m_reasons.append("Highly rated")
+
+                    logger.debug(f"[connection_suggestions] mentor_score candidate_id={candidate.id} "
+                                 f"score={m_score} reasons={m_reasons}")
+
+                    if m_score >= 40:
+                        mentors_raw.append((candidate, cand_profile, cand_onboarding, m_score, m_reasons))
+
+        logger.info(f"[connection_suggestions] user_id={current_user.id} "
+                    f"study_partners_qualified={len(study_partners_raw)} "
+                    f"mentors_qualified={len(mentors_raw)}")
+
+        # Sort early and limit before batch mutual-count lookup
+        study_partners_raw.sort(key=lambda x: x[3], reverse=True)
+        study_partners_raw = study_partners_raw[:10]
+
+        mentors_raw.sort(key=lambda x: x[3], reverse=True)
+        mentors_raw = mentors_raw[:10]
+
+        logger.debug(f"[connection_suggestions] user_id={current_user.id} "
+                     f"study_partners_after_limit={len(study_partners_raw)} "
+                     f"mentors_after_limit={len(mentors_raw)}")
+
+        qualifying_ids = list({r[0].id for r in study_partners_raw + mentors_raw})
+        logger.debug(f"[connection_suggestions] user_id={current_user.id} "
+                     f"qualifying_ids_count={len(qualifying_ids)}")
+
+        # OPTIMIZED: One query to get all connections for qualifying candidates
+        if qualifying_ids:
+            all_cand_conns = Connection.query.filter(
+                or_(
+                    Connection.requester_id.in_(qualifying_ids),
+                    Connection.receiver_id.in_(qualifying_ids)
+                ),
+                Connection.status == "accepted"
+            ).all()
+            logger.debug(f"[connection_suggestions] user_id={current_user.id} "
+                         f"candidate_connections_fetched={len(all_cand_conns)}")
+
+            cand_conn_ids_map = {}
+            for conn in all_cand_conns:
+                for uid in (conn.requester_id, conn.receiver_id):
+                    if uid in qualifying_ids:
+                        other = conn.receiver_id if conn.requester_id == uid else conn.requester_id
+                        cand_conn_ids_map.setdefault(uid, set()).add(other)
+        else:
+            cand_conn_ids_map = {}
+
+        def build_entry(candidate, cand_profile, cand_onboarding, score, reasons, category):
+            online_status = get_user_online_status(candidate.id)
+            their_ids     = cand_conn_ids_map.get(candidate.id, set())
+            mutual_count  = len(my_conn_ids & their_ids)
+            logger.debug(f"[connection_suggestions] build_entry category={category} "
+                         f"candidate_id={candidate.id} score={score} mutual_count={mutual_count} "
+                         f"is_online={online_status['is_online']}")
+            return {
+                "category": category,
+                "user": {
+                    "id":               candidate.id,
+                    "username":         candidate.username,
+                    "name":             candidate.name,
+                    "avatar":           candidate.avatar,
+                    "bio":              candidate.bio,
+                    "department":       cand_profile.department,
+                    "class_level":      cand_profile.class_name,
+                    "reputation":       candidate.reputation,
+                    "reputation_level": candidate.reputation_level,
+                    "is_online":        online_status["is_online"],
+                    "last_active":      online_status["last_active"],
+                },
+                "onboarding_details": {
+                    "subjects":    cand_onboarding.subjects[:5] if cand_onboarding.subjects else [],
+                    "study_style": cand_onboarding.learning_style,
+                },
+                "mutuals_count": mutual_count,
+                "match_score":   min(score, 100),
+                "reasons":       reasons[:4],
+            }
+
+        study_partners = [build_entry(*r, "study_partner") for r in study_partners_raw]
+        mentors        = [build_entry(*r, "mentor")        for r in mentors_raw]
+
+        logger.info(f"[connection_suggestions] user_id={current_user.id} completed successfully "
+                    f"study_partners_returned={len(study_partners)} mentors_returned={len(mentors)}")
+
+        return jsonify({
+            "status": "success",
+            "data": {
+                "study_partners": study_partners,
+                "mentors":        mentors,
+                "total":          len(study_partners) + len(mentors),
+            },
+        })
+
+    except Exception as e:
+        logger.error(f"[connection_suggestions] user_id={getattr(current_user, 'id', 'unknown')} "
+                     f"failed with error: {e}", exc_info=True)
+        return error_response("Failed to load suggestions")
 
 # ============================================================================
 # 6. SEARCH USERS - NO PAGINATION
@@ -2558,7 +2807,7 @@ def connection_suggestions_flat(current_user):
                 if days_ago < 7:
                     score += 5
 
-            if score >= 40:
+            if score >= 30:
                 scored_raw.append((candidate, cand_profile, cand_onboarding, score, reasons, category))
 
         # Sort and limit before the mutual-count batch lookup
