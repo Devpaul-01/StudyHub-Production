@@ -1,14 +1,14 @@
-/* verification.css */
+/* Cool Graphite + Indigo Accent — updated 2026-06-26 */
 
 body {
   margin: 0;
   font-family: 'Poppins', sans-serif;
-  background: linear-gradient(135deg, #1e3c72, #2a5298);
+  background: #0F0F11;
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
-  color: #333;
+  color: #FAFAFA;
 }
 
 .auth-page {
@@ -19,10 +19,11 @@ body {
 }
 
 .auth-container {
-  background: #fff;
+  background: #1C1C1F;
+  border: 1px solid #27272A;
   border-radius: 15px;
   padding: 40px 35px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.7);
   max-width: 450px;
   width: 90%;
   text-align: center;
@@ -33,19 +34,19 @@ body {
   font-size: 50px;
   margin-bottom: 20px;
   animation: spin 2s linear infinite;
-  color: #1e88e5;
+  color: #6366F1;
 }
 
 .auth-title {
   font-size: 22px;
   font-weight: 600;
-  color: #1e3c72;
+  color: #FAFAFA;
   margin-bottom: 10px;
 }
 
 .verification-message {
   font-size: 14px;
-  color: #555;
+  color: #A1A1AA;
   margin-top: 0;
 }
 

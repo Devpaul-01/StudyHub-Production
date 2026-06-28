@@ -35,6 +35,7 @@ export const THREAD_API = {
   MEETING_NOTES: (id)       => `/threads/${id}/meeting-notes`,
 
   MEMBERS:       (tid)      => `/threads/${tid}/members`,
+  ADD_MEMBERS:   (tid)      => `/threads/${tid}/members/add`,
   REMOVE_MEMBER: (tid, uid) => `/threads/${tid}/remove/${uid}`,
   LEAVE:         (tid)      => `/threads/${tid}/leave`,
   ROLE_UPDATE:   (tid, uid) => `/threads/${tid}/members/${uid}/role`,

@@ -130,6 +130,32 @@ export async function removeMember(threadId, userId) {
   return api.delete(THREAD_API.REMOVE_MEMBER(threadId, userId));
 }
 
+/**
+ * Fetch the current user's accepted connections (used to populate the
+ * "Add Members" picker — only connections can be directly added).
+ */
+export async function fetchMyConnections() {
+  try {
+    const res = await api.get('/connections/list');
+    // connections/list returns { data: [...] } where each item has a `user` sub-object
+    return (res.data ?? []).map((c) => c.user).filter(Boolean);
+  } catch (err) {
+    console.error('[thread_api] fetchMyConnections:', err);
+    return [];
+  }
+}
+
+/**
+ * Directly add one or more users to a thread as full members.
+ * Creator / moderator only. Users must be connections of the caller.
+ * @param {number}   threadId
+ * @param {number[]} userIds   – up to 10 user IDs
+ */
+export async function addMembersToThread(threadId, userIds) {
+  const res = await api.post(THREAD_API.ADD_MEMBERS(threadId), { user_ids: userIds });
+  return res.data ?? res;
+}
+
 export async function leaveThread(threadId) {
   return api.post(THREAD_API.LEAVE(threadId));
 }

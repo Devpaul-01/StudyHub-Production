@@ -319,7 +319,7 @@ function _onClick(e) {
     e.preventDefault();
     _hideMentionSuggestions();
     import('./thread.events.js').then(({ handleSendMessage }) =>
-      handleSendMessage().catch(() => {})
+      handleSendMessage().catch(() => showToast('Failed to send message', 'error'))
     );
     return;
   }
@@ -385,7 +385,7 @@ function _onClick(e) {
   if (_closest(t, "[data-action='thread-meeting-notes']")) {
     e.preventDefault();
     import('./thread.events.js').then(({ handleOpenMeetingNotes }) =>
-      handleOpenMeetingNotes().catch(() => {})
+      handleOpenMeetingNotes().catch(() => showToast('Failed to open meeting notes', 'error'))
     );
     return;
   }
@@ -902,6 +902,20 @@ function _onClick(e) {
     return;
   }
 
+  // ── Add members ──────────────────────────────────────────────────────────
+  const addMembersBtn = _closest(t, "[data-action='thread-add-members']");
+  if (addMembersBtn) {
+    e.preventDefault();
+    const threadId = Number(addMembersBtn.dataset.threadId ?? threadState.activeThreadId);
+    if (threadId) {
+      import('./thread.events.js').then(({ handleAddMembers }) =>
+        handleAddMembers(threadId)
+          .catch(() => showToast('Failed to open member picker', 'error'))
+      );
+    }
+    return;
+  }
+
   // ── Remove member ─────────────────────────────────────────────────────────
   const removeBtn = _closest(t, "[data-action='thread-remove-member']");
   if (removeBtn) {
@@ -1050,7 +1064,7 @@ function _onKeydown(e) {
       e.preventDefault();
       _hideMentionSuggestions();
       import('./thread.events.js').then(({ handleSendMessage }) =>
-        handleSendMessage().catch(() => {})
+        handleSendMessage().catch(() => showToast('Failed to send message', 'error'))
       );
     }
   }

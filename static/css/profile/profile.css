@@ -1,20 +1,84 @@
+/* Cool Graphite + Indigo Accent — updated 2026-06-26 */
 :root {
-  --primary: #667eea;
-  --primary-dark: #764ba2;
-  --primary-light: rgba(102, 126, 234, 0.2);
-  --primary-gradient: linear-gradient(135deg, #667eea, #764ba2);
-  --text-primary: #1a1a1a;
-  --text-secondary: #495057;
-  --text-meta: #6c757d;
-  --bg-page: #f5f7fa;
-  --bg-card: #ffffff;
-  --bg-surface: #f8f9fa;
-  --border-light: #e9ecef;
-  --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.12);
+  /* ── Primary — Cool Graphite ──────────────────────── */
+  --primary:           #18181B;
+  --primary-dark:      #09090B;
+  --primary-hover:     #27272A;
+  --primary-active:    #3F3F46;
+  --primary-subtle:    #F4F4F5;
+  --primary-border:    #D4D4D8;
+  --primary-gradient:  none;
+  --primary-start:     #18181B;
+  --primary-end:       #27272A;
+
+  /* ── Accent — Indigo ─────────────────────────────── */
+  --accent:            #6366F1;
+  --accent-hover:      #4F46E5;
+  --accent-active:     #4338CA;
+  --accent-subtle:     rgba(99,102,241,0.15);
+  --accent-border:     rgba(99,102,241,0.3);
+
+  /* ── Backgrounds ─────────────────────────────────── */
+  --bg-page:           #0F0F11;
+  --bg-card:           #1C1C1F;
+  --bg-surface:        #242428;
+  --bg-hover:          #2A2A2E;
+  --bg-primary:        var(--bg-card);
+  --bg-secondary:      var(--bg-page);
+  --bg-tertiary:       var(--bg-surface);
+
+  /* ── Text ────────────────────────────────────────── */
+  --text-primary:      #FAFAFA;
+  --text-secondary:    #A1A1AA;
+  --text-meta:         #71717A;
+  --text-tertiary:     #52525B;
+
+  /* ── Borders ─────────────────────────────────────── */
+  --border:            #27272A;
+  --border-light:      #1F1F22;
+
+  /* ── Status ──────────────────────────────────────── */
+  --success:           #10B981;
+  --warning:           #F59E0B;
+  --danger:            #EF4444;
+  --info:              #6366F1;
+
+  /* ── Shadows ─────────────────────────────────────── */
+  --shadow-sm:  0 1px 2px  rgba(0,0,0,0.4);
+  --shadow-md:  0 2px 8px  rgba(0,0,0,0.5);
+  --shadow-lg:  0 4px 16px rgba(0,0,0,0.6);
+  --shadow-xl:  0 8px 32px rgba(0,0,0,0.7);
+
+  /* ── Spacing ─────────────────────────────────────── */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+
+  /* ── Border Radius ───────────────────────────────── */
+  --radius-sm:   0.375rem;
+  --radius-md:   0.5rem;
+  --radius-lg:   0.75rem;
+  --radius-xl:   1rem;
+  --radius-full: 9999px;
+
+  /* ── Transitions ─────────────────────────────────── */
+  --transition-fast: 150ms ease;
+  --transition-base: 200ms ease;
+  --transition-slow: 300ms ease;
+
+  /* ── Z-index layers ──────────────────────────────── */
+  --z-dropdown:       1000;
+  --z-sticky:         1020;
+  --z-fixed:          1030;
+  --z-modal-backdrop: 1040;
+  --z-modal:          1050;
+  --z-popover:        1060;
+  --z-tooltip:        1070;
 }
 
-* ── Section wrapper ───────────────────────────────────────────────────────── */
+/* ── Section wrapper ──────────────────────────────────────────────────────── */
 
 
 /* ── Header card ────────────────────────────────────────────────────────────── */
@@ -72,7 +136,7 @@
   color: var(--text-secondary);
   white-space: nowrap;
 }
-.p-chip--accent { background: rgba(102,126,234,0.12); border-color: rgba(102,126,234,0.3); color: var(--primary); }
+.p-chip--accent { background: var(--accent-subtle); border-color: var(--accent-border); color: var(--accent); }
 
 /* ── Filter pill bar ─────────────────────────────────────────────────────────── */
 .p-filter-bar {
@@ -109,7 +173,7 @@
   margin-bottom: 0.55rem;
   transition: border-color 0.15s;
 }
-.profile-post-card:hover { border-color: var(--primary); }
+.profile-post-card:hover { border-color: var(--accent); }
 
 /* ── Post action buttons (pin / delete) ─────────────────────────────────────── */
 .p-action-btn {
@@ -238,7 +302,7 @@
   outline: none;
   box-sizing: border-box;
 }
-.p-input:focus { border-color: var(--primary); }
+.p-input:focus { border-color: var(--accent); }
 
 /* ── Buttons ─────────────────────────────────────────────────────────────────── */
 .p-btn {

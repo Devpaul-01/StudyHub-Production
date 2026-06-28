@@ -240,6 +240,11 @@ export function openInfoModal(thread, members, user_status = {}) {
                   class="w-4 h-4 rounded accent-indigo-600 cursor-pointer">
          </label>
          <div class="flex flex-wrap gap-2">
+           <button data-action="thread-add-members" data-thread-id="${threadId}"
+                   class="flex items-center gap-1.5 text-sm font-medium text-emerald-700
+                          bg-emerald-50 hover:bg-emerald-100 rounded-xl px-3 py-2 transition-colors">
+             ➕ Add Members
+           </button>
            <button data-action="thread-edit-settings" data-thread-id="${threadId}"
                    class="flex items-center gap-1.5 text-sm font-medium text-indigo-600
                           bg-indigo-50 hover:bg-indigo-100 rounded-xl px-3 py-2 transition-colors">
@@ -276,6 +281,11 @@ export function openInfoModal(thread, members, user_status = {}) {
     ? `<div class="pt-3 border-t border-gray-100 space-y-3">
          <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Moderator</h4>
          <div class="flex flex-wrap gap-2">
+           <button data-action="thread-add-members" data-thread-id="${threadId}"
+                   class="flex items-center gap-1.5 text-sm font-medium text-emerald-700
+                          bg-emerald-50 hover:bg-emerald-100 rounded-xl px-3 py-2 transition-colors">
+             ➕ Add Members
+           </button>
            <button data-action="thread-open-attachments"
                    class="flex items-center gap-1.5 text-sm font-medium text-gray-600
                           bg-gray-100 hover:bg-gray-200 rounded-xl px-3 py-2 transition-colors">
@@ -690,5 +700,205 @@ export function openInviteModal(invite, onAccept, onDecline) {
   });
   modal.querySelector('#invite-decline-btn')?.addEventListener('click', () => {
     _closeModal('thread-invite-modal'); onDecline();
+  });
+}
+
+
+// ─── Add Members modal ────────────────────────────────────────────────────────
+//
+// Opens a searchable connection picker so the creator/moderator can select
+// one or more connections to directly add as thread members.
+// Already-members are pre-filtered out. Selection is confirmed in one tap.
+//
+// @param {object}   thread       – current thread object (id, title, member_count, max_members)
+// @param {number[]} memberIds    – IDs of users already in the thread (to exclude)
+// @param {Function} onConfirm    – called with the array of selected user IDs
+// ─────────────────────────────────────────────────────────────────────────────
+
+export async function openAddMembersModal(thread, memberIds, onConfirm) {
+  const MODAL_ID = 'thread-add-members-modal';
+  const slots    = (thread.max_members ?? 50) - (thread.member_count ?? 0);
+
+  // Show a loading skeleton while we fetch connections
+  _openModal(MODAL_ID, `
+    <div class="relative bg-white rounded-2xl w-full max-w-md shadow-2xl max-h-[85vh]
+                flex flex-col overflow-hidden">
+      ${_closeBtn(MODAL_ID)}
+      <div class="px-5 pt-6 pb-4 border-b border-gray-100 flex-shrink-0">
+        <h3 class="text-base font-bold text-gray-900">➕ Add Members</h3>
+        <p class="text-xs text-gray-400 mt-0.5">
+          "${esc(thread.title)}" · ${slots} slot${slots !== 1 ? 's' : ''} available
+        </p>
+      </div>
+      <div class="flex-1 flex items-center justify-center py-12">
+        <div class="w-6 h-6 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    </div>`);
+
+  // Fetch the admin's connections list
+  let connections = [];
+  try {
+    const { fetchMyConnections } = await import('./thread.api.js');
+    connections = await fetchMyConnections();
+  } catch {
+    connections = [];
+  }
+
+  const memberSet = new Set(memberIds ?? []);
+  // Exclude people already in the thread
+  const eligible  = connections.filter((u) => !memberSet.has(u.id));
+
+  // ── Rebuild modal content with real data ──────────────────────────────
+  const modal = document.getElementById(MODAL_ID);
+  if (!modal) return;
+
+  const selectedIds = new Set();
+
+  function _rowHtml(user) {
+    const avatarHtml = user.avatar
+      ? `<img src="${escAttr(user.avatar)}"
+              class="w-10 h-10 rounded-full object-cover flex-shrink-0"
+              loading="lazy" alt="${esc(user.name)}">`
+      : `<div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-700 text-sm font-bold
+                     flex items-center justify-center flex-shrink-0 select-none">
+           ${esc((user.name ?? '?').charAt(0).toUpperCase())}
+         </div>`;
+    const deptText = user.department
+      ? `<span class="text-[10px] text-gray-400">${esc(user.department)}</span>`
+      : '';
+    return `
+      <label class="add-member-row flex items-center gap-3 px-4 py-3 hover:bg-indigo-50
+                     active:bg-indigo-100 cursor-pointer transition-colors border-b border-gray-50
+                     last:border-0 select-none"
+             data-user-id="${user.id}"
+             data-name="${escAttr((user.name ?? '') + ' ' + (user.username ?? ''))}">
+        <div class="flex-shrink-0">${avatarHtml}</div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-semibold text-gray-900 truncate">${esc(user.name ?? '')}</p>
+          <p class="text-xs text-gray-400 truncate">@${esc(user.username ?? '')} ${deptText}</p>
+        </div>
+        <input type="checkbox"
+               class="add-member-cb w-4 h-4 rounded accent-indigo-600 cursor-pointer flex-shrink-0"
+               value="${user.id}">
+      </label>`;
+  }
+
+  function _buildContent(list) {
+    if (!list.length) {
+      return `<div class="flex flex-col items-center gap-2 py-12 text-center px-5">
+                <span class="text-3xl">👥</span>
+                <p class="text-sm text-gray-500">
+                  ${eligible.length
+                    ? 'No connections match your search.'
+                    : 'All your connections are already members of this thread.'}
+                </p>
+              </div>`;
+    }
+    return `<div id="add-member-list">${list.map(_rowHtml).join('')}</div>`;
+  }
+
+  modal.innerHTML = `
+    <div class="relative bg-white rounded-2xl w-full max-w-md shadow-2xl max-h-[85vh]
+                flex flex-col overflow-hidden">
+      ${_closeBtn(MODAL_ID)}
+      <div class="px-5 pt-6 pb-4 border-b border-gray-100 flex-shrink-0">
+        <h3 class="text-base font-bold text-gray-900">➕ Add Members</h3>
+        <p class="text-xs text-gray-400 mt-0.5">
+          "${esc(thread.title)}" · ${slots} slot${slots !== 1 ? 's' : ''} available
+        </p>
+      </div>
+
+      <div class="px-4 py-2.5 border-b border-gray-100 flex-shrink-0">
+        <div class="relative">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+               width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
+               viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input id="add-member-search"
+                 type="search" placeholder="Search connections…" autocomplete="off"
+                 class="w-full pl-8 pr-3 py-2 text-sm rounded-xl border border-gray-200 bg-gray-50
+                        focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100
+                        outline-none transition-all placeholder-gray-400 text-gray-900">
+        </div>
+      </div>
+
+      <div class="flex-1 overflow-y-auto" id="add-member-scroll">
+        ${_buildContent(eligible)}
+      </div>
+
+      <div class="flex-shrink-0 px-4 py-3 border-t border-gray-100 flex gap-3 items-center">
+        <span id="add-member-count"
+              class="text-xs text-gray-400 flex-1">No one selected</span>
+        ${_btnSecondary('Cancel',
+            `onclick="document.getElementById('${MODAL_ID}')?.classList.add('hidden')"`)}
+        <button id="add-member-confirm"
+                disabled
+                class="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:scale-95
+                       text-sm font-semibold text-white transition-all duration-150 shadow-sm
+                       disabled:opacity-40 disabled:cursor-not-allowed">
+          Add Members
+        </button>
+      </div>
+    </div>`;
+
+  // ── Re-attach backdrop close listener (modal was re-built) ─────────────
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) _closeModal(MODAL_ID);
+  }, { once: false });
+
+  // ── Live search ─────────────────────────────────────────────────────────
+  const searchEl   = modal.querySelector('#add-member-search');
+  const scrollEl   = modal.querySelector('#add-member-scroll');
+  const confirmBtn = modal.querySelector('#add-member-confirm');
+  const countEl    = modal.querySelector('#add-member-count');
+
+  function _updateCount() {
+    const n = selectedIds.size;
+    countEl.textContent  = n === 0 ? 'No one selected' : `${n} selected`;
+    confirmBtn.disabled  = n === 0 || n > slots;
+    if (n > slots) countEl.textContent = `Too many — only ${slots} slot${slots !== 1 ? 's' : ''} left`;
+  }
+
+  function _renderList(query) {
+    const q    = (query ?? '').toLowerCase().trim();
+    const list = q
+      ? eligible.filter((u) =>
+          (u.name ?? '').toLowerCase().includes(q) ||
+          (u.username ?? '').toLowerCase().includes(q) ||
+          (u.department ?? '').toLowerCase().includes(q)
+        )
+      : eligible;
+    scrollEl.innerHTML = _buildContent(list);
+    // Re-tick any already-selected checkboxes after re-render
+    scrollEl.querySelectorAll('.add-member-cb').forEach((cb) => {
+      if (selectedIds.has(Number(cb.value))) cb.checked = true;
+    });
+  }
+
+  searchEl?.addEventListener('input', (e) => _renderList(e.target.value));
+
+  // ── Checkbox delegation via scroll container ────────────────────────────
+  scrollEl?.addEventListener('change', (e) => {
+    const cb = e.target.closest('.add-member-cb');
+    if (!cb) return;
+    const uid = Number(cb.value);
+    if (cb.checked) selectedIds.add(uid); else selectedIds.delete(uid);
+    _updateCount();
+  });
+
+  // Allow clicking the whole row (not just the checkbox)
+  scrollEl?.addEventListener('click', (e) => {
+    const row = e.target.closest('.add-member-row');
+    if (!row || e.target.closest('.add-member-cb')) return;
+    const cb = row.querySelector('.add-member-cb');
+    if (!cb) return;
+    cb.checked = !cb.checked;
+    cb.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+
+  // ── Confirm ─────────────────────────────────────────────────────────────
+  confirmBtn?.addEventListener('click', () => {
+    if (!selectedIds.size) return;
+    _closeModal(MODAL_ID);
+    onConfirm([...selectedIds]);
   });
 }

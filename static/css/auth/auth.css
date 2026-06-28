@@ -1,3 +1,4 @@
+/* Cool Graphite + Indigo Accent — updated 2026-06-26 */
 /* ============================================================================
    StudyHub - Authentication Pages CSS
    Login, Register, Email Verification
@@ -9,16 +10,16 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  background-color: #ffffff;
-  color: #444;
+  background-color: #242428;
+  color: #A1A1AA;
   font-weight: 500;
   font-size: 16px;
-  border: 1px solid #dadce0;
+  border: 1px solid #27272A;
   border-radius: 6px;
   padding: 10px 16px;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
-  box-shadow: 0 1px 3px rgba(60, 64, 67, 0.3), 0 1px 1px rgba(60, 64, 67, 0.15);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4), 0 1px 1px rgba(0,0,0,0.3);
 }
 
 .google-btn img {
@@ -27,25 +28,27 @@
 }
 
 .google-btn:hover {
-  background-color: #f8f9fa;
+  background-color: #2A2A2E;
   transform: translateY(-1px);
 }
 
 .google-btn:active {
   transform: translateY(0);
-  box-shadow: 0 0 0 rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 0 rgba(0,0,0,0.1);
 }
+
 .auth-page {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #0F0F11;
   padding: var(--spacing-lg);
 }
 
 .auth-container {
-  background: white;
+  background: #1C1C1F;
+  border: 1px solid #27272A;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-xl);
   max-width: 450px;
@@ -68,12 +71,12 @@
 .auth-title {
   font-size: 2rem;
   font-weight: 700;
-  color: var(--gray-900);
+  color: #FAFAFA;
   margin-bottom: var(--spacing-sm);
 }
 
 .auth-subtitle {
-  color: var(--gray-500);
+  color: #A1A1AA;
   font-size: 1rem;
 }
 
@@ -90,7 +93,7 @@
 .password-strength {
   margin-top: var(--spacing-sm);
   height: 4px;
-  background: var(--gray-200);
+  background: #27272A;
   border-radius: var(--radius-full);
   overflow: hidden;
   transition: all var(--transition-base);
@@ -146,7 +149,7 @@
 }
 
 .username-check.checking {
-  color: var(--gray-500);
+  color: #A1A1AA;
 }
 
 .username-check.available {
@@ -175,18 +178,18 @@
   cursor: pointer;
   user-select: none;
   font-size: 0.95rem;
-  color: var(--gray-700);
+  color: #A1A1AA;
 }
 
 /* Auth Footer */
 .auth-footer {
   text-align: center;
-  color: var(--gray-600);
+  color: #A1A1AA;
   font-size: 0.95rem;
 }
 
 .auth-footer a {
-  color: var(--primary-blue);
+  color: #6366F1;
   font-weight: 600;
 }
 
@@ -200,7 +203,7 @@
   align-items: center;
   gap: var(--spacing-md);
   margin: var(--spacing-xl) 0;
-  color: var(--gray-400);
+  color: #71717A;
   font-size: 0.875rem;
 }
 
@@ -209,7 +212,7 @@
   content: '';
   flex: 1;
   height: 1px;
-  background: var(--gray-200);
+  background: #27272A;
 }
 
 /* Email Verification Page */
@@ -251,13 +254,13 @@
 }
 
 .verification-message {
-  color: var(--gray-600);
+  color: #A1A1AA;
   margin: var(--spacing-lg) 0;
   font-size: 1.1rem;
   line-height: 1.6;
 }
 
-/* Social Login Buttons (if needed later) */
+/* Social Login Buttons */
 .social-login-btn {
   display: flex;
   align-items: center;
@@ -265,31 +268,33 @@
   gap: var(--spacing-md);
   width: 100%;
   padding: 12px;
-  border: 2px solid var(--gray-200);
+  border: 2px solid #27272A;
   border-radius: var(--radius-md);
-  background: white;
+  background: #242428;
+  color: #A1A1AA;
   font-weight: 600;
   cursor: pointer;
   transition: all var(--transition-base);
 }
 
 .social-login-btn:hover {
-  border-color: var(--primary-blue);
+  border-color: rgba(99,102,241,0.3);
+  color: #FAFAFA;
   transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
 }
 
 /* Terms and Privacy */
 .auth-terms {
   text-align: center;
   font-size: 0.85rem;
-  color: var(--gray-500);
+  color: #71717A;
   margin-top: var(--spacing-lg);
   line-height: 1.5;
 }
 
 .auth-terms a {
-  color: var(--primary-blue);
+  color: #6366F1;
 }
 
 /* Responsive Design */

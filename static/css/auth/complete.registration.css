@@ -1,44 +1,75 @@
+/* Cool Graphite + Indigo Accent — updated 2026-06-26 */
 /* ===========================
    StudyHub Auth - Complete Registration
-   Indigo/Purple Theme
+   Cool Graphite + Indigo Accent Theme
    =========================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 
 /* --- CSS Variables --- */
 :root {
-  --indigo-50:  #eef2ff;
-  --indigo-100: #e0e7ff;
-  --indigo-200: #c7d2fe;
-  --indigo-400: #818cf8;
-  --indigo-500: #6366f1;
-  --indigo-600: #4f46e5;
-  --indigo-700: #4338ca;
-  --indigo-900: #312e81;
+  /* ── Primary — Cool Graphite ── */
+  --primary:           #18181B;
+  --primary-dark:      #09090B;
+  --primary-hover:     #27272A;
+  --primary-active:    #3F3F46;
+  --primary-subtle:    #F4F4F5;
+  --primary-border:    #D4D4D8;
+  --primary-gradient:  none;
+  --primary-start:     #18181B;
+  --primary-end:       #27272A;
 
-  --purple-400: #c084fc;
-  --purple-500: #a855f7;
-  --purple-600: #9333ea;
+  /* ── Accent — Indigo ── */
+  --accent:            #6366F1;
+  --accent-hover:      #4F46E5;
+  --accent-active:     #4338CA;
+  --accent-subtle:     rgba(99,102,241,0.15);
+  --accent-border:     rgba(99,102,241,0.3);
 
-  --success:  #22c55e;
-  --warning:  #f59e0b;
-  --danger:   #ef4444;
+  /* ── Backgrounds ── */
+  --bg-page:           #0F0F11;
+  --bg-card:           #1C1C1F;
+  --bg-surface:        #242428;
+  --bg-hover:          #2A2A2E;
+  --bg-primary:        var(--bg-card);
+  --bg-secondary:      var(--bg-page);
+  --bg-tertiary:       var(--bg-surface);
 
-  --text-primary:   #1e1b4b;
-  --text-secondary: #6b7280;
-  --text-muted:     #9ca3af;
+  /* ── Text ── */
+  --text-primary:      #FAFAFA;
+  --text-secondary:    #A1A1AA;
+  --text-meta:         #71717A;
+  --text-tertiary:     #52525B;
 
-  --bg-page:  #f5f3ff;
-  --bg-card:  #ffffff;
-  --border:   #e0e7ff;
+  /* ── Borders ── */
+  --border:            #27272A;
+  --border-light:      #1F1F22;
 
+  /* ── Status ── */
+  --success:           #10B981;
+  --warning:           #F59E0B;
+  --danger:            #EF4444;
+  --info:              #6366F1;
+
+  /* ── Shadows ── */
+  --shadow-sm:  0 1px 2px  rgba(0,0,0,0.4);
+  --shadow-md:  0 2px 8px  rgba(0,0,0,0.5);
+  --shadow-lg:  0 4px 16px rgba(0,0,0,0.6);
+  --shadow-xl:  0 8px 32px rgba(0,0,0,0.7);
+
+  /* ── Spacing (unchanged) ── */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+
+  /* ── Border Radius (unchanged) ── */
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 20px;
 
-  --shadow-card: 0 8px 32px rgba(99, 102, 241, 0.10), 0 2px 8px rgba(99, 102, 241, 0.06);
-  --shadow-btn:  0 4px 14px rgba(99, 102, 241, 0.35);
-
+  /* ── Transitions (unchanged) ── */
   --transition: 0.2s ease;
 
   font-family: 'Inter', sans-serif;
@@ -65,8 +96,8 @@ body::before {
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(ellipse 60% 50% at 20% 10%, rgba(99,102,241,.12) 0%, transparent 70%),
-    radial-gradient(ellipse 50% 40% at 80% 90%, rgba(168,85,247,.10) 0%, transparent 70%);
+    radial-gradient(ellipse 60% 50% at 20% 10%, rgba(99,102,241,.08) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 40% at 80% 90%, rgba(99,102,241,.06) 0%, transparent 70%);
   pointer-events: none;
   z-index: 0;
 }
@@ -87,7 +118,7 @@ body::before {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--shadow-xl);
   padding: 2.5rem 2rem;
   width: 100%;
   max-width: 440px;
@@ -122,7 +153,7 @@ body::before {
 .auth-title {
   font-size: 1.75rem;
   font-weight: 700;
-  color: var(--indigo-700);
+  color: var(--text-primary);
   letter-spacing: -.02em;
   margin-bottom: .35rem;
 }
@@ -166,23 +197,23 @@ body::before {
   font-size: .9375rem;
   font-family: inherit;
   color: var(--text-primary);
-  background: #fafafe;
+  background: var(--bg-surface);
   outline: none;
   transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
 }
 
 .form-input::placeholder {
-  color: var(--text-muted);
+  color: var(--text-tertiary);
 }
 
 .form-input:hover {
-  border-color: var(--indigo-400);
+  border-color: var(--accent-border);
 }
 
 .form-input:focus {
-  border-color: var(--indigo-500);
-  background: #fff;
-  box-shadow: 0 0 0 3px rgba(99,102,241,.15);
+  border-color: var(--accent);
+  background: var(--bg-surface);
+  box-shadow: 0 0 0 3px var(--accent-subtle);
 }
 
 .form-input.error {
@@ -193,7 +224,7 @@ body::before {
 /* Help & Error Text */
 .form-help {
   font-size: .8125rem;
-  color: var(--text-muted);
+  color: var(--text-meta);
 }
 
 .form-error {
@@ -224,24 +255,24 @@ body::before {
 
 .username-check.available {
   color: var(--success);
-  background: #f0fdf4;
+  background: rgba(16,185,129,0.1);
 }
 
 .username-check.taken {
   color: var(--danger);
-  background: #fef2f2;
+  background: rgba(239,68,68,0.1);
 }
 
 .username-check.checking {
-  color: var(--indigo-500);
-  background: var(--indigo-50);
+  color: var(--accent);
+  background: var(--accent-subtle);
 }
 
 /* --- Password Strength Bar --- */
 .password-strength {
   height: 5px;
   border-radius: 99px;
-  background: var(--indigo-100);
+  background: var(--bg-hover);
   overflow: hidden;
   margin-top: .25rem;
 }
@@ -285,20 +316,20 @@ body::before {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--indigo-600) 0%, var(--purple-600) 100%);
-  color: #fff;
-  box-shadow: var(--shadow-btn);
+  background: var(--primary);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-md);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, var(--indigo-700) 0%, var(--purple-600) 100%);
-  box-shadow: 0 6px 20px rgba(99,102,241,.45);
+  background: var(--primary-hover);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.5);
   transform: translateY(-1px);
 }
 
 .btn-primary:active:not(:disabled) {
   transform: translateY(0);
-  box-shadow: var(--shadow-btn);
+  box-shadow: var(--shadow-md);
 }
 
 .btn-primary:disabled {
@@ -328,7 +359,7 @@ body::before {
   to { transform: rotate(360deg); }
 }
 
-/* --- Toast (global, if not already defined) --- */
+/* --- Toast --- */
 .toast-container {
   position: fixed;
   bottom: 1.5rem;
@@ -348,14 +379,14 @@ body::before {
   font-size: .9rem;
   font-weight: 500;
   color: #fff;
-  box-shadow: 0 4px 16px rgba(0,0,0,.15);
+  box-shadow: var(--shadow-lg);
   animation: toastIn .3s ease both;
   max-width: 340px;
 }
 
 .toast.success { background: var(--success); }
 .toast.error   { background: var(--danger);  }
-.toast.info    { background: var(--indigo-500); }
+.toast.info    { background: var(--accent); }
 
 @keyframes toastIn {
   from { opacity: 0; transform: translateX(20px); }

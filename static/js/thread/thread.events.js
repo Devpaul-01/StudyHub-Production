@@ -56,6 +56,7 @@ import {
   reopenThread,
   deleteThread,
   generateMeetingNotes,
+  addMembersToThread,
 } from './thread.api.js';
 
 import {
@@ -438,6 +439,7 @@ export async function handleCreateThread(dataOrForm) {
   }
 
   try {
+    showToast('Creating thread…', 'info');
     const result = await createStandaloneThread(data);
 
     const modal = document.getElementById('thread-create-modal');
@@ -487,6 +489,11 @@ export async function handleSendMessage() {
     if (sendBtn) { sendBtn.disabled = true; sendBtn.textContent = '…'; }
 
     try {
+      showToast(
+        pendingAtts.length > 1 ? `Uploading ${pendingAtts.length} files…` : 'Uploading…',
+        'info'
+      );
+
       for (let i = 0; i < pendingAtts.length; i++) {
         const att = pendingAtts[i];
         const result = await uploadAttachment(
@@ -885,6 +892,56 @@ export async function handleRemoveMember(threadId, userId) {
   }
 }
 
+/**
+ * Open the Add Members picker and add the selected connections directly.
+ * Only the thread creator or a moderator can call this.
+ */
+export async function handleAddMembers(threadId) {
+  try {
+    const [rawDetail, members] = await Promise.all([
+      fetchThread(threadId),
+      fetchThreadMembers(threadId),
+    ]);
+
+    const thread      = rawDetail.thread ?? rawDetail.data?.thread;
+    const memberIds   = members.map((m) => m.user_id ?? m.id);
+
+    const { openAddMembersModal } = await import('./thread.modals.js');
+
+    openAddMembersModal(thread, memberIds, async (selectedUserIds) => {
+      try {
+        showToast('Adding members…', 'info');
+        const result = await addMembersToThread(threadId, selectedUserIds);
+
+        const added   = result?.added   ?? [];
+        const skipped = result?.skipped ?? [];
+
+        if (added.length) {
+          addOrUpdateThreadInList({
+            id:           threadId,
+            member_count: result.member_count ?? (
+              (threadState.threadList.get(threadId)?.member_count ?? 0) + added.length
+            ),
+          });
+          showToast(
+            `Added ${added.length} member${added.length !== 1 ? 's' : ''}` +
+            (skipped.length ? ` (${skipped.length} skipped)` : ''),
+            'success'
+          );
+          // Re-open the info modal so the updated member list is visible
+          await handleOpenInfo();
+        } else {
+          showToast('No new members were added', 'info');
+        }
+      } catch (err) {
+        showToast(err?.message ?? 'Failed to add members', 'error');
+      }
+    });
+  } catch (err) {
+    showToast(err?.message ?? 'Failed to open member picker', 'error');
+  }
+}
+
 export async function handleChangeMemberRole(threadId, userId, role) {
   try {
     await changeMemberRole(threadId, userId, role);
@@ -913,6 +970,8 @@ export async function handleLeaveThread(threadId) {
 
 export async function handleSaveThreadEdit(threadId, fields) {
   try {
+    showToast('Saving changes…', 'info');
+
     await updateThread(threadId, {
       title:       fields.title,
       description: fields.description,
@@ -945,6 +1004,7 @@ export async function handleCloseThread(threadId) {
   try {
     await closeThread(threadId);
     addOrUpdateThreadInList({ id: threadId, is_open: false });
+    showToast('Thread closed', 'success');
     const { renderThreadHeader } = await import('./thread.render.js');
     const detail  = await fetchThread(threadId);
     const detail2 = detail.thread ?? detail.data?.thread ?? detail;
@@ -958,6 +1018,7 @@ export async function handleReopenThread(threadId) {
   try {
     await reopenThread(threadId);
     addOrUpdateThreadInList({ id: threadId, is_open: true });
+    showToast('Thread reopened', 'success');
     const { renderThreadHeader } = await import('./thread.render.js');
     const detail  = await fetchThread(threadId);
     const detail2 = detail.thread ?? detail.data?.thread ?? detail;

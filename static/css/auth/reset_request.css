@@ -1,9 +1,9 @@
-/* style.css */
+/* Cool Graphite + Indigo Accent — updated 2026-06-26 */
 
 body {
   font-family: 'Poppins', sans-serif;
-  background: linear-gradient(135deg, #1e3c72, #2a5298);
-  color: #333;
+  background: #0F0F11;
+  color: #FAFAFA;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -12,10 +12,11 @@ body {
 }
 
 .reset-container {
-  background: #fff;
+  background: #1C1C1F;
   padding: 30px 35px;
   border-radius: 15px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.7);
+  border: 1px solid #27272A;
   width: 100%;
   max-width: 400px;
   text-align: center;
@@ -23,14 +24,14 @@ body {
 }
 
 .reset-container h2 {
-  color: #1e3c72;
+  color: #FAFAFA;
   margin-bottom: 10px;
   font-weight: 600;
 }
 
 .reset-container p {
   font-size: 14px;
-  color: #555;
+  color: #A1A1AA;
   margin-bottom: 25px;
 }
 
@@ -42,22 +43,29 @@ form {
 
 input[type="text"] {
   padding: 12px;
-  border: 2px solid #cfd8dc;
+  border: 2px solid #27272A;
   border-radius: 8px;
   font-size: 14px;
-  transition: border-color 0.3s ease;
+  background-color: #242428;
+  color: #FAFAFA;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  outline: none;
+}
+
+input[type="text"]::placeholder {
+  color: #52525B;
 }
 
 input[type="text"]:focus {
-  border-color: #1e88e5;
-  outline: none;
+  border-color: #6366F1;
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
 }
 
 button {
   padding: 12px;
-  background: #1e88e5;
-  color: #fff;
-  border: none;
+  background: #18181B;
+  color: #FAFAFA;
+  border: 1px solid #27272A;
   border-radius: 8px;
   font-size: 15px;
   cursor: pointer;
@@ -66,7 +74,7 @@ button {
 }
 
 button:hover {
-  background: #1565c0;
+  background: #27272A;
   transform: translateY(-2px);
 }
 
@@ -84,11 +92,11 @@ button:active {
 }
 
 .input-error.found {
-  color: #1b5e20; /* Green for success */
+  color: #10B981;
 }
 
 .input-error.not-found {
-  color: #d32f2f; /* Red for error */
+  color: #EF4444;
 }
 
 .back-login {
@@ -96,7 +104,7 @@ button:active {
 }
 
 .back-login a {
-  color: #1e88e5;
+  color: #6366F1;
   text-decoration: none;
   font-weight: 500;
 }

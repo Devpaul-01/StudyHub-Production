@@ -1,3 +1,4 @@
+/* Cool Graphite + Indigo Accent — updated 2026-06-26 */
 /* ============================================================================
    StudyHub - Forms CSS
    Complete form styling for inputs, selects, buttons, and validation
@@ -22,7 +23,7 @@
     display: block;
     font-weight: 600;
     font-size: 0.9rem;
-    color: var(--gray-700);
+    color: #A1A1AA;
     margin-bottom: 0.5rem;
     transition: color 0.2s ease;
 }
@@ -41,31 +42,31 @@
     padding: 0.75rem 1rem;
     font-size: 0.95rem;
     font-family: inherit;
-    color: var(--gray-800);
-    background-color: var(--white);
-    border: 2px solid var(--gray-300);
+    color: #FAFAFA;
+    background-color: #242428;
+    border: 2px solid #27272A;
     border-radius: var(--radius-md);
     transition: all 0.2s ease-in-out;
     outline: none;
 }
 
 .form-input::placeholder {
-    color: var(--gray-400);
+    color: #52525B;
 }
 
 .form-input:focus {
-    border-color: var(--primary-blue);
-    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
-    background-color: var(--white);
+    border-color: #6366F1;
+    box-shadow: 0 0 0 4px rgba(99,102,241,0.15);
+    background-color: #242428;
 }
 
 .form-input:hover:not(:focus):not(.error) {
-    border-color: var(--gray-400);
+    border-color: rgba(99,102,241,0.3);
 }
 
 .form-input:disabled {
-    background-color: var(--gray-100);
-    color: var(--gray-500);
+    background-color: #1C1C1F;
+    color: #52525B;
     cursor: not-allowed;
     opacity: 0.6;
 }
@@ -78,13 +79,13 @@
     padding: 0.75rem 2.5rem 0.75rem 1rem;
     font-size: 0.95rem;
     font-family: inherit;
-    color: var(--gray-800);
-    background-color: var(--white);
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%234b5563' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    color: #FAFAFA;
+    background-color: #242428;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23A1A1AA' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 0.75rem center;
     background-size: 16px;
-    border: 2px solid var(--gray-300);
+    border: 2px solid #27272A;
     border-radius: var(--radius-md);
     cursor: pointer;
     transition: all 0.2s ease-in-out;
@@ -93,23 +94,25 @@
 }
 
 .form-select:focus {
-    border-color: var(--primary-blue);
-    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+    border-color: #6366F1;
+    box-shadow: 0 0 0 4px rgba(99,102,241,0.15);
 }
 
 .form-select:hover:not(:focus):not(.error) {
-    border-color: var(--gray-400);
+    border-color: rgba(99,102,241,0.3);
 }
 
 .form-select:disabled {
-    background-color: var(--gray-100);
-    color: var(--gray-500);
+    background-color: #1C1C1F;
+    color: #52525B;
     cursor: not-allowed;
     opacity: 0.6;
 }
 
 .form-select option {
     padding: 0.5rem;
+    background: #242428;
+    color: #FAFAFA;
 }
 
 /* ==========================================
@@ -120,9 +123,9 @@
     padding: 0.75rem 1rem;
     font-size: 0.95rem;
     font-family: inherit;
-    color: var(--gray-800);
-    background-color: var(--white);
-    border: 2px solid var(--gray-300);
+    color: #FAFAFA;
+    background-color: #242428;
+    border: 2px solid #27272A;
     border-radius: var(--radius-md);
     transition: all 0.2s ease-in-out;
     outline: none;
@@ -131,16 +134,16 @@
 }
 
 .form-textarea::placeholder {
-    color: var(--gray-400);
+    color: #52525B;
 }
 
 .form-textarea:focus {
-    border-color: var(--primary-blue);
-    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+    border-color: #6366F1;
+    box-shadow: 0 0 0 4px rgba(99,102,241,0.15);
 }
 
 .form-textarea:hover:not(:focus):not(.error) {
-    border-color: var(--gray-400);
+    border-color: rgba(99,102,241,0.3);
 }
 
 /* ==========================================
@@ -150,9 +153,10 @@
 .form-radio {
     width: 18px;
     height: 18px;
-    border: 2px solid var(--gray-300);
+    border: 2px solid #27272A;
     cursor: pointer;
     transition: all 0.2s ease;
+    background-color: #242428;
 }
 
 .form-checkbox {
@@ -165,14 +169,14 @@
 
 .form-checkbox:checked,
 .form-radio:checked {
-    background-color: var(--primary-blue);
-    border-color: var(--primary-blue);
+    background-color: #6366F1;
+    border-color: #6366F1;
 }
 
 .form-checkbox:focus,
 .form-radio:focus {
     outline: none;
-    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+    box-shadow: 0 0 0 4px rgba(99,102,241,0.15);
 }
 
 /* ==========================================
@@ -182,14 +186,14 @@
 .form-select.error,
 .form-textarea.error {
     border-color: var(--danger);
-    background-color: #fef2f2;
+    background-color: rgba(239,68,68,0.05);
 }
 
 .form-input.error:focus,
 .form-select.error:focus,
 .form-textarea.error:focus {
     border-color: var(--danger);
-    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+    box-shadow: 0 0 0 4px rgba(239,68,68,0.12);
 }
 
 .form-error {
@@ -218,7 +222,7 @@
 .form-input.success,
 .form-select.success {
     border-color: var(--success);
-    background-color: #f0fdf4;
+    background-color: rgba(16,185,129,0.05);
 }
 
 .form-success {
@@ -234,7 +238,7 @@
    ========================================== */
 .form-help {
     display: block;
-    color: var(--gray-500);
+    color: #71717A;
     font-size: 0.85rem;
     margin-top: 0.375rem;
     line-height: 1.4;
@@ -288,15 +292,16 @@
 
 /* Button Variants */
 .btn-primary {
-    background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-light) 100%);
-    color: var(--white);
-    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+    background: #18181B;
+    color: #FAFAFA;
+    border-color: transparent;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
 }
 
 .btn-primary:hover:not(:disabled) {
-    background: linear-gradient(135deg, var(--primary-blue-dark) 0%, var(--primary-blue) 100%);
+    background: #27272A;
     transform: translateY(-2px);
-    box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.6);
 }
 
 .btn-primary:active:not(:disabled) {
@@ -304,41 +309,43 @@
 }
 
 .btn-secondary {
-    background-color: var(--gray-100);
-    color: var(--gray-700);
-    border-color: var(--gray-300);
+    background-color: #242428;
+    color: #A1A1AA;
+    border-color: #27272A;
 }
 
 .btn-secondary:hover:not(:disabled) {
-    background-color: var(--gray-200);
-    border-color: var(--gray-400);
+    background-color: #2A2A2E;
+    border-color: #3F3F46;
+    color: #FAFAFA;
 }
 
 .btn-outline {
     background-color: transparent;
-    color: var(--primary-blue);
-    border-color: var(--primary-blue);
+    color: #6366F1;
+    border-color: rgba(99,102,241,0.3);
 }
 
 .btn-outline:hover:not(:disabled) {
-    background-color: var(--primary-blue);
-    color: var(--white);
+    background-color: rgba(99,102,241,0.15);
+    border-color: #6366F1;
+    color: #FAFAFA;
 }
 
 .btn-danger {
     background-color: var(--danger);
-    color: var(--white);
+    color: #FAFAFA;
 }
 
 .btn-danger:hover:not(:disabled) {
     background-color: #dc2626;
     transform: translateY(-2px);
-    box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.3);
+    box-shadow: 0 10px 15px -3px rgba(239,68,68,0.3);
 }
 
 .btn-success {
     background-color: var(--success);
-    color: var(--white);
+    color: #FAFAFA;
 }
 
 .btn-success:hover:not(:disabled) {
@@ -362,9 +369,9 @@
     left: 50%;
     margin-left: -8px;
     margin-top: -8px;
-    border: 2px solid var(--white);
+    border: 2px solid rgba(255,255,255,0.3);
     border-radius: 50%;
-    border-top-color: transparent;
+    border-top-color: #FAFAFA;
     animation: btnSpin 0.6s linear infinite;
 }
 
@@ -397,9 +404,9 @@
     display: flex;
     align-items: center;
     padding: 0.75rem 1rem;
-    background-color: var(--gray-100);
-    border: 2px solid var(--gray-300);
-    color: var(--gray-600);
+    background-color: #242428;
+    border: 2px solid #27272A;
+    color: #A1A1AA;
     font-weight: 500;
     white-space: nowrap;
 }
@@ -437,19 +444,19 @@
     justify-content: center;
     gap: 0.5rem;
     padding: 0.75rem 1rem;
-    background-color: var(--gray-50);
-    border: 2px dashed var(--gray-300);
+    background-color: #1C1C1F;
+    border: 2px dashed #27272A;
     border-radius: var(--radius-md);
-    color: var(--gray-600);
+    color: #71717A;
     cursor: pointer;
     transition: all 0.2s ease;
     text-align: center;
 }
 
 .form-file-label:hover {
-    background-color: var(--primary-blue-pale);
-    border-color: var(--primary-blue);
-    color: var(--primary-blue);
+    background-color: rgba(99,102,241,0.05);
+    border-color: rgba(99,102,241,0.3);
+    color: #6366F1;
 }
 
 .form-file-input {

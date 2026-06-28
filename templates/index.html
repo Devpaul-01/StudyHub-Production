@@ -11,6 +11,7 @@
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
+    /* Cool Graphite + Indigo Accent — updated 2026-06-26 */
     :root {
       /* ── surfaces ── */
       --bg: #07090f;
@@ -21,11 +22,23 @@
       --border: rgba(255,255,255,0.08);
       --border-strong: rgba(255,255,255,0.14);
 
-      /* ── brand: indigo (primary, used broadly as solid color) ── */
-      --primary: #667eea;
-      --primary-light: #9aa8f3;
-      --primary-soft: rgba(102,126,234,0.12);
-      --primary-border: rgba(102,126,234,0.28);
+      /* ── primary: cool graphite (buttons, active/CTA states only) ── */
+      --primary: #18181B;
+      --primary-dark: #09090B;
+      --primary-hover: #27272A;
+      --primary-active: #3F3F46;
+
+      /* ── accent: indigo (badges, tags, highlights, progress, brand text) ── */
+      --accent: #6366F1;
+      --accent-hover: #4F46E5;
+      --accent-active: #4338CA;
+      --accent-subtle: rgba(99,102,241,0.15);
+      --accent-border: rgba(99,102,241,0.3);
+
+      /* ── legacy aliases so existing rules keep working ── */
+      --primary-light: var(--accent);
+      --primary-soft: var(--accent-subtle);
+      --primary-border: var(--accent-border);
 
       /* ── violet: reserved for AI / Learnora touchpoints only ── */
       --violet: #8b5cf6;
@@ -49,11 +62,6 @@
       --amber-light: #fde68a;
       --amber-soft: rgba(251,191,36,0.12);
 
-      /* ── rare gradients (2–3 uses on the whole page) ── */
-      --grad-hero: linear-gradient(135deg, #818cf8, #a78bfa);
-      --grad-growth: linear-gradient(135deg, #667eea, #ec4899);
-      --grad-cta: linear-gradient(135deg, #6f86ef, #5a6fe0);
-
       /* ── text ── */
       --text: #f3f5fb;
       --text-soft: rgba(243,245,251,0.80);
@@ -62,9 +70,9 @@
       /* ── shadows: quieter than before, glow reserved for spotlight cards ── */
       --shadow-card: 0 8px 28px rgba(0,0,0,0.35);
       --shadow-card-lg: 0 16px 50px rgba(0,0,0,0.45);
-      --shadow-btn: 0 2px 10px rgba(102,126,234,0.28);
-      --shadow-btn-hover: 0 6px 18px rgba(102,126,234,0.34);
-      --shadow-spotlight: 0 0 50px rgba(102,126,234,0.08);
+      --shadow-btn: 0 2px 10px rgba(0,0,0,0.35);
+      --shadow-btn-hover: 0 6px 18px rgba(0,0,0,0.45);
+      --shadow-spotlight: 0 0 50px rgba(99,102,241,0.08);
 
       /* ── radius scale ── */
       --r-sm: 8px;
@@ -93,7 +101,7 @@
     .ambient {
       position: fixed; inset: 0; z-index: 0; pointer-events: none;
       background:
-        radial-gradient(ellipse 55% 38% at 12% 15%, rgba(102,126,234,0.09) 0%, transparent 70%),
+        radial-gradient(ellipse 55% 38% at 12% 15%, rgba(99,102,241,0.09) 0%, transparent 70%),
         radial-gradient(ellipse 45% 32% at 88% 78%, rgba(139,92,246,0.07) 0%, transparent 70%);
     }
 
@@ -111,14 +119,10 @@
     .container { max-width: 1200px; margin: 0 auto; padding: 0 5%; position: relative; z-index: 1; }
 
     .grad-text {
-      background: var(--grad-hero);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      background-clip: text;
+      color: var(--accent);
     }
     .grad-text-growth {
-      background: var(--grad-growth);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      background-clip: text;
+      color: var(--pink);
     }
 
     .eyebrow {
@@ -152,10 +156,10 @@
       white-space: nowrap;
     }
     .btn-primary {
-      background: var(--grad-cta); color: #fff;
+      background: var(--primary); color: #fff;
       box-shadow: var(--shadow-btn);
     }
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: var(--shadow-btn-hover); filter: brightness(1.06); }
+    .btn-primary:hover { background: var(--primary-hover); transform: translateY(-2px); box-shadow: var(--shadow-btn-hover); }
     .btn-ghost {
       background: rgba(255,255,255,0.05); color: var(--text);
       border: 1px solid var(--border);
@@ -326,9 +330,9 @@
   .rep-sub { font-size: 0.7rem; color: var(--text-muted); }
   .mini-heat { display: grid; grid-template-columns: repeat(14, 1fr); gap: 2px; }
   .mini-heat span { aspect-ratio: 1; border-radius: 2px; background: var(--surface); }
-  .mini-heat span.l1 { background: rgba(102,126,234,0.28); }
-  .mini-heat span.l2 { background: rgba(102,126,234,0.55); }
-  .mini-heat span.l3 { background: var(--primary); }
+  .mini-heat span.l1 { background: rgba(99,102,241,0.28); }
+  .mini-heat span.l2 { background: rgba(99,102,241,0.55); }
+  .mini-heat span.l3 { background: var(--accent); }
 
   /* Card D — AI bubble (violet, smallest, last) */
   .ai-row { display: flex; align-items: center; gap: 0.6rem; }
@@ -403,7 +407,7 @@
                 <div class="grp-meta"><span class="live-dot"></span> 3 online now</div>
               </div>
               <div class="grp-avatars">
-                <span style="background:rgba(102,126,234,0.2);">👩🏾‍🎓</span>
+                <span style="background:rgba(99,102,241,0.2);">👩🏾‍🎓</span>
                 <span style="background:rgba(236,72,153,0.15);">🧑🏻‍💻</span>
                 <span style="background:rgba(74,222,128,0.12);">👩🏼‍🔬</span>
               </div>
@@ -853,7 +857,7 @@
   .pomodoro svg { width: 84px; height: 84px; transform: rotate(-90deg); }
   .pomodoro circle.track { fill: none; stroke: var(--border); stroke-width: 6; }
   .pomodoro circle.prog {
-    fill: none; stroke: var(--primary); stroke-width: 6; stroke-linecap: round;
+    fill: none; stroke: var(--accent); stroke-width: 6; stroke-linecap: round;
     stroke-dasharray: 251.2; stroke-dashoffset: 0;
     animation: pomodoro-tick 18s linear infinite;
   }
@@ -867,7 +871,7 @@
   .session-notes .sn-label { font-size: 0.68rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.4rem; }
   .session-progress { display: flex; align-items: center; gap: 0.6rem; font-size: 0.78rem; color: var(--text-soft); margin-bottom: 1rem; }
   .session-progress .sp-bar { flex: 1; height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
-  .session-progress .sp-fill { height: 100%; width: 60%; background: var(--primary); border-radius: 99px; }
+  .session-progress .sp-fill { height: 100%; width: 60%; background: var(--accent); border-radius: 99px; }
   .session-ai {
     display: flex; align-items: center; gap: 0.5rem; font-size: 0.78rem; color: var(--violet-light);
     background: var(--violet-soft); border: 1px solid var(--violet-border); border-radius: var(--r-pill);
@@ -1018,7 +1022,7 @@
           </div>
           <div class="hours-stat" style="margin-top:1.5rem;">
             <div class="hs-avatars">
-              <span style="background:rgba(102,126,234,0.2);">🧑🏻‍💻</span>
+              <span style="background:rgba(99,102,241,0.2);">🧑🏻‍💻</span>
               <span style="background:rgba(236,72,153,0.15);">👩🏼‍🔬</span>
             </div>
             <div>
@@ -1124,7 +1128,7 @@
   .msg-info .mpreview { font-size: 0.75rem; color: var(--text-muted); }
   .msg-meta { margin-left: auto; text-align: right; }
   .msg-meta .mtime { font-size: 0.7rem; color: var(--text-muted); }
-  .msg-meta .mbadge { background: var(--primary); color: #fff; font-size: 0.65rem; font-weight: 700; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-left: auto; margin-top: 3px; }
+  .msg-meta .mbadge { background: var(--accent); color: #fff; font-size: 0.65rem; font-weight: 700; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-left: auto; margin-top: 3px; }
 
   /* ─── CONDENSED LIVE ACTIVITY ─── */
   .activity-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 3rem; }
@@ -1153,7 +1157,7 @@
           <div class="mockup-body" style="padding:0.75rem;">
             <div class="msg-list">
               <div class="msg-row active">
-                <div class="msg-ava" style="background:rgba(102,126,234,0.2);">👩🏾‍🎓</div>
+                <div class="msg-ava" style="background:rgba(99,102,241,0.2);">👩🏾‍🎓</div>
                 <div class="msg-info">
                   <div class="mname">Amara O.</div>
                   <div class="mpreview">did you see the lecture notes? 👀</div>
@@ -1205,7 +1209,7 @@
 
     <div class="activity-strip reveal">
       <div class="activity-entry">
-        <div class="activity-avatar" style="background:rgba(102,126,234,0.15);">👩🏾‍🎓</div>
+        <div class="activity-avatar" style="background:rgba(99,102,241,0.15);">👩🏾‍🎓</div>
         <div>
           <div class="aname">Amara O. <span class="live-dot"></span></div>
           <div class="adesc">Started a session on Graphs &amp; Trees — needs help with Dijkstra's.</div>
@@ -1262,10 +1266,10 @@
   .heatmap-grid { display: grid; grid-template-columns: repeat(13, 1fr); gap: 3px; margin-bottom: 1rem; }
   .hm-cell { aspect-ratio: 1; border-radius: 2px; }
   .hm-0 { background: var(--surface); }
-  .hm-1 { background: rgba(102,126,234,0.25); }
-  .hm-2 { background: rgba(102,126,234,0.5); }
-  .hm-3 { background: rgba(102,126,234,0.75); }
-  .hm-4 { background: var(--primary); }
+  .hm-1 { background: rgba(99,102,241,0.25); }
+  .hm-2 { background: rgba(99,102,241,0.5); }
+  .hm-3 { background: rgba(99,102,241,0.75); }
+  .hm-4 { background: var(--accent); }
   .heat-summary { display: flex; justify-content: space-between; font-size: 0.76rem; color: var(--text-muted); }
   .impact-row { display: flex; gap: 1.5rem; margin-top: 1.1rem; padding-top: 1.1rem; border-top: 1px solid var(--border); }
   .impact-item .ii-num { font-family: 'Outfit', sans-serif; font-size: 1.3rem; font-weight: 800; }
@@ -1285,7 +1289,7 @@
   .badge-progress { margin-top: 1rem; }
   .badge-progress .bp-label { display: flex; justify-content: space-between; font-size: 0.76rem; color: var(--text-muted); margin-bottom: 0.4rem; }
   .badge-progress .bp-bar { height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
-  .badge-progress .bp-fill { height: 100%; width: 76%; background: var(--grad-growth); border-radius: 99px; }
+  .badge-progress .bp-fill { height: 100%; width: 76%; background: var(--pink); border-radius: 99px; }
   @media (max-width: 500px) { .badge-strip { grid-template-columns: repeat(4, 1fr); } .badge-mini .bm-name { display: none; } }
 
   /* Insight card */

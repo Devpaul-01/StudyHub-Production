@@ -4,19 +4,56 @@
    message_render.html, message_voicenote.html, message_modals.html
    ========================================================================== */
 
+/* Cool Graphite + Indigo Accent — updated June 26, 2026 */
 :root {
-  --primary: #667eea;
-  --primary-dark: #764ba2;
-  --primary-gradient: linear-gradient(135deg, #667eea, #764ba2);
-  --text-primary: #1a1a1a;
-  --text-secondary: #495057;
-  --text-meta: #6c757d;
-  --bg-page: #f5f7fa;
-  --bg-card: #ffffff;
-  --bg-surface: #f8f9fa;
-  --border-light: #e9ecef;
-  --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.12);
+  /* ── Primary — Cool Graphite ──────────────────────── */
+  --primary:           #18181B;   /* Zinc 900  — buttons, active states */
+  --primary-dark:      #09090B;   /* Zinc 950  — pressed/active */
+  --primary-hover:     #27272A;   /* Zinc 800  — hover */
+  --primary-active:    #3F3F46;   /* Zinc 700  — active */
+  --primary-subtle:    #F4F4F5;   /* Zinc 100  — tint backgrounds */
+  --primary-border:    #D4D4D8;   /* Zinc 300  — subtle borders */
+  --primary-gradient:  none;
+  --primary-start:     #18181B;
+  --primary-end:       #27272A;
+
+  /* ── Accent — Indigo ─────────────────────────────── */
+  --accent:            #6366F1;
+  --accent-hover:      #4F46E5;
+  --accent-active:     #4338CA;
+  --accent-subtle:     rgba(99,102,241,0.15);
+  --accent-border:     rgba(99,102,241,0.3);
+
+  /* ── Background — Dark Shell ─────────────────────── */
+  --bg-page:           #0F0F11;
+  --bg-card:           #1C1C1F;
+  --bg-surface:        #242428;
+  --bg-hover:          #2A2A2E;
+  --bg-primary:        var(--bg-card);
+  --bg-secondary:      var(--bg-page);
+  --bg-tertiary:       var(--bg-surface);
+
+  /* ── Text ────────────────────────────────────────── */
+  --text-primary:      #FAFAFA;
+  --text-secondary:    #A1A1AA;
+  --text-meta:         #71717A;
+  --text-tertiary:     #52525B;
+
+  /* ── Borders ─────────────────────────────────────── */
+  --border:            #27272A;
+  --border-light:      #1F1F22;
+
+  /* ── Status ─────────────────────────────────────── */
+  --success:           #10B981;
+  --warning:           #F59E0B;
+  --danger:            #EF4444;
+  --info:              #6366F1;
+
+  /* ── Shadows (heavier for dark — needed for depth) ── */
+  --shadow-sm:  0 1px 2px  rgba(0,0,0,0.4);
+  --shadow-md:  0 2px 8px  rgba(0,0,0,0.5);
+  --shadow-lg:  0 4px 16px rgba(0,0,0,0.6);
+  --shadow-xl:  0 8px 32px rgba(0,0,0,0.7);
 }
 
 /* --------------------------------------------------------------------------
@@ -39,10 +76,10 @@
   padding: 0.75rem 1rem;
   cursor: pointer;
   transition: background 0.15s ease;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--border);
 }
-.conversation-item:hover  { background: #f9fafb; }
-.conversation-item:active { background: #f3f4f6; }
+.conversation-item:hover  { background: var(--bg-hover); }
+.conversation-item:active { background: var(--bg-hover); }
 
 /* avatar wrapper — online dot is `absolute bottom-0 right-0` via Tailwind */
 .conversation-avatar {
@@ -52,7 +89,7 @@
   height: 3rem;
   border-radius: 50%;
   overflow: hidden;
-  background: #e5e7eb;
+  background: var(--bg-surface);
 }
 .conversation-avatar img {
   width: 100%;
@@ -88,7 +125,7 @@
   height: 1.75rem;
   border-radius: 50%;
   overflow: hidden;
-  background: #e5e7eb;
+  background: var(--bg-surface);
   align-self: flex-end;
 }
 .message-avatar img {
@@ -110,7 +147,7 @@
 .message-sender {
   font-size: 0.7rem;
   font-weight: 600;
-  color: #6b7280;
+  color: var(--text-secondary);
   padding-left: 0.25rem;
 }
 
@@ -120,29 +157,29 @@
 .message-bubble {
   padding: 0.5rem 0.75rem;
   border-radius: 1.125rem;
-  background: #ffffff;
-  box-shadow: 0 1px 2px rgba(0,0,0,.08);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-sm);
   word-break: break-word;
   position: relative;
 }
 
 /* Partner bubble shape */
 .message-partner .message-bubble {
-  background: #ffffff;
+  background: var(--bg-card);
   border-bottom-left-radius: 0.25rem;
 }
 
 /* Own bubble shape */
 .message-own .message-bubble {
   background: var(--primary);   /* primary */
-  color: #ffffff;
+  color: var(--text-primary);
   border-bottom-right-radius: 0.25rem;
 }
 
 /* Deleted bubble */
 .message-bubble--deleted {
-  background: #f3f4f6 !important;
-  color: #9ca3af !important;
+  background: var(--bg-surface) !important;
+  color: var(--text-meta) !important;
   font-style: italic;
   box-shadow: none;
 }
@@ -156,7 +193,7 @@
 
 /* Pending / failed states */
 .message-pending  .message-bubble { opacity: 0.6; }
-.message-failed   .message-bubble { background: #fee2e2; color: #991b1b; }
+.message-failed   .message-bubble { background: rgba(239,68,68,0.12); color: var(--danger); }
 
 /* --------------------------------------------------------------------------
    MESSAGE TEXT
@@ -190,13 +227,13 @@
   font-size: 0.7rem;
   opacity: 0.75;
 }
-.message-read-indicator    { color: rgba(102, 126, 234, 0.75); }  /* primary tint inside own bubble */
+.message-read-indicator    { color: rgba(99,102,241,0.75); }  /* accent tint inside own bubble */
 .message-pending-indicator { font-size: 0.7rem; opacity: 0.65; }
 
 /* Retry button */
 .message-retry-btn {
   font-size: 0.7rem;
-  color: #ef4444;
+  color: var(--danger);
   cursor: pointer;
   background: none;
   border: none;
@@ -220,14 +257,14 @@
   align-items: center;
   gap: 0.15rem;
   padding: 0.1rem 0.4rem;
-  background: #f3f4f6;
-  border: 1px solid #e5e7eb;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
   border-radius: 999px;
   font-size: 0.75rem;
   cursor: pointer;
   transition: background 0.15s;
 }
-.reaction:hover { background: #e5e7eb; }
+.reaction:hover { background: var(--bg-hover); }
 
 /* --------------------------------------------------------------------------
    RESOURCES (images / files / videos / audio)
@@ -322,7 +359,7 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem 1rem;
-  color: #9ca3af;
+  color: var(--text-meta);
   font-size: 0.7rem;
   font-weight: 500;
   letter-spacing: 0.04em;
@@ -333,7 +370,7 @@
   content: '';
   flex: 1;
   height: 1px;
-  background: #e5e7eb;
+  background: var(--border);
 }
 
 /* --------------------------------------------------------------------------
@@ -352,7 +389,7 @@
   width: 0.45rem;
   height: 0.45rem;
   border-radius: 50%;
-  background: #9ca3af;
+  background: var(--text-meta);
   animation: typingBounce 1.2s ease-in-out infinite;
 }
 .typing-dot:nth-child(2) { animation-delay: 0.2s; }
@@ -372,8 +409,8 @@
   align-items: center;
   gap: 0.375rem;
   padding: 0.375rem 0.5rem;
-  background: #f3f4f6;
-  border: 1px solid #e5e7eb;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
   border-radius: 0.75rem;
   flex-shrink: 0;
   max-width: 9rem;
@@ -393,15 +430,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #e5e7eb;
+  background: var(--bg-surface);
   border-radius: 0.5rem;
   flex-shrink: 0;
-  color: #6b7280;
+  color: var(--text-secondary);
 }
 
 .pending-attachment-name {
   font-size: 0.7rem;
-  color: #374151;
+  color: var(--text-primary);
   flex: 1;
   min-width: 0;
   overflow: hidden;
@@ -417,19 +454,19 @@
   width: 1.25rem;
   height: 1.25rem;
   border-radius: 50%;
-  background: #d1d5db;
-  color: #374151;
+  background: var(--bg-hover);
+  color: var(--text-primary);
   border: none;
   cursor: pointer;
   transition: background 0.15s;
 }
-.pending-attachment-remove:hover { background: #ef4444; color: #fff; }
+.pending-attachment-remove:hover { background: var(--danger); color: #fff; }
 
 .pending-attachment-progress {
   position: absolute;
   inset: 0;
   border-radius: 0.75rem;
-  background: rgba(102, 126, 234, 0.75);
+  background: rgba(99,102,241,0.75);
   color: #fff;
   font-size: 0.65rem;
   font-weight: 700;
@@ -444,11 +481,11 @@
 .upload-progress {
   padding: 0.5rem 0.75rem;
   font-size: 0.75rem;
-  color: #6b7280;
+  color: var(--text-secondary);
 }
 .upload-progress-bar {
   height: 0.25rem;
-  background: #e5e7eb;
+  background: var(--bg-surface);
   border-radius: 999px;
   margin-top: 0.25rem;
   overflow: hidden;
@@ -469,9 +506,9 @@
   justify-content: center;
   gap: 0.5rem;
   padding: 1rem 1.25rem;
-  background: #fef2f2;
-  border-top: 1px solid #fecaca;
-  color: #dc2626;
+  background: rgba(239,68,68,0.1);
+  border-top: 1px solid rgba(239,68,68,0.2);
+  color: var(--danger);
   font-size: 0.82rem;
   flex-wrap: wrap;
 }
@@ -480,7 +517,7 @@
 
 .blocked-unblock-btn {
   padding: 0.25rem 0.75rem;
-  background: #dc2626;
+  background: var(--danger);
   color: #fff;
   border: none;
   border-radius: 999px;
@@ -500,11 +537,11 @@
   justify-content: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  background: #fef3c7;
-  color: #92400e;
+  background: rgba(245,158,11,0.12);
+  color: var(--warning);
   font-size: 0.78rem;
   font-weight: 500;
-  border-bottom: 1px solid #fde68a;
+  border-bottom: 1px solid rgba(245,158,11,0.25);
 }
 
 .reconnecting-banner {
@@ -513,11 +550,11 @@
   justify-content: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  background: #eff6ff;
-  color: #1d4ed8;
+  background: var(--accent-subtle);
+  color: var(--accent);
   font-size: 0.78rem;
   font-weight: 500;
-  border-bottom: 1px solid #bfdbfe;
+  border-bottom: 1px solid var(--accent-border);
 }
 
 /* --------------------------------------------------------------------------
@@ -529,7 +566,7 @@
   align-items: center;
   justify-content: center;
   padding: 3rem 1.5rem;
-  color: #9ca3af;
+  color: var(--text-meta);
   text-align: center;
   gap: 0.75rem;
 }
@@ -552,13 +589,13 @@
   width: 2.5rem;
   height: 2.5rem;
   border-radius: 50%;
-  background: #e5e7eb;
+  background: var(--bg-surface);
 }
 
 .skeleton-line {
   height: 0.75rem;
   border-radius: 999px;
-  background: #e5e7eb;
+  background: var(--bg-surface);
   margin-bottom: 0.4rem;
 }
 
@@ -620,10 +657,10 @@
    REACTION PICKER MODAL
    -------------------------------------------------------------------------- */
 .reaction-picker {
-  background: #fff;
+  background: var(--bg-card);
   border-radius: 1rem;
   padding: 0.75rem;
-  box-shadow: 0 4px 24px rgba(0,0,0,.15);
+  box-shadow: var(--shadow-lg);
 }
 
 .reaction-option {
@@ -636,7 +673,7 @@
 }
 .reaction-option:hover {
   transform: scale(1.25);
-  background: #f3f4f6;
+  background: var(--bg-hover);
 }
 
 /* --------------------------------------------------------------------------
@@ -652,7 +689,7 @@
 .spinner {
   width: 1.25rem;
   height: 1.25rem;
-  border: 2px solid #e5e7eb;
+  border: 2px solid var(--border);
   border-top-color: var(--primary);
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
@@ -744,7 +781,7 @@
   position: fixed;
   inset: 0;                  /* top: 0; right: 0; bottom: 0; left: 0 */
   z-index: 200;
-  background: #fff;
+  background: var(--bg-page);
   overflow: hidden;
 }
 
@@ -769,8 +806,8 @@
 /* Input footer always pinned to bottom */
 #messages #message-input-footer {
   flex-shrink: 0;
-  border-top: 1px solid #e5e7eb;
-  background: #fff;
+  border-top: 1px solid var(--border);
+  background: var(--bg-card);
   padding: 0.75rem 1rem;
 }
 
